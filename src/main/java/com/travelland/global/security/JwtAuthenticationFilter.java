@@ -2,7 +2,6 @@ package com.travelland.global.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelland.constant.Role;
-import com.travelland.dto.MemberRequestDto;
 import com.travelland.dto.MemberRequestDto.LoginRequestDto;
 import com.travelland.global.dto.ResponseDto;
 import com.travelland.global.jwt.JwtUtil;
