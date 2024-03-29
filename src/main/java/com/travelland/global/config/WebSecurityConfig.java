@@ -90,7 +90,8 @@ public class WebSecurityConfig {
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll() // resources 접근 허용 설정
                         .requestMatchers("/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "swagger-ui.html").permitAll()
-                        .anyRequest().authenticated() // 그 외 모든 요청 인증처리
+//                        .anyRequest().authenticated() // 그 외 모든 요청 인증처리
+                        .anyRequest().permitAll()
         );
 
         http.formLogin(AbstractHttpConfigurer::disable);
