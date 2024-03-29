@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.UUID;
 
 @Slf4j(topic = "KAKAO Login")
 @Service
@@ -109,12 +110,14 @@ public class KakaoService {
                 .get("email").asText();
         String name = jsonNode.get("kakao_account")
                 .get("name").asText();
-        String age_range = jsonNode.get("kakao_account")
-                .get("age_range").asText();
+        String birthday = jsonNode.get("kakao_account")
+                .get("birthyear").asText();
+        birthday += jsonNode.get("kakao_account")
+                .get("birthday").asText();
         String gender = jsonNode.get("kakao_account")
                 .get("gender").asText();
 
-        log.info("카카오 사용자 정보: id=" + id + ", nickname=" + nickname + ", email=" + email + ", name=" + name + ", age_range=" + age_range + ", gender=" + gender);
-        return new KakaoUserInfoDto(id, nickname, email, name, age_range, gender);
+        log.info("카카오 사용자 정보: id=" + id + ", nickname=" + nickname + ", email=" + email + ", name=" + name + ", birthday=" + birthday + ", gender=" + gender);
+        return new KakaoUserInfoDto(id, nickname, email, name, birthday, gender);
     }
 }
