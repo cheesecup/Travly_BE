@@ -3,8 +3,11 @@ package com.travelland.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.travelland.constant.Role;
+import com.travelland.domain.Member;
 import com.travelland.dto.KakaoUserInfoDto;
 import com.travelland.global.jwt.JwtUtil;
+import com.travelland.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Slf4j(topic = "KAKAO Login")
@@ -28,6 +32,7 @@ public class KakaoService {
     private final PasswordEncoder passwordEncoder;
     private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
+    private final MemberRepository memberRepository;
 
     public String kakaoLogin(String code) throws JsonProcessingException {
         // 1. "인가 코드"로 "액세스 토큰" 요청
@@ -36,11 +41,16 @@ public class KakaoService {
         // 2. 토큰으로 카카오 API 호출 : "액세스 토큰"으로 "카카오 사용자 정보" 가져오기
         KakaoUserInfoDto kakaoUserInfo = getKakaoUserInfo(accessToken);
 
-        return null;
+        // 3. 필요시 회원가입
+        Member member = registerKakaoUserIfNeeded(kakaoUserInfo);
+
+        // 4. JWT 토큰 반환
+        String createToken = jwtUtil.createToken(member.getEmail(), member.getRole());
+
+        return createToken;
     }
 
     private String getToken(String code) throws JsonProcessingException {
-        log.info("인가 코드 = " + code);
         // 요청 URL 만들기
         URI uri = UriComponentsBuilder
                 .fromUriString("https://kauth.kakao.com")
@@ -77,7 +87,6 @@ public class KakaoService {
     }
 
     private KakaoUserInfoDto getKakaoUserInfo(String accessToken) throws JsonProcessingException {
-        log.info("access token = " + accessToken);
         // 요청 URL 만들기
         URI uri = UriComponentsBuilder
                 .fromUriString("https://kapi.kakao.com")
@@ -110,14 +119,40 @@ public class KakaoService {
                 .get("email").asText();
         String name = jsonNode.get("kakao_account")
                 .get("name").asText();
-        String birthday = jsonNode.get("kakao_account")
+        String birth = jsonNode.get("kakao_account")
                 .get("birthyear").asText();
-        birthday += jsonNode.get("kakao_account")
+        birth += jsonNode.get("kakao_account")
                 .get("birthday").asText();
         String gender = jsonNode.get("kakao_account")
                 .get("gender").asText();
 
-        log.info("카카오 사용자 정보: id=" + id + ", nickname=" + nickname + ", email=" + email + ", name=" + name + ", birthday=" + birthday + ", gender=" + gender);
-        return new KakaoUserInfoDto(id, nickname, email, name, birthday, gender);
+        log.info("카카오 사용자 정보: id=" + id + ", nickname=" + nickname + ", email=" + email + ", name=" + name + ", birthday=" + birth + ", gender=" + gender);
+        return new KakaoUserInfoDto(id, nickname, email, name, birth, gender);
+    }
+
+    private Member registerKakaoUserIfNeeded(KakaoUserInfoDto kakaoUserInfo) {
+        // DB 에 중복된 Kakao Id 가 있는지 확인
+        Long kakaoId = kakaoUserInfo.getId();
+        Member kakaoUser = memberRepository.findBySocialId(kakaoId).orElse(null);
+
+        if (kakaoUser == null) {
+            // 신규 회원가입
+            // password: random UUID
+            String password = UUID.randomUUID().toString();
+            String encodedPassword = passwordEncoder.encode(password);
+
+            // email: kakao email
+            String email = kakaoUserInfo.getEmail();
+
+            // birth: String -> LocalDate
+            LocalDate birth = LocalDate.of(Integer.parseInt(kakaoUserInfo.getBirth().substring(0,4)),
+                    Integer.parseInt(kakaoUserInfo.getBirth().substring(4,6)),
+                    Integer.parseInt(kakaoUserInfo.getBirth().substring(6,8)));
+
+            kakaoUser = new Member(kakaoId, email, encodedPassword, kakaoUserInfo.getNickname(), kakaoUserInfo.getGender(), birth, Role.USER);
+
+            memberRepository.save(kakaoUser);
+        }
+        return kakaoUser;
     }
 }
