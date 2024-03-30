@@ -3,9 +3,10 @@ package com.travelland.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.travelland.constant.Gender;
 import com.travelland.constant.Role;
 import com.travelland.domain.Member;
-import com.travelland.dto.KakaoUserInfoDto;
+import com.travelland.dto.MemberDto;
 import com.travelland.global.jwt.JwtUtil;
 import com.travelland.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class KakaoService {
         String accessToken = getToken(code);
 
         // 2. 토큰으로 카카오 API 호출 : "액세스 토큰"으로 "카카오 사용자 정보" 가져오기
-        KakaoUserInfoDto kakaoUserInfo = getKakaoUserInfo(accessToken);
+        MemberDto.KakaoInfo kakaoUserInfo = getKakaoUserInfo(accessToken);
 
         // 3. 필요시 회원가입
         Member member = registerKakaoUserIfNeeded(kakaoUserInfo);
@@ -66,8 +67,8 @@ public class KakaoService {
         // HTTP Body 생성
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
-        body.add("client_id", "bd5952c9702cfc38cb3064fb7a0d7dfa");
-        body.add("redirect_uri", "http://localhost:8080/user/login/kakao");
+        body.add("client_id", "aa4b6a242e99488886c885baee1cd1ab");
+        body.add("redirect_uri", "http://localhost:8080/users/login/kakao");
         body.add("code", code);
 
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity
@@ -86,7 +87,7 @@ public class KakaoService {
         return jsonNode.get("access_token").asText();
     }
 
-    private KakaoUserInfoDto getKakaoUserInfo(String accessToken) throws JsonProcessingException {
+    private MemberDto.KakaoInfo getKakaoUserInfo(String accessToken) throws JsonProcessingException {
         // 요청 URL 만들기
         URI uri = UriComponentsBuilder
                 .fromUriString("https://kapi.kakao.com")
@@ -127,10 +128,17 @@ public class KakaoService {
                 .get("gender").asText();
 
         log.info("카카오 사용자 정보: id=" + id + ", nickname=" + nickname + ", email=" + email + ", name=" + name + ", birthday=" + birth + ", gender=" + gender);
-        return new KakaoUserInfoDto(id, nickname, email, name, birth, gender);
+        return MemberDto.KakaoInfo.builder()
+                .id(id)
+                .nickname(nickname)
+                .email(email)
+                .name(name)
+                .birth(birth)
+                .gender(gender)
+                .build();
     }
 
-    private Member registerKakaoUserIfNeeded(KakaoUserInfoDto kakaoUserInfo) {
+    private Member registerKakaoUserIfNeeded(MemberDto.KakaoInfo kakaoUserInfo) {
         // DB 에 중복된 Kakao Id 가 있는지 확인
         Long kakaoId = kakaoUserInfo.getId();
         Member kakaoUser = memberRepository.findBySocialId(kakaoId).orElse(null);
@@ -149,7 +157,21 @@ public class KakaoService {
                     Integer.parseInt(kakaoUserInfo.getBirth().substring(4,6)),
                     Integer.parseInt(kakaoUserInfo.getBirth().substring(6,8)));
 
-            kakaoUser = new Member(kakaoId, email, encodedPassword, kakaoUserInfo.getNickname(), kakaoUserInfo.getGender(), birth, Role.USER);
+            // gender
+            Gender gender = Gender.MALE;
+            if (kakaoUserInfo.getGender().equals("female")) {
+                gender = Gender.FEMALE;
+            }
+
+            kakaoUser = Member.builder()
+                    .socialId(kakaoId)
+                    .password(encodedPassword)
+                    .email(email)
+                    .birth(birth)
+                    .gender(gender)
+                    .nickname(kakaoUserInfo.getNickname())
+                    .role(Role.USER)
+                    .build();
 
             memberRepository.save(kakaoUser);
         }

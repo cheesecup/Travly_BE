@@ -1,7 +1,9 @@
 package com.travelland.domain;
 
+import com.travelland.constant.Gender;
 import com.travelland.constant.Role;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -27,14 +29,15 @@ public class Member {
     private String nickname;
 
     @Column(length = 8)
-    private String gender;
+    private Gender gender;
 
     private LocalDate birth;
 
     @Column(length = 10)
     private Role role;
 
-    public Member(Long socialId, String email, String password, String nickname, String gender, LocalDate birth, Role role) {
+    @Builder
+    public Member(Long socialId, String email, String password, String nickname, Gender gender, LocalDate birth, Role role) {
         this.socialId = socialId;
         this.email = email;
         this.password = password;
