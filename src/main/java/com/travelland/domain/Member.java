@@ -1,10 +1,7 @@
 package com.travelland.domain;
 
 import com.travelland.constant.Role;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -29,5 +26,6 @@ public class Member {
 
     private LocalDateTime birth;
 
+    @Enumerated(EnumType.STRING)
     private Role role;
 }
