@@ -1,5 +1,6 @@
 package com.travelland.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -23,5 +24,11 @@ public class MemberDto {
             this.birth = birth;
             this.gender = gender;
         }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class Response {
+        private boolean isSuccess;
     }
 }
