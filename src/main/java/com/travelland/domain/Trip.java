@@ -81,4 +81,12 @@ public class Trip {
     public void increaseViewCount() {
         this.viewCount++;
     }
+
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        this.likeCount--;
+    }
 }

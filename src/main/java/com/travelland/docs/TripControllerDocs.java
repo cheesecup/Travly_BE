@@ -3,6 +3,7 @@ package com.travelland.docs;
 import com.travelland.dto.TripDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,4 +37,16 @@ public interface TripControllerDocs {
 
     @Operation(summary = "여행정보 삭제", description = "등록한 여행정보를 삭제하는 API")
     ResponseEntity deleteTrip(@PathVariable Long tripId);
+
+    @Operation(summary = "여행정보 좋아요 등록", description = "여행정보 게시글 좋아요를 등록하는 API")
+    ResponseEntity createTripLike(@PathVariable Long tripId);
+
+    @Operation(summary = "여행정보 좋아요 취소", description = "여행정보 게시글의 좋아요를 취소하는 API")
+    ResponseEntity deleteTripLike(@PathVariable Long tripId);
+
+    @Operation(summary = "여행정보 좋아요 목록 조회", description = "좋아요을 누른 여행정보 게시글 목록을 페이지별로 조회하는 API")
+    ResponseEntity getTripLikeList(@RequestParam(defaultValue = "1") int page,
+                                   @RequestParam(defaultValue = "5") int size,
+                                   @RequestParam(required = false, defaultValue = "createdAt") String sort,
+                                   @RequestParam(required = false, defaultValue = "false") boolean ASC);
 }

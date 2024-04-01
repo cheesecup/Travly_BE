@@ -2,6 +2,7 @@ package com.travelland.controller;
 
 import com.travelland.docs.TripControllerDocs;
 import com.travelland.dto.TripDto;
+import com.travelland.service.TripLikeService;
 import com.travelland.service.TripService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import java.util.List;
 public class TripController implements TripControllerDocs {
 
     private final TripService tripService;
+    private final TripLikeService tripLikeService;
 
     //여행정보 작성
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
@@ -33,16 +35,18 @@ public class TripController implements TripControllerDocs {
     @GetMapping("/{tripId}")
     public ResponseEntity<TripDto.GetResponse> getTrip(@PathVariable Long tripId) {
         TripDto.GetResponse responseDto = tripService.getTrip(tripId);
+
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     //여행정보 목록 조회
     @GetMapping
     public ResponseEntity<List<TripDto.GetListResponse>> getTripList(@RequestParam(defaultValue = "1") int page,
-                                      @RequestParam(defaultValue = "5") int size,
-                                      @RequestParam(required = false, defaultValue = "createdAt") String sort,
-                                      @RequestParam(required = false, defaultValue = "false") boolean ASC) {
+                                                                     @RequestParam(defaultValue = "20") int size,
+                                                                     @RequestParam(required = false, defaultValue = "createdAt") String sort,
+                                                                     @RequestParam(required = false, defaultValue = "false") boolean ASC) {
         List<TripDto.GetListResponse> responseDto = tripService.getTripList(page, size, sort, ASC);
+
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
@@ -53,6 +57,7 @@ public class TripController implements TripControllerDocs {
                                                              @RequestPart List<MultipartFile> imageList,
                                                              @RequestPart String email){
         TripDto.UpdateResponse responseDto = tripService.updateTrip(tripId, requestDto, imageList, email);
+
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
@@ -65,10 +70,31 @@ public class TripController implements TripControllerDocs {
     }
 
     //여행정보 좋아요 등록
+    @PostMapping("/{tripId}/like")
+    public ResponseEntity<TripDto.TripLikeResponse> createTripLike(@PathVariable Long tripId) {
+        tripLikeService.createTripLike(tripId, "test@email.com");
+
+        return ResponseEntity.status(HttpStatus.OK).body(new TripDto.TripLikeResponse(true));
+    }
 
     //여행정보 좋아요 취소
+    @DeleteMapping("/{tripId}/like")
+    public ResponseEntity<TripDto.TripLikeResponse> deleteTripLike(@PathVariable Long tripId) {
+        tripLikeService.deleteTripLike(tripId, "test@email.com");
+
+        return ResponseEntity.status(HttpStatus.OK).body(new TripDto.TripLikeResponse(false));
+    }
 
     //여행정보 좋아요 목록 조회
+    @GetMapping("/like")
+    public ResponseEntity<List<TripDto.GetTripLikeListResponse>> getTripLikeList(@RequestParam(defaultValue = "1") int page,
+                                                                                 @RequestParam(defaultValue = "20") int size,
+                                                                                 @RequestParam(required = false, defaultValue = "createdAt") String sort,
+                                                                                 @RequestParam(required = false, defaultValue = "false") boolean ASC) {
+        List<TripDto.GetTripLikeListResponse> responseDto = tripLikeService.getTripLikeList(page, size, sort, ASC, "test@email.com");
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
 
     //여행정보 스크랩 추가
 
