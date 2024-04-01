@@ -1,11 +1,18 @@
 package com.travelland.global.security;
 
+import com.travelland.domain.Member;
+import com.travelland.domain.RefreshToken;
+import com.travelland.global.exception.CustomException;
+import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.jwt.JwtUtil;
+import com.travelland.repository.MemberRepository;
+import com.travelland.repository.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -18,25 +25,39 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Slf4j
+@RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsServiceImpl userDetailsService;
-
-    public JwtAuthorizationFilter(JwtUtil jwtUtil, UserDetailsServiceImpl userDetailsService) {
-        this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
-    }
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final MemberRepository memberRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String tokenValue = jwtUtil.getJwtFromHeader(request);
+        String tokenValue = jwtUtil.getJwtFromCookie(request);
 
         if (StringUtils.hasText(tokenValue)) {
+            // access token 유효하지 않으면 refresh token 유효성 검사
             if (!jwtUtil.validateToken(tokenValue)) {
-                log.error("Token Error");
-                return;
+                RefreshToken tokenInfo = refreshTokenRepository.findByAccessToken(tokenValue)
+                        .orElseThrow(() -> new CustomException(ErrorCode.INVALID_AUTH_TOKEN));
+
+                String refreshToken = tokenInfo.getRefreshToken();
+                if (!jwtUtil.validateToken(refreshToken)) {
+                    refreshTokenRepository.delete(tokenInfo);
+                    return;
+                }
+
+                // refresh token 유효하면 access token 새로 발급
+                Member member = memberRepository.findById(tokenInfo.getMemberId())
+                        .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+                tokenValue = jwtUtil.createToken(member.getEmail(), member.getRole());
+                refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, tokenValue));
+
+                jwtUtil.addJwtToCookie(tokenValue, response);
             }
 
             Claims claims = jwtUtil.getUserInfoFromToken(tokenValue);

@@ -6,9 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelland.constant.Gender;
 import com.travelland.constant.Role;
 import com.travelland.domain.Member;
+import com.travelland.domain.RefreshToken;
 import com.travelland.dto.MemberDto;
 import com.travelland.global.jwt.JwtUtil;
 import com.travelland.repository.MemberRepository;
+import com.travelland.repository.RefreshTokenRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -34,8 +37,9 @@ public class KakaoService {
     private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
     private final MemberRepository memberRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public String kakaoLogin(String code) throws JsonProcessingException {
+    public boolean kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
         // 1. "인가 코드"로 "액세스 토큰" 요청
         String accessToken = getToken(code);
 
@@ -45,10 +49,14 @@ public class KakaoService {
         // 3. 필요시 회원가입
         Member member = registerKakaoUserIfNeeded(kakaoUserInfo);
 
-        // 4. JWT 토큰 반환
+        // 4. JWT 토큰 쿠키 저장
         String createToken = jwtUtil.createToken(member.getEmail(), member.getRole());
+        String refreshToken = jwtUtil.createRefreshToken();
 
-        return createToken;
+        refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, createToken));
+        jwtUtil.addJwtToCookie(createToken, response);
+
+        return true;
     }
 
     private String getToken(String code) throws JsonProcessingException {
