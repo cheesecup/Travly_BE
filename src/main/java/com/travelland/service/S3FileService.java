@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
-@Slf4j
+@Slf4j(topic = "S3 Upload / Delete Log")
 @Service
 @RequiredArgsConstructor
 public class S3FileService {
@@ -64,6 +64,7 @@ public class S3FileService {
         try {
             return oriImgName.substring(oriImgName.lastIndexOf("."));
         } catch (StringIndexOutOfBoundsException e) {
+            log.error("확장자 추출 실패");
             throw new IllegalArgumentException(e.getMessage());
         }
     }

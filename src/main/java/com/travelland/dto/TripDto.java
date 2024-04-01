@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.travelland.domain.Trip;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -48,20 +47,17 @@ public class TripDto {
 
     @Getter
     @AllArgsConstructor
-    @NoArgsConstructor
     public static class CreateResponse {
         private Long tripId;
     }
 
     @Getter
     @AllArgsConstructor
-    @NoArgsConstructor
     public static class UpdateResponse {
         private Long tripId;
     }
 
     @Getter
-    @NoArgsConstructor
     public static class GetResponse {
         //Trip 엔티티 값
         private Long tripId;
@@ -102,7 +98,6 @@ public class TripDto {
     }
 
     @Getter
-    @NoArgsConstructor
     public static class GetListResponse {
         private Long tripId;
         private String title;
@@ -121,5 +116,11 @@ public class TripDto {
             this.viewCount = trip.getViewCount();
             this.createdAt = trip.getCreatedAt().toLocalDate();
         }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class DeleteResponse {
+        private boolean isDeleted;
     }
 }
