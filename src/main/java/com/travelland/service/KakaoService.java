@@ -159,9 +159,8 @@ public class KakaoService {
 
             // gender
             Gender gender = Gender.MALE;
-            if (kakaoUserInfo.getGender().equals("female")) {
+            if (kakaoUserInfo.getGender().equals("female"))
                 gender = Gender.FEMALE;
-            }
 
             kakaoUser = Member.builder()
                     .socialId(kakaoId)
