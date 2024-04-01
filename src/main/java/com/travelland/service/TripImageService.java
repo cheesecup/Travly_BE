@@ -2,7 +2,6 @@ package com.travelland.service;
 
 import com.travelland.domain.Trip;
 import com.travelland.domain.TripImage;
-import com.travelland.dto.TripImageDto.CreateRequest;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.TripImageRepository;
@@ -23,13 +22,9 @@ public class TripImageService {
     // 이미지 정보 저장
     @Transactional
     public void createTripImage(List<MultipartFile> imageList, Trip trip) {
-        for (int i=0; i<imageList.size(); i++) {
-            boolean isThumbnail = i == 0;
-
-            CreateRequest createRequest = s3FileService.s3Upload(imageList.get(i)); // S3에 이미지 업로드
-
-            tripImageRepository.save(new TripImage(createRequest, isThumbnail, trip));
-        }
+        imageList.stream()
+                .map(image -> new TripImage(s3FileService.s3Upload(image), imageList.indexOf(image) == 0, trip))
+                .forEach(tripImageRepository::save);
     }
 
     // 선택한 게시글 이미지 URL 리스트 가져오기
@@ -54,9 +49,6 @@ public class TripImageService {
 
         tripImageRepository.deleteByTrip(trip);
 
-        for (String storeImageName : storeImageNameList) {
-            s3FileService.deleteFile(storeImageName); //S3에 저장된 이미지 삭제
-        }
-
+        storeImageNameList.forEach(s3FileService::deleteFile); //S3 이미지 삭제
     }
 }
