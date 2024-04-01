@@ -1,10 +1,13 @@
 package com.travelland.domain;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TripHashtag {
 
     @Id
@@ -17,8 +20,6 @@ public class TripHashtag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id")
     private Trip trip;
-
-    protected TripHashtag() {}
 
     public TripHashtag(String title, Trip trip) {
         this.title = title;
