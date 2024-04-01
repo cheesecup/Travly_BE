@@ -2,10 +2,13 @@ package com.travelland.domain;
 
 import com.travelland.dto.TripImageDto.CreateRequest;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TripImage {
 
     @Id
@@ -21,8 +24,6 @@ public class TripImage {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trip_id")
     private Trip trip;
-
-    protected TripImage() {}
 
     public TripImage(CreateRequest requestDto, boolean isThumbnail, Trip trip) {
         this.imageUrl = requestDto.getImageUrl();

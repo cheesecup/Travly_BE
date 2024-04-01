@@ -3,7 +3,9 @@ package com.travelland.domain;
 import com.travelland.dto.TripDto;
 import com.travelland.dto.TripDto.CreateRequest;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -14,6 +16,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @EntityListeners(AuditingEntityListener.class)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Trip {
 
     @Id
@@ -51,8 +54,6 @@ public class Trip {
 
     @LastModifiedDate
     private LocalDateTime modifiedAt;
-
-    protected Trip() {}
 
     public Trip(CreateRequest requestDto, Member member) {
         this.title = requestDto.getTitle();
