@@ -6,11 +6,11 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.Member;
 import com.travelland.domain.QTrip;
 import com.travelland.domain.Trip;
+import com.travelland.domain.TripHashtag;
 import com.travelland.dto.TripDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.MemberRepository;
-import com.travelland.repository.TripRepository;
+import com.travelland.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +25,10 @@ public class TripService {
 
     private final TripRepository tripRepository;
     private final MemberRepository memberRepository;
+    private final TripHashtagRepository tripHashtagRepository;
     private final TripImageService tripImageService;
-    private final TripHashTagService tripHashTagService;
+    private final TripLikeService tripLikeService;
+    private final TripScrapService tripScrapService;
     private final JPAQueryFactory jpaQueryFactory;
 
     @Transactional
@@ -35,7 +37,7 @@ public class TripService {
         Trip trip = tripRepository.save(new Trip(requestDto, member));//여행정보 저장
 
         if (!requestDto.getHashTag().isEmpty()) //해쉬태그 저장
-            requestDto.getHashTag().forEach(hashtagTitle -> tripHashTagService.createHashTag(hashtagTitle, trip));
+            requestDto.getHashTag().forEach(hashtagTitle -> tripHashtagRepository.save(new TripHashtag(hashtagTitle, trip)));
 
         if (!imageList.isEmpty()) //여행정보 이미지 정보 저장
             tripImageService.createTripImage(imageList, trip);
@@ -63,7 +65,11 @@ public class TripService {
     public TripDto.GetResponse getTrip(Long tripId) {
         Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
         trip.increaseViewCount(); //조회수 증가
-        List<String> hashTag = tripHashTagService.getHashTagList(trip);
+
+        // 해쉬태그 가져오기
+        List<String> hashTag = tripHashtagRepository.findAllByTrip(trip).stream()
+                .map(TripHashtag::getTitle).toList();
+
         List<String> imageUrlList = tripImageService.getTripImageUrl(trip);
 
         return new TripDto.GetResponse(trip, hashTag, imageUrlList);
@@ -77,10 +83,10 @@ public class TripService {
             throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
 
         //해쉬태그 수정
-        tripHashTagService.deleteHashTag(trip);
+        tripHashtagRepository.deleteByTrip(trip);
 
         if (!requestDto.getHashTag().isEmpty())
-            requestDto.getHashTag().forEach(hashtagTitle -> tripHashTagService.createHashTag(hashtagTitle, trip));
+            requestDto.getHashTag().forEach(hashtagTitle -> tripHashtagRepository.save(new TripHashtag(hashtagTitle, trip)));
 
         //이미지 수정
         tripImageService.deleteTripImage(trip);
@@ -101,8 +107,12 @@ public class TripService {
         if (!trip.getMember().getEmail().equals(email))
             throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
 
-        tripHashTagService.deleteHashTag(trip);
+        // 여행정보 엔티티와 관련된 데이터 삭제
         tripImageService.deleteTripImage(trip);
+        tripLikeService.deleteTripLikeByTrip(trip);
+        tripScrapService.deleteTripScrapByTrip(trip);
+
+        tripHashtagRepository.deleteByTrip(trip);
         tripRepository.delete(trip);
     }
 
