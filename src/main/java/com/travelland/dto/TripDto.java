@@ -146,4 +146,26 @@ public class TripDto {
             this.tripPeriod = Period.between(trip.getTripStartDate(), trip.getTripEndDate()).getDays() + "일";
         }
     }
+
+    @Getter
+    @AllArgsConstructor
+    public static class TripScrapResponse {
+        private boolean scrap;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class GetTripScrapListResponse {
+        private Long tripId;
+        private String title;
+        private String nickname;
+        private String tripPeriod;
+
+        public GetTripScrapListResponse(Trip trip, Member member) {
+            this.tripId = trip.getId();
+            this.title = trip.getTitle();
+            this.nickname = member.getNickname();
+            this.tripPeriod = Period.between(trip.getTripStartDate(), trip.getTripEndDate()).getDays() + "일";
+        }
+    }
 }

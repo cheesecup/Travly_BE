@@ -3,6 +3,7 @@ package com.travelland.controller;
 import com.travelland.docs.TripControllerDocs;
 import com.travelland.dto.TripDto;
 import com.travelland.service.TripLikeService;
+import com.travelland.service.TripScrapService;
 import com.travelland.service.TripService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ public class TripController implements TripControllerDocs {
 
     private final TripService tripService;
     private final TripLikeService tripLikeService;
+    private final TripScrapService tripScrapService;
 
     //여행정보 작성
     @PostMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
@@ -97,10 +99,31 @@ public class TripController implements TripControllerDocs {
     }
 
     //여행정보 스크랩 추가
+    @PostMapping("/{tripId}/scrap")
+    public ResponseEntity<TripDto.TripScrapResponse> createTripScrap(@PathVariable Long tripId) {
+        tripScrapService.createTripScrap(tripId, "test@email.com");
+
+        return ResponseEntity.status(HttpStatus.OK).body(new TripDto.TripScrapResponse(true));
+    }
 
     //여행정보 스크랩 취소
+    @DeleteMapping("/{tripId}/scrap")
+    public ResponseEntity<TripDto.TripScrapResponse> deleteTripScrap(@PathVariable Long tripId) {
+        tripScrapService.deleteTripScrap(tripId, "test@email.com");
+
+        return ResponseEntity.status(HttpStatus.OK).body(new TripDto.TripScrapResponse(false));
+    }
 
     //여행정보 스크랩 목록 조회
+    @GetMapping("/scrap")
+    public ResponseEntity<List<TripDto.GetTripScrapListResponse>> getTripScrapList(@RequestParam(defaultValue = "1") int page,
+                                                                                   @RequestParam(defaultValue = "20") int size,
+                                                                                   @RequestParam(required = false, defaultValue = "createdAt") String sort,
+                                                                                   @RequestParam(required = false, defaultValue = "false") boolean ASC) {
+        List<TripDto.GetTripScrapListResponse> responseDto = tripScrapService.getTripScrapList(page, size, sort, ASC, "test@email.com");
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
 
     //여행정보 해쉬태그 검색
 
