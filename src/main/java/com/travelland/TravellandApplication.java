@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @EnableJpaAuditing // for 생성일&수정일
 @SpringBootApplication
+
 public class TravellandApplication {
 
     public static void main(String[] args) {
