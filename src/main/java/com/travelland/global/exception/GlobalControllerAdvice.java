@@ -1,5 +1,6 @@
 package com.travelland.global.exception;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
@@ -81,6 +82,23 @@ public class GlobalControllerAdvice {
 
         errorList.add(CustomError.builder()
                 .field(e.getParameterName())
+                .message(e.getMessage()).build());
+
+        CustomErrorResponse errorResponse = CustomErrorResponse.builder()
+                .errorList(errorList)
+                .message("")
+                .requestUrl(httpServletRequest.getRequestURI())
+                .statusCode(HttpStatus.BAD_REQUEST.toString())
+                .resultCode("FAIL").build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(value = JsonProcessingException.class)
+    public ResponseEntity jsonProcessingException(JsonProcessingException e, HttpServletRequest httpServletRequest) {
+        List<CustomError> errorList = new ArrayList<>();
+
+        errorList.add(CustomError.builder()
                 .message(e.getMessage()).build());
 
         CustomErrorResponse errorResponse = CustomErrorResponse.builder()
