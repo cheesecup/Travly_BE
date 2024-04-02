@@ -1,7 +1,6 @@
 package com.travelland.controller;
 
 import com.travelland.docs.TestControllerDocs;
-import com.travelland.dto.MemberRequestDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import org.springframework.http.HttpStatus;
@@ -20,7 +19,7 @@ public class TestController implements TestControllerDocs {
     }
 
     @GetMapping("/swagger-test")
-    public ResponseEntity<String> swaggerTest(MemberRequestDto.LoginRequestDto requestDto) {
+    public ResponseEntity<String> swaggerTest() {
         return ResponseEntity.ok("Swagger Test Success!");
     }
 
