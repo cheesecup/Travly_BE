@@ -30,11 +30,13 @@ public class Member {
     private String nickname;
 
     @Column(length = 8)
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     private LocalDate birth;
 
     @Column(length = 10)
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     @Builder
