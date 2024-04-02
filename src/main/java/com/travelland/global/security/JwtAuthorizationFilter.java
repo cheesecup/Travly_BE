@@ -38,36 +38,39 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         String tokenValue = jwtUtil.getJwtFromCookie(request);
 
-        if (StringUtils.hasText(tokenValue)) {
-            // access token 유효하지 않으면 refresh token 유효성 검사
-            if (!jwtUtil.validateToken(tokenValue)) {
-                RefreshToken tokenInfo = refreshTokenRepository.findByAccessToken(tokenValue)
-                        .orElseThrow(() -> new CustomException(ErrorCode.INVALID_AUTH_TOKEN));
+        if (!StringUtils.hasText(tokenValue)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-                String refreshToken = tokenInfo.getRefreshToken();
-                if (!jwtUtil.validateToken(refreshToken)) {
-                    refreshTokenRepository.delete(tokenInfo);
-                    return;
-                }
+        // access token 유효하지 않으면 refresh token 유효성 검사
+        if (!jwtUtil.validateToken(tokenValue)) {
+            RefreshToken tokenInfo = refreshTokenRepository.findByAccessToken(tokenValue)
+                    .orElseThrow(() -> new CustomException(ErrorCode.INVALID_AUTH_TOKEN));
 
-                // refresh token 유효하면 access token 새로 발급
-                Member member = memberRepository.findById(tokenInfo.getMemberId())
-                        .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-
-                tokenValue = jwtUtil.createToken(member.getEmail(), member.getRole());
-                refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, tokenValue));
-
-                jwtUtil.addJwtToCookie(tokenValue, response);
-            }
-
-            Claims claims = jwtUtil.getUserInfoFromToken(tokenValue);
-
-            try {
-                setAuthentication(claims.getSubject());
-            } catch (Exception e) {
-                log.error(e.getMessage());
+            String refreshToken = tokenInfo.getRefreshToken();
+            if (!jwtUtil.validateToken(refreshToken)) {
+                refreshTokenRepository.delete(tokenInfo);
                 return;
             }
+
+            // refresh token 유효하면 access token 새로 발급
+            Member member = memberRepository.findById(tokenInfo.getMemberId())
+                    .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+            tokenValue = jwtUtil.createToken(member.getEmail(), member.getRole());
+            refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, tokenValue));
+
+            jwtUtil.addJwtToCookie(tokenValue, response);
+        }
+
+        Claims claims = jwtUtil.getUserInfoFromToken(tokenValue);
+
+        try {
+            setAuthentication(claims.getSubject());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return;
         }
 
         filterChain.doFilter(request, response);

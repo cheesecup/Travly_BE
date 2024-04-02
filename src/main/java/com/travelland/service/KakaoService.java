@@ -40,16 +40,12 @@ public class KakaoService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     public boolean kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
-        // 1. "인가 코드"로 "액세스 토큰" 요청
         String accessToken = getToken(code);
 
-        // 2. 토큰으로 카카오 API 호출 : "액세스 토큰"으로 "카카오 사용자 정보" 가져오기
         MemberDto.KakaoInfo kakaoUserInfo = getKakaoUserInfo(accessToken);
 
-        // 3. 필요시 회원가입
         Member member = registerKakaoUserIfNeeded(kakaoUserInfo);
 
-        // 4. JWT 토큰 쿠키 저장
         String createToken = jwtUtil.createToken(member.getEmail(), member.getRole());
         String refreshToken = jwtUtil.createRefreshToken();
 
