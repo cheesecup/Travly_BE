@@ -1,18 +1,18 @@
-package com.travelland.service;
+package com.travelland.service.plan;
 
-import com.travelland.domain.DayPlan;
+import com.travelland.domain.plan.DayPlan;
 import com.travelland.domain.Member;
-import com.travelland.domain.Plan;
-import com.travelland.domain.UnitPlan;
+import com.travelland.domain.plan.Plan;
+import com.travelland.domain.plan.UnitPlan;
 import com.travelland.dto.DayPlanDto;
 import com.travelland.dto.PlanDto;
 import com.travelland.dto.UnitPlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.DayPlanRepository;
+import com.travelland.repository.plan.DayPlanRepository;
 import com.travelland.repository.MemberRepository;
-import com.travelland.repository.PlanRepository;
-import com.travelland.repository.UnitPlanRepository;
+import com.travelland.repository.plan.PlanRepository;
+import com.travelland.repository.plan.UnitPlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,45 +33,46 @@ public class PlanService {
     private final UnitPlanRepository unitPlanRepository;
 
     // Plan 작성
-    public PlanDto.CreateResponse createPlan(PlanDto.CreateRequest request, String email) {
+    public PlanDto.Id createPlan(PlanDto.Create request, String email) {
 //        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        Member member = userDetails.getMember();
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
 
         Plan plan = new Plan(request, member);
         Plan savedPlan = planRepository.save(plan);
-        return new PlanDto.CreateResponse(savedPlan);
+        return new PlanDto.Id(savedPlan);
     }
 
     // Plan 전체조회
-    public Page<PlanDto.ReadResponse> readPlanList(int page, int size, String sortBy, boolean isAsc) {
+    public Page<PlanDto.Read> readPlanList(int page, int size, String sortBy, boolean isAsc) {
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page-1, size, sort);
 
         Page<Plan> plans = planRepository.findAll(pageable);
-        return plans.map(PlanDto.ReadResponse::new);
+        return plans.map(PlanDto.Read::new);
     }
 
     // Plan 상세조회 (planId)
-    public PlanDto.ReadResponse readPlanById(Long planId) {
+    public PlanDto.Read readPlanById(Long planId) {
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        return new PlanDto.ReadResponse(plan);
+        return new PlanDto.Read(plan);
     }
 
     // Plan 수정
-    public PlanDto.UpdateResponse updatePlan(Long planId, PlanDto.UpdateRequest request) {
+    public PlanDto.Id updatePlan(Long planId, PlanDto.Update request) {
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
         Plan updatedPlan = plan.update(request);
-        return new PlanDto.UpdateResponse(updatedPlan);
+        return new PlanDto.Id(updatedPlan);
     }
 
     // Plan 삭제
-    public PlanDto.DeleteResponse deletePlan(Long planId) {
+    public PlanDto.Delete deletePlan(Long planId) {
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
         planRepository.delete(plan);
-        return new PlanDto.DeleteResponse(true);
+        return new PlanDto.Delete(true);
     }
+
 
 
 

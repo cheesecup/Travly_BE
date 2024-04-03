@@ -1,10 +1,10 @@
 package com.travelland.service;
 
-import com.travelland.document.TripDocument;
+import com.travelland.document.TripSearchDoc;
 import com.travelland.dto.TripSearchDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.TripDocumentRepository;
+import com.travelland.repository.TripSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.ActionListener;
@@ -31,36 +31,35 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Slf4j(topic = "ES")
 @Service
 @RequiredArgsConstructor
-public class TripDocumentService {
-    private final TripDocumentRepository tripDocumentRepository;
+public class TripSearchService {
+    private final TripSearchRepository tripSearchRepository;
     private final RestHighLevelClient client;
 
     public TripSearchDto.GetResponse createTripDocument(TripSearchDto.CreateRequest tripSearchDto){
         return new TripSearchDto.GetResponse(
-                tripDocumentRepository.save(new TripDocument(tripSearchDto)));
+                tripSearchRepository.save(new TripSearchDoc(tripSearchDto)));
     }
 
     public TripSearchDto.GetResponse searchTripById(Long tripId){
-        TripDocument tripDocument = tripDocumentRepository.findById(tripId).
+        TripSearchDoc tripSearchDoc = tripSearchRepository.findById(tripId).
                 orElseThrow(()-> new CustomException(ErrorCode.POST_NOT_FOUND));
-        return new TripSearchDto.GetResponse(tripDocument);
+        return new TripSearchDto.GetResponse(tripSearchDoc);
     }
 
     public void searchTripByTitle(String title){
         Pageable pageable = PageRequest.of(0, 10);
-        Page<TripDocument> page = tripDocumentRepository.searchByTitle("이색", pageable);
+        Page<TripSearchDoc> page = tripSearchRepository.searchByTitle("이색", pageable);
         log.info(String.valueOf(page.getTotalElements()));
         log.info(String.valueOf(page.getContent().get(0)));
     }
 
-    public Page<TripDocument> searchTripByHashtag(String hashtag) {
+    public Page<TripSearchDoc> searchTripByHashtag(String hashtag) {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<TripDocument> page = tripDocumentRepository.searchByHashtag(hashtag, pageable);
+        Page<TripSearchDoc> page = tripSearchRepository.searchByHashtag(hashtag, pageable);
         if (page.getTotalElements() > 0)
             putSearchLog(hashtag,"java@java.com");
         return page;
@@ -148,15 +147,15 @@ public class TripDocumentService {
         SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         Terms byQuery = searchResponse.getAggregations().get("by_query");
 
-        List<Map<String, Object>> keywords = new ArrayList<>();
-        for (Terms.Bucket entry : byQuery.getBuckets()) {
-            Map<String, Object> keywordEntry = new HashMap<>();
-            keywordEntry.put("key", entry.getKeyAsString());
-            keywordEntry.put("count", entry.getDocCount());
-            keywords.add(keywordEntry);
-        }
-        return keywords;
+        return byQuery.getBuckets().stream()
+                .map(entry -> {
+                    Map<String, Object> keywordEntry = new HashMap<>();
+                    keywordEntry.put("key", entry.getKeyAsString());
+                    keywordEntry.put("count", entry.getDocCount());
+                    return keywordEntry;
+                }).toList();
     }
+
 
     private String determineStatus(String key, long count, List<Map<String, Object>> pastKeywords) {
         for (Map<String, Object> pastKeyword : pastKeywords) {

@@ -1,6 +1,6 @@
 package com.travelland.repository.es;
 
-import com.travelland.document.TripDocument;
+import com.travelland.document.TripSearchDoc;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -21,28 +21,28 @@ public class CustomTripRepositoryImpl implements CustomTripRepository{
     private final ElasticsearchOperations elasticsearchOperations;
 
     @Override
-    public Page<TripDocument> searchByTitle(String title, Pageable pageable) {
+    public Page<TripSearchDoc> searchByTitle(String title, Pageable pageable) {
         Criteria criteria = Criteria.where("title").contains(title);
         Query query = new CriteriaQuery(criteria).setPageable(pageable);
 
-        SearchHits<TripDocument> searchHits = elasticsearchOperations.search(query, TripDocument.class);
-        List<TripDocument> tripDocuments = searchHits.stream()
+        SearchHits<TripSearchDoc> searchHits = elasticsearchOperations.search(query, TripSearchDoc.class);
+        List<TripSearchDoc> tripSearchDocs = searchHits.stream()
                 .map(SearchHit::getContent)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(tripDocuments, pageable, searchHits.getTotalHits());
+        return new PageImpl<>(tripSearchDocs, pageable, searchHits.getTotalHits());
     }
 
     @Override
-    public Page<TripDocument> searchByHashtag(String hashtag, Pageable pageable) {
+    public Page<TripSearchDoc> searchByHashtag(String hashtag, Pageable pageable) {
         Criteria criteria = Criteria.where("hashtag").contains(hashtag);
         Query query = new CriteriaQuery(criteria).setPageable(pageable);
 
-        SearchHits<TripDocument> searchHits = elasticsearchOperations.search(query, TripDocument.class);
-        List<TripDocument> tripDocuments = searchHits.stream()
+        SearchHits<TripSearchDoc> searchHits = elasticsearchOperations.search(query, TripSearchDoc.class);
+        List<TripSearchDoc> tripSearchDocs = searchHits.stream()
                 .map(SearchHit::getContent)
                 .collect(Collectors.toList());
 
-        return new PageImpl<>(tripDocuments, pageable, searchHits.getTotalHits());
+        return new PageImpl<>(tripSearchDocs, pageable, searchHits.getTotalHits());
     }
 }

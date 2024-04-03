@@ -1,0 +1,19 @@
+package com.travelland.repository;
+
+import com.travelland.document.TripSearchDoc;
+import com.travelland.repository.es.CustomTripRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
+import org.springframework.data.repository.CrudRepository;
+
+import java.util.Optional;
+
+public interface TripSearchRepository extends ElasticsearchRepository<TripSearchDoc,Long>, CrudRepository<TripSearchDoc,Long>, CustomTripRepository {
+
+    Page<TripSearchDoc> searchByTitle(String title, Pageable pageable);
+
+    Page<TripSearchDoc> searchByHashtag(String hashtag, Pageable pageable);
+
+    Optional<TripSearchDoc> findByArea(String area);
+}

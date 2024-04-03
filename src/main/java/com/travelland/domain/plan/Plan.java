@@ -1,5 +1,6 @@
-package com.travelland.domain;
+package com.travelland.domain.plan;
 
+import com.travelland.domain.Member;
 import com.travelland.dto.PlanDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -9,6 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -31,9 +33,9 @@ public class Plan {
 
     private boolean isPublic;
 
-    private LocalDateTime tripStartDate;
+    private LocalDate tripStartDate;
 
-    private LocalDateTime tripEndDate;
+    private LocalDate tripEndDate;
 
     private int viewCount;
 
@@ -53,7 +55,7 @@ public class Plan {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    public Plan(PlanDto.CreateRequest requestDto, Member member) {
+    public Plan(PlanDto.Create requestDto, Member member) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.budget = requestDto.getBudget();
@@ -67,7 +69,7 @@ public class Plan {
         this.member = member;
     }
 
-    public Plan update(PlanDto.UpdateRequest request) {
+    public Plan update(PlanDto.Update request) {
         this.title = request.getTitle();
         this.content = request.getContent();
         this.budget = request.getBudget();;
@@ -78,5 +80,16 @@ public class Plan {
         this.isVotable = request.isVotable();
 
         return this;
+    }
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
+
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        this.likeCount--;
     }
 }

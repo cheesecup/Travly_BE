@@ -1,6 +1,6 @@
-package com.travelland.domain;
+package com.travelland.domain.plan;
 
-import com.travelland.dto.DayPlanDto;
+import com.travelland.dto.UnitPlanDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,11 +8,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class DayPlan {
+public class UnitPlan {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,25 +23,29 @@ public class DayPlan {
 
     private int budget;
 
-    private LocalDateTime date;
+    private String location;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "plan_id")
-    private Plan plan;
+    private LocalDateTime time;
 
-    public DayPlan(DayPlanDto.CreateRequest request, Plan plan) {
+    @ManyToOne
+    @JoinColumn(name = "day_plan_id")
+    private DayPlan dayPlan;
+
+    public UnitPlan(UnitPlanDto.CreateRequest request, DayPlan dayPlan) {
         this.title = request.getTitle();
         this.content = request.getContent();
         this.budget = request.getBudget();
-        this.date = request.getDate();
-        this.plan = plan;
+        this.location = request.getLocation();
+        this.time = request.getTime();
+        this.dayPlan = dayPlan;
     }
 
-    public DayPlan update(DayPlanDto.UpdateRequest request) {
+    public UnitPlan update(UnitPlanDto.UpdateRequest request) {
         this.title = request.getTitle();
         this.content = request.getContent();
         this.budget = request.getBudget();
-        this.date = request.getDate();
+        this.location = request.getLocation();
+        this.time = request.getTime();
 
         return this;
     }
