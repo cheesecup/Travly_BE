@@ -4,20 +4,24 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.Member;
-import com.travelland.domain.QTrip;
 import com.travelland.domain.Trip;
 import com.travelland.domain.TripHashtag;
 import com.travelland.dto.TripDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.*;
+import com.travelland.repository.MemberRepository;
+import com.travelland.repository.TripHashtagRepository;
+import com.travelland.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.travelland.domain.QTrip.trip;
 
 @Service
 @RequiredArgsConstructor
@@ -49,8 +53,8 @@ public class TripService {
     public List<TripDto.GetListResponse> getTripList(int page, int size, String sort, boolean ASC) {
         Order order = (ASC) ? Order.ASC : Order.DESC;
         OrderSpecifier orderSpecifier = createOrderSpecifier(sort, order);
-        List<Trip> tripList = jpaQueryFactory.selectFrom(QTrip.trip)
-                .orderBy(orderSpecifier, QTrip.trip.id.desc())
+        List<Trip> tripList = jpaQueryFactory.selectFrom(trip)
+                .orderBy(orderSpecifier, trip.id.desc())
                 .limit(size)
                 .offset((long) (page - 1) * size)
                 .fetch();
@@ -109,20 +113,36 @@ public class TripService {
 
         // 여행정보 엔티티와 관련된 데이터 삭제
         tripImageService.deleteTripImage(trip);
-        tripLikeService.deleteTripLikeByTrip(trip);
-        tripScrapService.deleteTripScrapByTrip(trip);
+        tripLikeService.deleteTripLike(trip);
+        tripScrapService.deleteTripScrap(trip);
 
         tripHashtagRepository.deleteByTrip(trip);
         tripRepository.delete(trip);
     }
 
+    @Transactional(readOnly = true)
+    public List<TripDto.GetMyTripListResponse> getMyTripList(int page, int size, String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        List<Trip> tripList = jpaQueryFactory.selectFrom(trip)
+                .where(trip.member.eq(member))
+                .orderBy(trip.createdAt.desc())
+                .limit(size)
+                .offset((long) (page - 1) * size)
+                .fetch();
+
+        return tripList.stream()
+                .map(trip -> new TripDto.GetMyTripListResponse(trip, tripImageService.getTripImageThumbnailUrl(trip)))
+                .collect(Collectors.toList());
+
+    }
+
     // 목록 정렬 방식, 기준 설정 메서드
     private OrderSpecifier createOrderSpecifier(String sort, Order order) {
         return switch (sort) {
-            case "viewCount" -> new OrderSpecifier<>(order, QTrip.trip.viewCount);
-            case "title" -> new OrderSpecifier<>(order, QTrip.trip.title);
-            default -> new OrderSpecifier<>(order, QTrip.trip.createdAt);
+            case "viewCount" -> new OrderSpecifier<>(order, trip.viewCount);
+            case "title" -> new OrderSpecifier<>(order, trip.title);
+            default -> new OrderSpecifier<>(order, trip.createdAt);
         };
     }
-
 }

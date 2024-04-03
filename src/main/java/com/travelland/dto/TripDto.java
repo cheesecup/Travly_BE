@@ -59,6 +59,7 @@ public class TripDto {
     }
 
     @Getter
+    @AllArgsConstructor
     public static class GetResponse {
         //Trip 엔티티 값
         private Long tripId;
@@ -99,6 +100,7 @@ public class TripDto {
     }
 
     @Getter
+    @AllArgsConstructor
     public static class GetListResponse {
         private Long tripId;
         private String title;
@@ -166,6 +168,28 @@ public class TripDto {
             this.title = trip.getTitle();
             this.nickname = member.getNickname();
             this.tripPeriod = Period.between(trip.getTripStartDate(), trip.getTripEndDate()).getDays() + "일";
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class GetMyTripListResponse {
+        private Long tripId;
+        private String title;
+        private String nickname;
+        private String thumbnailUrl;
+        private String tripPeriod;
+        private int viewCount;
+        private LocalDate createdAt;
+
+        public GetMyTripListResponse(Trip trip, String thumbnailUrl) {
+            this.tripId = trip.getId();
+            this.title = trip.getTitle();
+            this.nickname = trip.getMember().getNickname();
+            this.thumbnailUrl = thumbnailUrl;
+            this.tripPeriod = Period.between(trip.getTripStartDate(), trip.getTripEndDate()).getDays() + "일";
+            this.viewCount = trip.getViewCount();
+            this.createdAt = trip.getCreatedAt().toLocalDate();
         }
     }
 }
