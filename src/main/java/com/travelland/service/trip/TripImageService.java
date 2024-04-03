@@ -1,10 +1,11 @@
-package com.travelland.service;
+package com.travelland.service.trip;
 
 import com.travelland.domain.Trip;
 import com.travelland.domain.TripImage;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.TripImageRepository;
+import com.travelland.repository.trip.TripImageRepository;
+import com.travelland.service.S3FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
