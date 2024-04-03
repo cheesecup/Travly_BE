@@ -41,10 +41,10 @@ spring:
           writetimeout: 5000
     auth-code-expiration-millis: 1800000
 
-    data:
-      redis:
-        port: 6379
-        host: localhost
+  data:
+    redis:
+      port: 6379
+      host: localhost
 
   elasticsearch:
     username: elastic
