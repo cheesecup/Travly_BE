@@ -22,8 +22,19 @@ public class TripLike {
     @JoinColumn(name = "trip_id")
     private Trip trip;
 
+    private boolean isDeleted;
+
     public TripLike(Member member, Trip trip) {
         this.member = member;
         this.trip = trip;
+        this.isDeleted = false;
+    }
+
+    public void registerLike() {
+        this.isDeleted = false;
+    }
+
+    public void cancelLike() {
+        this.isDeleted = true;
     }
 }
