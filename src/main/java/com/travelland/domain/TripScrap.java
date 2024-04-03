@@ -22,8 +22,19 @@ public class TripScrap {
     @JoinColumn(name = "trip_id")
     private Trip trip;
 
+    private boolean isDeleted;
+
     public TripScrap(Member member, Trip trip) {
         this.member = member;
         this.trip = trip;
+        this.isDeleted = false;
+    }
+
+    public void registerScrap() {
+        this.isDeleted = false;
+    }
+
+    public void cancelScrap() {
+        this.isDeleted = true;
     }
 }
