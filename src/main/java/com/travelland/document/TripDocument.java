@@ -10,7 +10,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 @ToString
 @Getter
@@ -27,7 +29,7 @@ public class TripDocument {
     @Field(name = "trip_id", type = FieldType.Long)
     private Long tripId;
 
-    @Field(name = "title",type = FieldType.Text, analyzer = "nori")
+    @Field(name = "title",type = FieldType.Text)
     private String title;
 
     @Field(name = "cost",type = FieldType.Integer)
@@ -45,7 +47,7 @@ public class TripDocument {
     @Field(name = "trip_end_date", type = FieldType.Date, format = {DateFormat.basic_date, DateFormat.epoch_millis})
     private LocalDate tripEndDate;
 
-    @Field(name = "created_at", type = FieldType.Date, format = DateFormat.custom, pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @Field(name = "create_at", type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     private LocalDateTime createdAt;
 
     @Field(name = "location", type = FieldType.Object)
@@ -66,7 +68,8 @@ public class TripDocument {
         this.createdAt = toLocalDateTime();
     }
 
-    private LocalDateTime toLocalDateTime(){
-        return ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime();
+    private LocalDateTime toLocalDateTime()
+    {
+        return  LocalDateTime.now(ZoneId.of("Asia/Seoul"));
     }
 }
