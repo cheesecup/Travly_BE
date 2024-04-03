@@ -5,6 +5,7 @@ import com.travelland.domain.plan.PlanLike;
 import com.travelland.domain.plan.PlanScrap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ public class PlanDto {
     }
 
     @Getter
+    @ToString
     public static class Read {
         private final Long planId;
         private final String title;
