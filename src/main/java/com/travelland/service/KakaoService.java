@@ -142,7 +142,7 @@ public class KakaoService {
                 .build();
     }
 
-    private Member registerKakaoUserIfNeeded(MemberDto.KakaoInfo kakaoUserInfo) {
+    public Member registerKakaoUserIfNeeded(MemberDto.KakaoInfo kakaoUserInfo) {
         // DB 에 중복된 Kakao Id 가 있는지 확인
         Long kakaoId = kakaoUserInfo.getId();
         Member kakaoUser = memberRepository.findBySocialId(kakaoId).orElse(null);
