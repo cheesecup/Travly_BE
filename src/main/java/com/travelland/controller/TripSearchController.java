@@ -2,7 +2,7 @@ package com.travelland.controller;
 
 import com.travelland.document.TripSearchDoc;
 import com.travelland.dto.TripSearchDto;
-import com.travelland.service.TripSearchService;
+import com.travelland.service.trip.TripSearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
