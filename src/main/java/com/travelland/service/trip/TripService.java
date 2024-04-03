@@ -1,7 +1,5 @@
-package com.travelland.service;
+package com.travelland.service.trip;
 
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.Member;
 import com.travelland.domain.Trip;
@@ -10,18 +8,15 @@ import com.travelland.dto.TripDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.MemberRepository;
-import com.travelland.repository.TripHashtagRepository;
-import com.travelland.repository.TripRepository;
+import com.travelland.repository.trip.TripHashtagRepository;
+import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.travelland.domain.QTrip.trip;
 
 @Service
 @RequiredArgsConstructor
@@ -33,40 +28,31 @@ public class TripService {
     private final TripImageService tripImageService;
     private final TripLikeService tripLikeService;
     private final TripScrapService tripScrapService;
-    private final JPAQueryFactory jpaQueryFactory;
 
     @Transactional
-    public TripDto.CreateResponse createTrip(TripDto.CreateRequest requestDto, List<MultipartFile> imageList, String email) {
+    public TripDto.Id createTrip(TripDto.Create requestDto, List<MultipartFile> imageList, String email) {
         Member member = memberRepository.findByEmail(email).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
         Trip trip = tripRepository.save(new Trip(requestDto, member));//여행정보 저장
 
         if (!requestDto.getHashTag().isEmpty()) //해쉬태그 저장
             requestDto.getHashTag().forEach(hashtagTitle -> tripHashtagRepository.save(new TripHashtag(hashtagTitle, trip)));
 
-        if (!imageList.isEmpty()) //여행정보 이미지 정보 저장
-            tripImageService.createTripImage(imageList, trip);
+//        if (!imageList.isEmpty()) //여행정보 이미지 정보 저장
+//            tripImageService.createTripImage(imageList, trip);
 
-        return new TripDto.CreateResponse(trip.getId());
+        return new TripDto.Id(trip.getId());
     }
 
     @Transactional(readOnly = true)
-    public List<TripDto.GetListResponse> getTripList(int page, int size, String sort, boolean ASC) {
-        Order order = (ASC) ? Order.ASC : Order.DESC;
-        OrderSpecifier orderSpecifier = createOrderSpecifier(sort, order);
-        List<Trip> tripList = jpaQueryFactory.selectFrom(trip)
-                .orderBy(orderSpecifier, trip.id.desc())
-                .limit(size)
-                .offset((long) (page - 1) * size)
-                .fetch();
-
-        // 게시글 목록 조회된 여행정보의 썸네일 URL 가져오기
-        return tripList.stream()
-                .map(trip -> new TripDto.GetListResponse(trip, tripImageService.getTripImageThumbnailUrl(trip)))
-                .collect(Collectors.toList());
+    public List<TripDto.GetList> getTripList(int page, int size, String sort, boolean ASC) {
+        return tripRepository.getTripList(page, size, sort, ASC)
+                .stream()
+                .map(trip -> new TripDto.GetList(trip, tripImageService.getTripImageThumbnailUrl(trip)))
+                .toList();
     }
 
     @Transactional
-    public TripDto.GetResponse getTrip(Long tripId) {
+    public TripDto.Get getTrip(Long tripId) {
         Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
         trip.increaseViewCount(); //조회수 증가
 
@@ -76,11 +62,11 @@ public class TripService {
 
         List<String> imageUrlList = tripImageService.getTripImageUrl(trip);
 
-        return new TripDto.GetResponse(trip, hashTag, imageUrlList);
+        return new TripDto.Get(trip, hashTag, imageUrlList);
     }
 
     @Transactional
-    public TripDto.UpdateResponse updateTrip(Long tripId, TripDto.UpdateRequest requestDto, List<MultipartFile> imageList, String email) {
+    public TripDto.Id updateTrip(Long tripId, TripDto.Update requestDto, List<MultipartFile> imageList, String email) {
         Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
         if (!trip.getMember().getEmail().equals(email))
@@ -101,7 +87,7 @@ public class TripService {
         //여행정보 수정
         trip.update(requestDto);
 
-        return new TripDto.UpdateResponse(trip.getId());
+        return new TripDto.Id(trip.getId());
     }
 
     @Transactional
@@ -121,28 +107,24 @@ public class TripService {
     }
 
     @Transactional(readOnly = true)
-    public List<TripDto.GetMyTripListResponse> getMyTripList(int page, int size, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-
-        List<Trip> tripList = jpaQueryFactory.selectFrom(trip)
-                .where(trip.member.eq(member))
-                .orderBy(trip.createdAt.desc())
-                .limit(size)
-                .offset((long) (page - 1) * size)
-                .fetch();
-
-        return tripList.stream()
-                .map(trip -> new TripDto.GetMyTripListResponse(trip, tripImageService.getTripImageThumbnailUrl(trip)))
+    public List<TripDto.GetByMember> getMyTripList(int page, int size, String email) {
+        return tripRepository.getMyTripList(page, size, getMember(email))
+                .stream()
+                .map(trip -> new TripDto.GetByMember(trip, tripImageService.getTripImageThumbnailUrl(trip)))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<TripDto.GetList> searchTripByHashtag(String hashtag, int page, int size, String sort, boolean ASC) {
+        return tripRepository.searchTripByHashtag(hashtag, page, size, sort, ASC)
+                .stream()
+                .map(trip -> new TripDto.GetList(trip, tripImageService.getTripImageThumbnailUrl(trip)))
+                .toList();
 
     }
 
-    // 목록 정렬 방식, 기준 설정 메서드
-    private OrderSpecifier createOrderSpecifier(String sort, Order order) {
-        return switch (sort) {
-            case "viewCount" -> new OrderSpecifier<>(order, trip.viewCount);
-            case "title" -> new OrderSpecifier<>(order, trip.title);
-            default -> new OrderSpecifier<>(order, trip.createdAt);
-        };
+    private Member getMember(String email) {
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
 }

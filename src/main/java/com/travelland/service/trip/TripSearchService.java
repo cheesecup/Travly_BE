@@ -1,10 +1,10 @@
-package com.travelland.service;
+package com.travelland.service.trip;
 
 import com.travelland.document.TripSearchDoc;
 import com.travelland.dto.TripSearchDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.TripSearchRepository;
+import com.travelland.repository.trip.TripSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.ActionListener;
