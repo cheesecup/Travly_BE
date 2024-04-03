@@ -1,14 +1,13 @@
 package com.travelland.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.travelland.document.TripDocument;
+import com.travelland.document.TripSearchDoc;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public class TripSearchDto {
@@ -39,13 +38,13 @@ public class TripSearchDto {
         private final String area;
         private final LocalDate tripStartDate;
 
-        public GetResponse(TripDocument tripDocument) {
-            this.id = tripDocument.getId();
-            this.tripId = tripDocument.getTripId();
-            this.title = tripDocument.getTitle();
-            this.cost = tripDocument.getCost();
-            this.area = tripDocument.getArea();
-            this.tripStartDate = tripDocument.getTripStartDate();
+        public GetResponse(TripSearchDoc tripSearchDoc) {
+            this.id = tripSearchDoc.getId();
+            this.tripId = tripSearchDoc.getTripId();
+            this.title = tripSearchDoc.getTitle();
+            this.cost = tripSearchDoc.getCost();
+            this.area = tripSearchDoc.getArea();
+            this.tripStartDate = tripSearchDoc.getTripStartDate();
         }
     }
     @Getter

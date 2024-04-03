@@ -9,10 +9,7 @@ import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 
 @ToString
 @Getter
@@ -20,7 +17,7 @@ import java.util.Locale;
 @Document(indexName = "tripdocs" )
 @Setting(settingPath = "logs/es-setting.json")
 @Mapping(mappingPath = "logs/es-mapping.json")
-public class TripDocument {
+public class TripSearchDoc {
 
     @Id
     @Field(name = "id", type = FieldType.Keyword)
@@ -56,7 +53,7 @@ public class TripDocument {
 
 
     @Builder
-    public TripDocument(TripSearchDto.CreateRequest requestDto) {
+    public TripSearchDoc(TripSearchDto.CreateRequest requestDto) {
         this.tripId =requestDto.getTripId();
         this.title = requestDto.getTitle();
         this.cost = requestDto.getCost();
@@ -65,11 +62,7 @@ public class TripDocument {
         this.tripStartDate = requestDto.getTripStartDate();
         this.tripEndDate = requestDto.getTripEndDate();
         this.location = requestDto.getLocation();
-        this.createdAt = toLocalDateTime();
+        this.createdAt = LocalDateTime.now();
     }
 
-    private LocalDateTime toLocalDateTime()
-    {
-        return  LocalDateTime.now(ZoneId.of("Asia/Seoul"));
-    }
 }
