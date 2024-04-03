@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @Tag(name = "PlanController", description = "Plan, DayPlan, UnitPlan 모두 포함")
 public interface PlanControllerDocs {
 
     @Operation(summary = "Plan 작성", description = " ")
-    ResponseEntity createPlan(@RequestBody PlanDto.CreateRequest request);
+    ResponseEntity createPlan(@RequestBody PlanDto.Create request);
 
     @Operation(summary = "Plan 전체조회", description = "전체조회, /plans?page=0&size=20&sortBy=createdAt&isAsc=false, page는 1부터")
     ResponseEntity readPlanList(
@@ -24,10 +26,30 @@ public interface PlanControllerDocs {
     ResponseEntity readPlanById(@PathVariable Long planId);
 
     @Operation(summary = "Plan 수정", description = " ")
-    ResponseEntity updatePlan(@PathVariable Long planId, @RequestBody PlanDto.UpdateRequest request);
+    ResponseEntity updatePlan(@PathVariable Long planId, @RequestBody PlanDto.Update request);
 
     @Operation(summary = "Plan 삭제", description = " ")
     ResponseEntity deletePlan(@PathVariable Long planId);
+
+    @Operation(summary = "Plan 좋아요 등록", description = "선택한 Plan 좋아요를 등록하는 API")
+    ResponseEntity<PlanDto.Result> createPlanLike(@PathVariable Long planId) ;
+
+    @Operation(summary = "Plan 좋아요 취소", description = "선택한 Plan 좋아요를 취소하는 API")
+    ResponseEntity<PlanDto.Result> deletePlanLike(@PathVariable Long planId);
+
+    @Operation(summary = "Plan 좋아요 목록 조회", description = "좋아요을 누른 Plan 목록을 페이지별로 조회하는 API")
+    ResponseEntity<List<PlanDto.Likes>> getPlanLikeList(@RequestParam(defaultValue = "1") int page,
+                                                        @RequestParam(defaultValue = "20") int size);
+
+    @Operation(summary = "Plan 스크랩 추가", description = "선택한 Plan 스크랩에 추가하는 API")
+    ResponseEntity<PlanDto.Result> createPlanScrap(@PathVariable Long planId);
+
+    @Operation(summary = "Plan 스크랩 취소", description = "선택한 Plan 스크랩에서 삭제하는 API")
+    ResponseEntity<PlanDto.Result> deletePlanScrap(@PathVariable Long planId);
+
+    @Operation(summary = "Plan 스크랩 목록 조회", description = "스크랩한 Plan 목록을 페이지별로 조회하는 API")
+    ResponseEntity<List<PlanDto.Scraps>> getPlanScrapList(@RequestParam(defaultValue = "1") int page,
+                                                          @RequestParam(defaultValue = "20") int size);
 
 
 

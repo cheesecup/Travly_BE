@@ -1,6 +1,6 @@
 package com.travelland.dto;
 
-import com.travelland.domain.UnitPlan;
+import com.travelland.domain.plan.UnitPlan;
 import lombok.Getter;
 
 import java.time.LocalDateTime;

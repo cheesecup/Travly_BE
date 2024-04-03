@@ -1,0 +1,38 @@
+{
+  "properties": {
+    "trip_id": {
+      "type": "keyword"
+    },
+    "title": {
+      "type": "text",
+      "analyzer": "korean"
+    },
+    "content": {
+      "type": "text"
+    },
+    "cost": {
+      "type": "integer"
+    },
+    "area": {
+      "type": "keyword"
+    },
+    "hashtag": {
+      "type": "keyword"
+    },
+    "location": {
+      "type": "geo_point"
+    },
+    "trip_start_date": {
+      "type": "date",
+      "format": "yyyy-MM-dd||epoch_millis"
+    },
+    "trip_end_date": {
+      "type": "date",
+      "format": "yyyy-MM-dd||epoch_millis"
+    },
+    "created_at": {
+      "type": "date",
+      "format": "yyyy-MM-dd'T'HH:mm:ss"
+    }
+  }
+}
