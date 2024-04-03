@@ -1,0 +1,47 @@
+name: Deploy on PR merge  # Actions 식별이름
+
+on: # 발동조건
+  pull_request: # github에서 pull-request일때
+    types: [ closed ] # 특히 pull-request가 close(완료)되었을 때 (단 완료는 동의완료와 반대완료가 존재하기에 동의완료만 되도록 아래서 if문)
+    branches: [ main, dev ] # 2개 이상시 '[]'를 이용해 가로나열 하거나 '-'를 이용해 세로나열
+
+jobs: # 실제 어떤 작업을 실행할지에 대한 명시
+  deploy: # 예약어x, 임의의 사용자지정명칭
+    if: github.event.pull_request.merged == true # pull-request 동의완료일때만으로 제한
+    runs-on: [ ubuntu-latest ] # 스크립트 실행 환경 (OS), 배열로 선언시 개수 만큼 반복해서 실행
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3 # uses는 github actions에서 제공하는 플러그인을 실행. (git checkout 실행)
+      - name: java setup
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+      - name: gradlew bootJar
+        run: ./gradlew bootJar
+      - name: copy jar to server
+        uses: appleboy/scp-action@master
+        with:
+          host: 13.125.236.200 # EC2 주소
+          username: ubuntu     # EC2 OS
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          source: "./build/libs/*.jar" # 로컬의 jar주소
+          target: "~" # 타겟의 홈디렉토리주소
+          strip_components: 2 # 타겟의 하위주소로 쓸 로컬의 하위2개주소
+
+      - name: SSH Commands
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: 13.125.236.200 # EC2 주소
+          username: ubuntu     # EC2 OS
+          key: ${{ secrets.SSH_KEY }}
+          port: 22 # SSH접속은 22포트를 사용
+          script_stop: true
+          script: |
+            kill -9 $(ps -ef | grep java | head -n 1 | awk '{print $2}')  # 가장오래된 java프로그램 종료
+            nohup java -jar *.jar 1> /dev/null 2>&1 &                     # 디렉토리 내 존재하는 jar파일 실행

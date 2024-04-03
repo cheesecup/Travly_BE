@@ -5,6 +5,7 @@ import com.travelland.dto.PlanDto;
 import com.travelland.dto.UnitPlanDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-@Tag(name = "PlanController", description = "Plan, DayPlan, UnitPlan 모두 포함")
+@Tag(name = "여행 플랜 API", description = "Plan, DayPlan, UnitPlan 모두 포함")
 public interface PlanControllerDocs {
 
     @Operation(summary = "Plan 작성", description = " ")
