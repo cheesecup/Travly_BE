@@ -15,7 +15,7 @@ import java.util.List;
 public interface TripControllerDocs {
 
     @Operation(summary = "여행정보 등록", description = "작성한 여행정보를 등록하는 API")
-    ResponseEntity createTrip(@RequestPart TripDto.CreateRequest requestDto,
+    ResponseEntity createTrip(@RequestPart TripDto.Create requestDto,
                               @RequestPart List<MultipartFile> imageList,
                               @RequestParam String email);
 
@@ -30,7 +30,7 @@ public interface TripControllerDocs {
 
     @Operation(summary = "여행정보 수정", description = "작성한 여행정보에 대한 내용을 수정하는 API")
     ResponseEntity updateTrip(@PathVariable Long tripId,
-                              @RequestPart TripDto.UpdateRequest requestDto,
+                              @RequestPart TripDto.Update requestDto,
                               @RequestPart List<MultipartFile> imageList,
                               @RequestParam String email);
 
@@ -57,4 +57,11 @@ public interface TripControllerDocs {
 
     @Operation(summary = "내가 작성한 여행정보 목록 조회", description = "로그인한 회원이 작성한 여행정보 게시글 목록을 페이지별로 조회하는 API")
     ResponseEntity getMyTripList(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size);
+
+    @Operation(summary = "여행정보 해쉬태그 검색", description = "입력한 해쉬태그가 포함된 여행정보 게시글 목록을 페이지별로 조회하는 API")
+    ResponseEntity searchTripByHashtag(@RequestParam String hashtag,
+                                       @RequestParam(defaultValue = "1") int page,
+                                       @RequestParam(defaultValue = "20") int size,
+                                       @RequestParam(required = false, defaultValue = "createdAt") String sort,
+                                       @RequestParam(required = false, defaultValue = "false") boolean ASC);
 }

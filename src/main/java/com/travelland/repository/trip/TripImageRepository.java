@@ -1,4 +1,4 @@
-package com.travelland.repository;
+package com.travelland.repository.trip;
 
 import com.travelland.domain.Trip;
 import com.travelland.domain.TripImage;

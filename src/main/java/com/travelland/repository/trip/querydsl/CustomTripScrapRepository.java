@@ -1,0 +1,11 @@
+package com.travelland.repository.trip.querydsl;
+
+import com.travelland.domain.Member;
+import com.travelland.domain.TripScrap;
+
+import java.util.List;
+
+public interface CustomTripScrapRepository {
+
+    List<TripScrap> getScrapListByMember(Member member, int size, int page);
+}
