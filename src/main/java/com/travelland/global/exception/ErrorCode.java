@@ -30,6 +30,8 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(NOT_FOUND, "해당 회원 정보를 찾을 수 없습니다."),
     POST_NOT_FOUND(NOT_FOUND, "해당 게시글을 찾을 수 없습니다."),
     POST_IMAGE_NOT_FOUND(NOT_FOUND, "해당 게시글의 이미지를 찾을 수 없습니다."),
+    POST_SCRAP_NOT_FOUND(NOT_FOUND, "해당 게시글은 스크랩되어 있지 않습니다."),
+    POST_LIKE_NOT_FOUND(NOT_FOUND, "해당 게시글은 좋아요가 되어 있지 않습니다."),
     PLAN_NOT_FOUND(NOT_FOUND, "해당 여행 플랜을 찾을 수 없습니다."),
     USER_NOT_FOUND(NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
 
