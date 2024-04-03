@@ -4,12 +4,16 @@ import com.travelland.docs.PlanControllerDocs;
 import com.travelland.dto.DayPlanDto;
 import com.travelland.dto.PlanDto;
 import com.travelland.dto.UnitPlanDto;
-import com.travelland.service.PlanService;
+import com.travelland.service.plan.PlanLikeService;
+import com.travelland.service.plan.PlanScrapService;
+import com.travelland.service.plan.PlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -17,27 +21,30 @@ import org.springframework.web.bind.annotation.*;
 public class PlanController implements PlanControllerDocs {
 
     private final PlanService planService;
+    private final PlanLikeService planLikeService;
+    private final PlanScrapService planScrapService;
 
     // Plan 작성
     @PostMapping("/plans")
-    public ResponseEntity<PlanDto.CreateResponse> createPlan(@RequestBody PlanDto.CreateRequest request) {
-        PlanDto.CreateResponse response = planService.createPlan(request, "a@email.com");
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<PlanDto.Id> createPlan(@RequestBody PlanDto.Create request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body( planService.createPlan(request, "a@email.com"));
     }
 
     // Plan 전체조회
     @GetMapping("/plans") // 예시: /plans?page=0&size=20&sortBy=createdAt&isAsc=false, page는 1부터
-    public ResponseEntity<Page<PlanDto.ReadResponse>> readPlanList(
-            @RequestParam int page, @RequestParam int size, @RequestParam String sortBy, @RequestParam boolean isAsc) {
-        Page<PlanDto.ReadResponse> responses = planService.readPlanList(page, size, sortBy, isAsc);
-        return ResponseEntity.status(HttpStatus.OK).body(responses);
+    public ResponseEntity<Page<PlanDto.Read>> readPlanList(@RequestParam int page,
+                                                           @RequestParam int size,
+                                                           @RequestParam String sortBy,
+                                                           @RequestParam boolean isAsc) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(planService.readPlanList(page, size, sortBy, isAsc));
     }
 
     // Plan 상세조회 (planId)
     @GetMapping("/plans/{planId}")
-    public ResponseEntity<PlanDto.ReadResponse> readPlanById(@PathVariable Long planId) {
-        PlanDto.ReadResponse response = planService.readPlanById(planId);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+    public ResponseEntity<PlanDto.Read> readPlanById(@PathVariable Long planId) {
+        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanById(planId));
     }
 
 //    // Plan 유저별조회 (memberId)
@@ -48,18 +55,62 @@ public class PlanController implements PlanControllerDocs {
 
     // Plan 수정
     @PutMapping("/plans/{planId}")
-    public ResponseEntity<PlanDto.UpdateResponse> updatePlan(@PathVariable Long planId, @RequestBody PlanDto.UpdateRequest request) {
-        PlanDto.UpdateResponse response = planService.updatePlan(planId, request);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+    public ResponseEntity<PlanDto.Id> updatePlan(@PathVariable Long planId, @RequestBody PlanDto.Update request) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(planService.updatePlan(planId, request));
     }
 
     // Plan 삭제
     @DeleteMapping("/plans/{planId}")
-    public ResponseEntity<PlanDto.DeleteResponse> deletePlan(@PathVariable Long planId) {
-        PlanDto.DeleteResponse response = planService.deletePlan(planId);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+    public ResponseEntity<PlanDto.Delete> deletePlan(@PathVariable Long planId) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(planService.deletePlan(planId));
     }
 
+
+    //여행정보 좋아요 등록
+    @PostMapping("/plans/{planId}/like")
+    public ResponseEntity<PlanDto.Result> createPlanLike(@PathVariable Long planId) {
+        planLikeService.registerPlanLike(planId, "test@email.com");
+        return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(true));
+    }
+
+    //여행정보 좋아요 취소
+    @DeleteMapping("/plans/{planId}/like")
+    public ResponseEntity<PlanDto.Result> deletePlanLike(@PathVariable Long planId) {
+        planLikeService.cancelPlanLike(planId, "test@email.com");
+        return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(false));
+    }
+
+    //여행정보 좋아요 목록 조회
+    @GetMapping("/plans/like")
+    public ResponseEntity<List<PlanDto.Likes>> getPlanLikeList(@RequestParam(defaultValue = "1") int page,
+                                                               @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(planLikeService.getPlanLikeList(page, size, "test@email.com"));
+    }
+
+    //여행정보 스크랩 등록
+    @PostMapping("/plans/{planId}/scrap")
+    public ResponseEntity<PlanDto.Result> createPlanScrap(@PathVariable Long planId) {
+        planScrapService.registerPlanScrap(planId, "test@email.com");
+        return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(true));
+    }
+
+    //여행정보 스크랩 취소
+    @DeleteMapping("/plans/{planId}/scrap")
+    public ResponseEntity<PlanDto.Result> deletePlanScrap(@PathVariable Long planId) {
+        planScrapService.cancelPlanScrap(planId, "test@email.com");
+        return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(false));
+    }
+
+    //여행정보 스크랩 목록 조회
+    @GetMapping("/plans/scrap")
+    public ResponseEntity<List<PlanDto.Scraps>> getPlanScrapList(@RequestParam(defaultValue = "1") int page,
+                                                                 @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(planScrapService.getPlanScrapList(page, size, "test@email.com"));
+    }
 
 
 
