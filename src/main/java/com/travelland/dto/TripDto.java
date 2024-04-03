@@ -1,6 +1,7 @@
 package com.travelland.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.travelland.domain.Member;
 import com.travelland.domain.Trip;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -58,6 +59,7 @@ public class TripDto {
     }
 
     @Getter
+    @AllArgsConstructor
     public static class GetResponse {
         //Trip 엔티티 값
         private Long tripId;
@@ -98,6 +100,7 @@ public class TripDto {
     }
 
     @Getter
+    @AllArgsConstructor
     public static class GetListResponse {
         private Long tripId;
         private String title;
@@ -122,5 +125,71 @@ public class TripDto {
     @AllArgsConstructor
     public static class DeleteResponse {
         private boolean isDeleted;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class TripLikeResponse {
+        private boolean like;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class GetTripLikeListResponse {
+        private Long tripId;
+        private String title;
+        private String nickname;
+        private String tripPeriod;
+
+        public GetTripLikeListResponse(Trip trip, Member member) {
+            this.tripId = trip.getId();
+            this.title = trip.getTitle();
+            this.nickname = member.getNickname();
+            this.tripPeriod = Period.between(trip.getTripStartDate(), trip.getTripEndDate()).getDays() + "일";
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class TripScrapResponse {
+        private boolean scrap;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class GetTripScrapListResponse {
+        private Long tripId;
+        private String title;
+        private String nickname;
+        private String tripPeriod;
+
+        public GetTripScrapListResponse(Trip trip, Member member) {
+            this.tripId = trip.getId();
+            this.title = trip.getTitle();
+            this.nickname = member.getNickname();
+            this.tripPeriod = Period.between(trip.getTripStartDate(), trip.getTripEndDate()).getDays() + "일";
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class GetMyTripListResponse {
+        private Long tripId;
+        private String title;
+        private String nickname;
+        private String thumbnailUrl;
+        private String tripPeriod;
+        private int viewCount;
+        private LocalDate createdAt;
+
+        public GetMyTripListResponse(Trip trip, String thumbnailUrl) {
+            this.tripId = trip.getId();
+            this.title = trip.getTitle();
+            this.nickname = trip.getMember().getNickname();
+            this.thumbnailUrl = thumbnailUrl;
+            this.tripPeriod = Period.between(trip.getTripStartDate(), trip.getTripEndDate()).getDays() + "일";
+            this.viewCount = trip.getViewCount();
+            this.createdAt = trip.getCreatedAt().toLocalDate();
+        }
     }
 }
