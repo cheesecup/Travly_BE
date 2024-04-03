@@ -1,7 +1,7 @@
 package com.travelland.domain;
 
 import com.travelland.dto.TripDto;
-import com.travelland.dto.TripDto.CreateRequest;
+import com.travelland.dto.TripDto.Create;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -55,7 +55,7 @@ public class Trip {
     @LastModifiedDate
     private LocalDateTime modifiedAt;
 
-    public Trip(CreateRequest requestDto, Member member) {
+    public Trip(Create requestDto, Member member) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.cost = requestDto.getCost();
@@ -68,7 +68,7 @@ public class Trip {
         this.member = member;
     }
 
-    public void update(TripDto.UpdateRequest requestDto) {
+    public void update(TripDto.Update requestDto) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.cost = requestDto.getCost();

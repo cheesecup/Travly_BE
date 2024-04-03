@@ -1,21 +1,17 @@
-package com.travelland.service;
+package com.travelland.service.trip;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.*;
 import com.travelland.dto.TripDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.MemberRepository;
-import com.travelland.repository.TripLikeRepository;
-import com.travelland.repository.TripRepository;
+import com.travelland.repository.trip.TripLikeRepository;
+import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.travelland.domain.QTripLike.tripLike;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +20,6 @@ public class TripLikeService {
     private final TripLikeRepository tripLikeRepository;
     private final MemberRepository memberRepository;
     private final TripRepository tripRepository;
-    private final JPAQueryFactory jpaQueryFactory;
 
     //여행정보 좋아요 등록
     @Transactional
@@ -54,18 +49,9 @@ public class TripLikeService {
 
     //여행정보 좋아요 목록 조회
     @Transactional(readOnly = true)
-    public List<TripDto.GetTripLikeListResponse> getTripLikeList(int page, int size, String email) {
-        Member member = getMember(email);
-
-        List<TripLike> tripLikeList = jpaQueryFactory.selectFrom(tripLike)
-                .where(tripLike.member.eq(member), tripLike.isDeleted.eq(false))
-                .orderBy(tripLike.trip.createdAt.desc())
-                .limit(size)
-                .offset((long) (page - 1) * size)
-                .fetch();
-
-        return tripLikeList.stream().map(tripLike -> new TripDto.GetTripLikeListResponse(tripLike.getTrip(), tripLike.getMember()))
-                .collect(Collectors.toList());
+    public List<TripDto.Likes> getTripLikeList(int page, int size, String email) {
+        return tripLikeRepository.getLikeListByMember(getMember(email), size, page)
+                .stream().map(TripDto.Likes::new).toList();
     }
     
     //좋아요 데이터 삭제

@@ -1,4 +1,4 @@
-package com.travelland.repository;
+package com.travelland.repository.trip;
 
 import com.travelland.document.TripSearchDoc;
 import com.travelland.repository.es.CustomTripRepository;
