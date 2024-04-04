@@ -1,7 +1,7 @@
 package com.travelland.repository.trip.querydsl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.TripLike;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

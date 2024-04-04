@@ -1,7 +1,7 @@
 package com.travelland.service.plan;
 
 import com.travelland.domain.plan.DayPlan;
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.UnitPlan;
 import com.travelland.dto.DayPlanDto;

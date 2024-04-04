@@ -1,5 +1,6 @@
 package com.travelland.domain;
 
+import com.travelland.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

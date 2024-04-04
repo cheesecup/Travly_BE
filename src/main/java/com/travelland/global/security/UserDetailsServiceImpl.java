@@ -1,6 +1,6 @@
 package com.travelland.global.security;
 
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.member.MemberRepository;
