@@ -3,11 +3,10 @@ package com.travelland.global.security;
 import com.travelland.domain.Member;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.MemberRepository;
+import com.travelland.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor

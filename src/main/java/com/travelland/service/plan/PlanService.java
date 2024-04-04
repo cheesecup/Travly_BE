@@ -10,7 +10,7 @@ import com.travelland.dto.UnitPlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.plan.DayPlanRepository;
-import com.travelland.repository.MemberRepository;
+import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.PlanRepository;
 import com.travelland.repository.plan.UnitPlanRepository;
 import lombok.RequiredArgsConstructor;

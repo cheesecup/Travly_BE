@@ -1,4 +1,4 @@
-package com.travelland.repository;
+package com.travelland.repository.member;
 
 import com.travelland.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
