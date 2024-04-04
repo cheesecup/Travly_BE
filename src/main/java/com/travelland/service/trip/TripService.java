@@ -1,7 +1,6 @@
 package com.travelland.service.trip;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.Trip;
 import com.travelland.domain.TripHashtag;
 import com.travelland.dto.TripDto;

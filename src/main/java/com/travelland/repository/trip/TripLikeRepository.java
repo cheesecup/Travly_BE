@@ -1,6 +1,6 @@
 package com.travelland.repository.trip;
 
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.Trip;
 import com.travelland.domain.TripLike;
 import com.travelland.repository.trip.querydsl.CustomTripLikeRepository;

@@ -1,6 +1,6 @@
 package com.travelland.service.plan;
 
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanLike;
 import com.travelland.dto.PlanDto;
