@@ -2,8 +2,10 @@ package com.travelland.dto;
 
 import com.travelland.domain.plan.DayPlan;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class DayPlanDto {
 
@@ -38,6 +40,29 @@ public class DayPlanDto {
             this.content = dayPlan.getContent();
             this.budget = dayPlan.getBudget();
             this.date = dayPlan.getDate();
+        }
+    }
+
+    @Getter
+    @ToString
+    public static class AllInOne {
+        private Long dayPlanId;
+        private String title;
+        private String content;
+        private int budget;
+        private LocalDateTime date;
+        private List<UnitPlanDto.GetResponse> unitPlans;
+
+
+        public AllInOne(GetResponse dayPlan) {
+            this.dayPlanId = dayPlan.getDayPlanId();
+            this.title = dayPlan.getTitle();
+            this.content = dayPlan.getContent();
+            this.budget = dayPlan.getBudget();
+            this.date = dayPlan.getDate();
+        }
+        public void update(List<UnitPlanDto.GetResponse> unitPlans){
+            this.unitPlans = unitPlans;
         }
     }
 

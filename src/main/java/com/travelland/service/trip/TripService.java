@@ -48,8 +48,6 @@ public class TripService {
 
         if (!imageList.isEmpty()) //여행정보 이미지 정보 저장
             tripImageService.createTripImage(imageList, trip);
-        if (!imageList.isEmpty()) //여행정보 이미지 정보 저장
-            tripImageService.createTripImage(imageList, trip);
 
         redisTemplate.opsForValue().increment(TOTAL_ELEMENTS);
 
