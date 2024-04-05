@@ -4,14 +4,14 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.Member;
-import com.travelland.domain.Trip;
+import com.travelland.domain.trip.Trip;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.travelland.domain.QTrip.trip;
-import static com.travelland.domain.QTripHashtag.tripHashtag;
+import static com.travelland.domain.trip.QTrip.trip;
+import static com.travelland.domain.trip.QTripHashtag.tripHashtag;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,8 +20,8 @@ public class CustomTripRepositoryV2Impl implements CustomTripRepositoryV2 {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<Trip> getTripList(int page, int size, String sort, boolean ASC) {
-        OrderSpecifier orderSpecifier = createOrderSpecifier(sort, ASC);
+    public List<Trip> getTripList(int page, int size, String sortBy, boolean isAsc) {
+        OrderSpecifier orderSpecifier = createOrderSpecifier(sortBy, isAsc);
 
         return jpaQueryFactory.selectFrom(trip)
                 .orderBy(orderSpecifier, trip.id.desc())
@@ -41,8 +41,8 @@ public class CustomTripRepositoryV2Impl implements CustomTripRepositoryV2 {
     }
 
     @Override
-    public List<Trip> searchTripByHashtag(String hashtag, int page, int size, String sort, boolean ASC) {
-        OrderSpecifier orderSpecifier = createOrderSpecifier(sort, ASC);
+    public List<Trip> searchTripByHashtag(String hashtag, int page, int size, String sortBy, boolean isAsc) {
+        OrderSpecifier orderSpecifier = createOrderSpecifier(sortBy, isAsc);
 
         return jpaQueryFactory.select(trip)
                 .from(tripHashtag)
@@ -54,10 +54,10 @@ public class CustomTripRepositoryV2Impl implements CustomTripRepositoryV2 {
                 .fetch();
     }
 
-    private OrderSpecifier createOrderSpecifier(String sort, boolean ASC) {
-        Order order = (ASC) ? Order.ASC : Order.DESC;
+    private OrderSpecifier createOrderSpecifier(String sortBy, boolean isAsc) {
+        Order order = (isAsc) ? Order.ASC : Order.DESC;
 
-        return switch (sort) {
+        return switch (sortBy) {
             case "viewCount" -> new OrderSpecifier<>(order, trip.viewCount);
             case "title" -> new OrderSpecifier<>(order, trip.title);
             default -> new OrderSpecifier<>(order, trip.createdAt);
