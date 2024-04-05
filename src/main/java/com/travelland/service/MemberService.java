@@ -36,4 +36,20 @@ public class MemberService {
     public boolean checkNickname(String nickname) {
         return memberRepository.findByNickname(nickname).isEmpty();
     }
+
+    public boolean logout(HttpServletRequest request, HttpServletResponse response) {
+        String token = jwtUtil.getJwtFromCookie(request);
+        if (token == null) return false;
+
+        RefreshToken tokenInfo = refreshTokenRepository.findByAccessToken(token)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_AUTH_TOKEN));
+
+        refreshTokenRepository.delete(tokenInfo);
+
+        SecurityContextHolder.clearContext();
+
+        jwtUtil.deleteCookie(response);
+
+        return true;
+    }
 }
