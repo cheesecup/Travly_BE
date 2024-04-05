@@ -28,7 +28,7 @@ public class PlanController implements PlanControllerDocs {
     @PostMapping("/plans")
     public ResponseEntity<PlanDto.Id> createPlan(@RequestBody PlanDto.Create request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body( planService.createPlan(request, "a@email.com"));
+                .body( planService.createPlan(request, "test@test.com"));
     }
 
     // Plan 전체조회
@@ -66,6 +66,14 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(planService.deletePlan(planId));
     }
+
+
+
+
+
+
+
+
 
 
     //여행정보 좋아요 등록
@@ -117,33 +125,40 @@ public class PlanController implements PlanControllerDocs {
 
 
 
+
+
+
+
     // DayPlan 작성
-    @PostMapping("/plans/{planId}/dayplans")
+    @PostMapping("/dayPlans/{planId}")
     public ResponseEntity<DayPlanDto.CreateResponse> createDayPlan(@PathVariable Long planId, @RequestBody DayPlanDto.CreateRequest request) {
         DayPlanDto.CreateResponse response = planService.createDayPlan(planId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // DayPlan 상세조회 (dayPlanId)
-    @GetMapping("/plans/{planId}/dayplans/{dayPlanId}")
-    public ResponseEntity<DayPlanDto.ReadResponse> readDayPlan(@PathVariable Long planId, @PathVariable Long dayPlanId) {
-        DayPlanDto.ReadResponse response = planService.readDayPlan(planId, dayPlanId);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+    // DayPlan 조회 (planId)
+    @GetMapping("/dayPlans/{planId}")
+    public ResponseEntity<List<DayPlanDto.ReadResponse>> readDayPlan(@PathVariable Long planId) {
+        List<DayPlanDto.ReadResponse> responses = planService.readDayPlan(planId);
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
     // DayPlan 수정
-    @PutMapping("/plans/{planId}/dayplans/{dayPlanId}")
-    public ResponseEntity<DayPlanDto.UpdateResponse> updateDayPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @RequestBody DayPlanDto.UpdateRequest request) {
-        DayPlanDto.UpdateResponse response = planService.updateDayPlan(planId, dayPlanId, request);
+    @PutMapping("/dayPlans/{dayPlanId}")
+    public ResponseEntity<DayPlanDto.UpdateResponse> updateDayPlan(@PathVariable Long dayPlanId, @RequestBody DayPlanDto.UpdateRequest request) {
+        DayPlanDto.UpdateResponse response = planService.updateDayPlan(dayPlanId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // DayPlan 삭제
-    @DeleteMapping("/plans/{planId}/dayplans/{dayPlanId}")
-    public ResponseEntity<DayPlanDto.DeleteResponse> deleteDayPlan(@PathVariable Long planId, @PathVariable Long dayPlanId) {
-        DayPlanDto.DeleteResponse response = planService.deleteDayPlan(planId, dayPlanId);
+    @DeleteMapping("/dayPlans/{dayPlanId}")
+    public ResponseEntity<DayPlanDto.DeleteResponse> deleteDayPlan(@PathVariable Long dayPlanId) {
+        DayPlanDto.DeleteResponse response = planService.deleteDayPlan(dayPlanId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+
+
 
 
 
@@ -152,36 +167,30 @@ public class PlanController implements PlanControllerDocs {
 
 
     // UnitPlan 작성
-    @PostMapping("/plans/{planId}/dayplans/{dayPlanId}/unitplans")
-    public ResponseEntity<UnitPlanDto.CreateResponse> createUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @RequestBody UnitPlanDto.CreateRequest request) {
-        UnitPlanDto.CreateResponse response = planService.createUnitPlan(planId, dayPlanId, request);
+    @PostMapping("/unitPlans/{dayPlanId}")
+    public ResponseEntity<UnitPlanDto.CreateResponse> createUnitPlan(@PathVariable Long dayPlanId, @RequestBody UnitPlanDto.CreateRequest request) {
+        UnitPlanDto.CreateResponse response = planService.createUnitPlan(dayPlanId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // UnitPlan 상세조회 (dayPlanId)
-    @GetMapping("/plans/{planId}/dayplans/{dayPlanId}/unitplans/{unitPlanId}")
-    public ResponseEntity<UnitPlanDto.ReadResponse> readUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @PathVariable Long unitPlanId) {
-        UnitPlanDto.ReadResponse response = planService.readUnitPlan(planId, dayPlanId, unitPlanId);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+    // UnitPlan 조회 (dayPlanId)
+    @GetMapping("/unitPlans/{dayPlanId}")
+    public ResponseEntity<List<UnitPlanDto.ReadResponse>> readUnitPlan(@PathVariable Long dayPlanId) {
+        List<UnitPlanDto.ReadResponse> responses = planService.readUnitPlan(dayPlanId);
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
     // UnitPlan 수정
-    @PutMapping("/plans/{planId}/dayplans/{dayPlanId}/unitplans/{unitPlanId}")
-    public ResponseEntity<UnitPlanDto.UpdateResponse> updateUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @PathVariable Long unitPlanId, @RequestBody UnitPlanDto.UpdateRequest request) {
-        UnitPlanDto.UpdateResponse response = planService.updateUnitPlan(planId, dayPlanId, unitPlanId, request);
+    @PutMapping("/unitPlans/{unitPlanId}")
+    public ResponseEntity<UnitPlanDto.UpdateResponse> updateUnitPlan(@PathVariable Long unitPlanId, @RequestBody UnitPlanDto.UpdateRequest request) {
+        UnitPlanDto.UpdateResponse response = planService.updateUnitPlan(unitPlanId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // UnitPlan 삭제
-    @DeleteMapping("/plans/{planId}/dayplans/{dayPlanId}/unitplans/{unitPlanId}")
-    public ResponseEntity<UnitPlanDto.DeleteResponse> deleteUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @PathVariable Long unitPlanId) {
-        UnitPlanDto.DeleteResponse response = planService.deleteUnitPlan(planId, dayPlanId, unitPlanId);
+    @DeleteMapping("/unitPlans/{unitPlanId}")
+    public ResponseEntity<UnitPlanDto.DeleteResponse> deleteUnitPlan(@PathVariable Long unitPlanId) {
+        UnitPlanDto.DeleteResponse response = planService.deleteUnitPlan(unitPlanId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
-
-    /*
-    swagger
-    @AuthenticationPrincipal UserDetailsImpl userDetails
-     */
 }

@@ -21,6 +21,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @Service
 @Transactional//(readOnly = true)
@@ -69,9 +71,18 @@ public class PlanService {
     // Plan 삭제
     public PlanDto.Delete deletePlan(Long planId) {
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+
+        // 연관된 DayPlan과 UnitPlan을 먼저 삭제
+        List<DayPlanDto.ReadResponse> dayPlanList = readDayPlan(planId);
+        for (DayPlanDto.ReadResponse dayPlanDto : dayPlanList) {
+            deleteDayPlan(dayPlanDto.getDayPlanId());
+        }
+
         planRepository.delete(plan);
         return new PlanDto.Delete(true);
     }
+
+
 
 
 
@@ -89,28 +100,36 @@ public class PlanService {
         return new DayPlanDto.CreateResponse(savedDayPlan);
     }
 
-    // DayPlan 상세조회 (dayPlanId)
-    public DayPlanDto.ReadResponse readDayPlan(Long planId, Long dayPlanId) {
-        Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+    // DayPlan 조회 (planId)
+    public List<DayPlanDto.ReadResponse> readDayPlan(Long planId) {
+        List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanId(planId);
 
-        DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        return new DayPlanDto.ReadResponse(dayPlan);
+        if (dayPlanList.isEmpty()) {
+            throw new CustomException(ErrorCode.DAY_PLAN_NOT_FOUND);
+        }
+
+        return dayPlanList.stream()
+                .map(DayPlanDto.ReadResponse::new)
+                .toList();
     }
 
     // DayPlan 수정
-    public DayPlanDto.UpdateResponse updateDayPlan(Long planId, Long dayPlanId, DayPlanDto.UpdateRequest request) {
-        Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-
-        DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+    public DayPlanDto.UpdateResponse updateDayPlan(Long dayPlanId, DayPlanDto.UpdateRequest request) {
+        DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.DAY_PLAN_NOT_FOUND));
         DayPlan updatedDayPlan = dayPlan.update(request);
         return new DayPlanDto.UpdateResponse(updatedDayPlan);
     }
 
     // DayPlan 삭제
-    public DayPlanDto.DeleteResponse deleteDayPlan(Long planId, Long dayPlanId) {
-        Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+    public DayPlanDto.DeleteResponse deleteDayPlan(Long dayPlanId) {
+        DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.DAY_PLAN_NOT_FOUND));
 
-        DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        // 연관된 UnitPlan을 먼저 삭제
+        List<UnitPlanDto.ReadResponse> unitPlanList = readUnitPlan(dayPlanId);
+        for (UnitPlanDto.ReadResponse unitPlanDto : unitPlanList) {
+            deleteUnitPlan(unitPlanDto.getUnitPlanId());
+        }
+
         dayPlanRepository.delete(dayPlan);
         return new DayPlanDto.DeleteResponse(true);
     }
@@ -121,41 +140,41 @@ public class PlanService {
 
 
 
+
+
+
     // UnitPlan 작성
-    public UnitPlanDto.CreateResponse createUnitPlan(Long planId, Long dayPlanId, UnitPlanDto.CreateRequest request) {
-        Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+    public UnitPlanDto.CreateResponse createUnitPlan(Long dayPlanId, UnitPlanDto.CreateRequest request) {
+        DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.DAY_PLAN_NOT_FOUND));
 
         UnitPlan unitPlan = new UnitPlan(request, dayPlan);
         UnitPlan savedUnitPlan = unitPlanRepository.save(unitPlan);
         return new UnitPlanDto.CreateResponse(savedUnitPlan);
     }
 
-    // UnitPlan 상세조회 (unitPlanId)
-    public UnitPlanDto.ReadResponse readUnitPlan(Long planId, Long dayPlanId, Long unitPlanId) {
-        Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+    // UnitPlan 조회 (dayPlanId)
+    public List<UnitPlanDto.ReadResponse> readUnitPlan(Long dayPlanId) {
+        List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanId(dayPlanId);
 
-        UnitPlan unitPlan = unitPlanRepository.findById(unitPlanId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        return new UnitPlanDto.ReadResponse(unitPlan);
+        if (unitPlanList.isEmpty()) {
+            throw new CustomException(ErrorCode.UNIT_PLAN_NOT_FOUND);
+        }
+
+        return unitPlanList.stream()
+                .map(UnitPlanDto.ReadResponse::new)
+                .toList();
     }
 
     // UnitPlan 수정
-    public UnitPlanDto.UpdateResponse updateUnitPlan(Long planId, Long dayPlanId, Long unitPlanId, UnitPlanDto.UpdateRequest request) {
-        Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-
-        UnitPlan unitPlan = unitPlanRepository.findById(unitPlanId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+    public UnitPlanDto.UpdateResponse updateUnitPlan(Long unitPlanId, UnitPlanDto.UpdateRequest request) {
+        UnitPlan unitPlan = unitPlanRepository.findById(unitPlanId).orElseThrow(() -> new CustomException(ErrorCode.UNIT_PLAN_NOT_FOUND));
         UnitPlan updatedUnitPlan = unitPlan.update(request);
         return new UnitPlanDto.UpdateResponse(updatedUnitPlan);
     }
 
     // UnitPlan 삭제
-    public UnitPlanDto.DeleteResponse deleteUnitPlan(Long planId, Long dayPlanId, Long unitPlanId) {
-        Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-
-        UnitPlan unitPlan = unitPlanRepository.findById(unitPlanId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+    public UnitPlanDto.DeleteResponse deleteUnitPlan(Long unitPlanId) {
+        UnitPlan unitPlan = unitPlanRepository.findById(unitPlanId).orElseThrow(() -> new CustomException(ErrorCode.UNIT_PLAN_NOT_FOUND));
         unitPlanRepository.delete(unitPlan);
         return new UnitPlanDto.DeleteResponse(true);
     }
