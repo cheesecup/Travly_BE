@@ -10,6 +10,7 @@ import lombok.Getter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.List;
 
 public class PlanDto {
 
@@ -69,6 +70,44 @@ public class PlanDto {
             this.isVotable = plan.isVotable();
             this.createdAt = plan.getCreatedAt();
             this.memberNickname = plan.getMember().getNickname();
+        }
+    }
+
+    @Getter
+    public static class AllInOne {
+        private final Long planId;
+        private final String title;
+        private final String content;
+        private final int budget;
+        private final String area;
+        private final boolean isPublic;
+        private final LocalDate tripStartDate;
+        private final LocalDate tripEndDate;
+        private final int viewCount;
+        private final int likeCount;
+        private final boolean isVotable;
+        private final LocalDateTime createdAt;
+        private final String memberNickname;
+        private List<DayPlanDto.AllInOne> dayPlans;
+
+        public AllInOne(Get plan) {
+            this.planId = plan.getPlanId();
+            this.title = plan.getTitle();
+            this.content = plan.getContent();
+            this.budget = plan.getBudget();
+            this.area = plan.getArea();
+            this.isPublic = plan.isPublic();
+            this.tripStartDate = plan.getTripStartDate();
+            this.tripEndDate = plan.getTripEndDate();
+            this.viewCount = plan.getViewCount();
+            this.likeCount = plan.getViewCount();
+            this.isVotable = plan.isVotable();
+            this.createdAt = plan.getCreatedAt();
+            this.memberNickname = plan.getMemberNickname();
+        }
+
+        public void updateDayPlan(List<DayPlanDto.AllInOne> dayPlans){
+            this.dayPlans = dayPlans;
         }
     }
 
