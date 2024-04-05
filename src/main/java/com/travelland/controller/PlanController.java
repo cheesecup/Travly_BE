@@ -33,17 +33,27 @@ public class PlanController implements PlanControllerDocs {
 
     // Plan 전체조회
     @GetMapping("/plans") // 예시: /plans?page=0&size=20&sortBy=createdAt&isAsc=false, page는 1부터
-    public ResponseEntity<Page<PlanDto.Read>> readPlanList(@RequestParam int page,
-                                                           @RequestParam int size,
-                                                           @RequestParam String sortBy,
-                                                           @RequestParam boolean isAsc) {
+    public ResponseEntity<Page<PlanDto.Get>> readPlanList(@RequestParam int page,
+                                                          @RequestParam int size,
+                                                          @RequestParam String sortBy,
+                                                          @RequestParam boolean isAsc) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(planService.readPlanList(page, size, sortBy, isAsc));
     }
 
+    // Plan 전체조회 - Redis
+    @GetMapping("/plans/redis") // 예시: /plans?page=0&size=20&sortBy=createdAt&isAsc=false, page는 1부터
+    public ResponseEntity<List<PlanDto.Get>> readPlanListRedis(@RequestParam int page,
+                                                               @RequestParam int size,
+                                                               @RequestParam String sortBy,
+                                                               @RequestParam boolean isAsc) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(planService.readPlanListRedis(page, size, sortBy, isAsc));
+    }
+
     // Plan 상세조회 (planId)
     @GetMapping("/plans/{planId}")
-    public ResponseEntity<PlanDto.Read> readPlanById(@PathVariable Long planId) {
+    public ResponseEntity<PlanDto.Get> readPlanById(@PathVariable Long planId) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanById(planId));
     }
 
@@ -138,8 +148,8 @@ public class PlanController implements PlanControllerDocs {
 
     // DayPlan 조회 (planId)
     @GetMapping("/dayPlans/{planId}")
-    public ResponseEntity<List<DayPlanDto.ReadResponse>> readDayPlan(@PathVariable Long planId) {
-        List<DayPlanDto.ReadResponse> responses = planService.readDayPlan(planId);
+    public ResponseEntity<List<DayPlanDto.GetResponse>> readDayPlan(@PathVariable Long planId) {
+        List<DayPlanDto.GetResponse> responses = planService.readDayPlan(planId);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
@@ -175,8 +185,8 @@ public class PlanController implements PlanControllerDocs {
 
     // UnitPlan 조회 (dayPlanId)
     @GetMapping("/unitPlans/{dayPlanId}")
-    public ResponseEntity<List<UnitPlanDto.ReadResponse>> readUnitPlan(@PathVariable Long dayPlanId) {
-        List<UnitPlanDto.ReadResponse> responses = planService.readUnitPlan(dayPlanId);
+    public ResponseEntity<List<UnitPlanDto.GetResponse>> readUnitPlan(@PathVariable Long dayPlanId) {
+        List<UnitPlanDto.GetResponse> responses = planService.readUnitPlan(dayPlanId);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
@@ -192,5 +202,20 @@ public class PlanController implements PlanControllerDocs {
     public ResponseEntity<UnitPlanDto.DeleteResponse> deleteUnitPlan(@PathVariable Long unitPlanId) {
         UnitPlanDto.DeleteResponse response = planService.deleteUnitPlan(unitPlanId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+
+
+
+
+
+
+
+
+
+    // HTTPS 수신상태가 양호함을 AWS와 통신하는 Controller
+    @GetMapping("/healthcheck")
+    public String healthcheck() {
+        return "OK";
     }
 }

@@ -25,14 +25,14 @@ public class DayPlanDto {
     }
 
     @Getter
-    public static class ReadResponse {
+    public static class GetResponse {
         private Long dayPlanId;
         private String title;
         private String content;
         private int budget;
         private LocalDateTime date;
 
-        public ReadResponse(DayPlan dayPlan) {
+        public GetResponse(DayPlan dayPlan) {
             this.dayPlanId = dayPlan.getId();
             this.title = dayPlan.getTitle();
             this.content = dayPlan.getContent();

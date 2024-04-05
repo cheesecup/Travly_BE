@@ -1,6 +1,5 @@
 package com.travelland.service.trip;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.Member;
 import com.travelland.domain.Trip;
 import com.travelland.domain.TripHashtag;
@@ -37,8 +36,8 @@ public class TripService {
         if (!requestDto.getHashTag().isEmpty()) //해쉬태그 저장
             requestDto.getHashTag().forEach(hashtagTitle -> tripHashtagRepository.save(new TripHashtag(hashtagTitle, trip)));
 
-//        if (!imageList.isEmpty()) //여행정보 이미지 정보 저장
-//            tripImageService.createTripImage(imageList, trip);
+        if (!imageList.isEmpty()) //여행정보 이미지 정보 저장
+            tripImageService.createTripImage(imageList, trip);
 
         return new TripDto.Id(trip.getId());
     }
