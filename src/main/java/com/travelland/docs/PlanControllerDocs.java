@@ -32,6 +32,15 @@ public interface PlanControllerDocs {
     @Operation(summary = "Plan 삭제", description = " ")
     ResponseEntity deletePlan(@PathVariable Long planId);
 
+
+
+
+
+
+
+
+
+
     @Operation(summary = "Plan 좋아요 등록", description = "선택한 Plan 좋아요를 등록하는 API")
     ResponseEntity<PlanDto.Result> createPlanLike(@PathVariable Long planId) ;
 
@@ -58,17 +67,23 @@ public interface PlanControllerDocs {
 
 
 
+
+
+
     @Operation(summary = "DayPlan 작성", description = " ")
     ResponseEntity createDayPlan(@PathVariable Long planId, @RequestBody DayPlanDto.CreateRequest request);
 
-    @Operation(summary = "DayPlan 상세조회", description = " ")
-    ResponseEntity readDayPlan(@PathVariable Long planId, @PathVariable Long dayPlanId);
+    @Operation(summary = "DayPlan 조회", description = "planId로 조회")
+    ResponseEntity readDayPlan(@PathVariable Long planId);
 
     @Operation(summary = "DayPlan 수정", description = " ")
-    ResponseEntity updateDayPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @RequestBody DayPlanDto.UpdateRequest request);
+    ResponseEntity updateDayPlan(@PathVariable Long dayPlanId, @RequestBody DayPlanDto.UpdateRequest request);
 
     @Operation(summary = "DayPlan 삭제", description = " ")
-    ResponseEntity deleteDayPlan(@PathVariable Long planId, @PathVariable Long dayPlanId);
+    ResponseEntity deleteDayPlan(@PathVariable Long dayPlanId);
+
+
+
 
 
 
@@ -77,14 +92,14 @@ public interface PlanControllerDocs {
 
 
     @Operation(summary = "UnitPlan 작성", description = " ")
-    ResponseEntity createUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @RequestBody UnitPlanDto.CreateRequest request);
+    ResponseEntity createUnitPlan(@PathVariable Long dayPlanId, @RequestBody UnitPlanDto.CreateRequest request);
 
-    @Operation(summary = "UnitPlan 상세조회", description = " ")
-    ResponseEntity readUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @PathVariable Long unitPlanId);
+    @Operation(summary = "UnitPlan 조회", description = "dayPlanId로 조회")
+    ResponseEntity readUnitPlan(@PathVariable Long dayPlanId);
 
     @Operation(summary = "UnitPlan 수정", description = " ")
-    ResponseEntity updateUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @PathVariable Long unitPlanId, @RequestBody UnitPlanDto.UpdateRequest request);
+    ResponseEntity updateUnitPlan(@PathVariable Long unitPlanId, @RequestBody UnitPlanDto.UpdateRequest request);
 
     @Operation(summary = "UnitPlan 삭제", description = " ")
-    ResponseEntity deleteUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @PathVariable Long unitPlanId);
+    ResponseEntity deleteUnitPlan(@PathVariable Long unitPlanId);
 }
