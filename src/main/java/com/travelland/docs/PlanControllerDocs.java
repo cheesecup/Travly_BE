@@ -28,6 +28,9 @@ public interface PlanControllerDocs {
     @Operation(summary = "Plan 상세조회", description = "상세조회, planId로 조회, userId는 로그인구현 후")
     ResponseEntity readPlanById(@PathVariable Long planId);
 
+    @Operation(summary = "Plan 한방 상세조회", description = "한방 상세조회, planId로 조회, userId는 로그인구현 후")
+    ResponseEntity readPlanByIdOne(@PathVariable Long planId);
+
     @Operation(summary = "Plan 수정", description = " ")
     ResponseEntity updatePlan(@PathVariable Long planId, @RequestBody PlanDto.Update request);
 
