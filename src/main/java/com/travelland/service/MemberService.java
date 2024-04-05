@@ -37,6 +37,7 @@ public class MemberService {
         return memberRepository.findByNickname(nickname).isEmpty();
     }
 
+    @Transactional
     public boolean logout(HttpServletRequest request, HttpServletResponse response) {
         String token = jwtUtil.getJwtFromCookie(request);
         if (token == null) return false;
@@ -49,6 +50,18 @@ public class MemberService {
         SecurityContextHolder.clearContext();
 
         jwtUtil.deleteCookie(response);
+
+        return true;
+    }
+
+    @Transactional
+    public boolean signout(HttpServletRequest request, HttpServletResponse response, String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        memberRepository.delete(member);
+
+        logout(request, response);
 
         return true;
     }

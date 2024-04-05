@@ -30,6 +30,11 @@ public class MemberController implements MemberControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.Response(memberService.logout(request, response)));
     }
 
+    @DeleteMapping("/signout")
+    public ResponseEntity<MemberDto.Response> signout(HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.Response(memberService.signout(request, response, "a@email.com")));
+    }
+
     @PatchMapping
     public ResponseEntity<MemberDto.Response> changeNickname(@RequestBody MemberDto.ChangeNicknameRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.Response(memberService.changeNickname(request, "a@email.com")));
