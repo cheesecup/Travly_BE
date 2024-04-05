@@ -45,4 +45,15 @@ public class CustomTripRepositoryImpl implements CustomTripRepository{
 
         return new PageImpl<>(tripSearchDocs, pageable, searchHits.getTotalHits());
     }
+
+    @Override
+    public List<TripSearchDoc> searchByHashtags(String hashtag, Pageable pageable) {
+        Criteria criteria = Criteria.where("hashtag").contains(hashtag);
+        Query query = new CriteriaQuery(criteria).setPageable(pageable);
+
+        SearchHits<TripSearchDoc> searchHits = elasticsearchOperations.search(query, TripSearchDoc.class);
+        return searchHits.stream()
+                .map(SearchHit::getContent)
+                .collect(Collectors.toList());
+    }
 }

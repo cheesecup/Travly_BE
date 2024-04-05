@@ -1,7 +1,7 @@
 package com.travelland.service.trip;
 
-import com.travelland.domain.Trip;
-import com.travelland.domain.TripImage;
+import com.travelland.domain.trip.Trip;
+import com.travelland.domain.trip.TripImage;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.trip.TripImageRepository;

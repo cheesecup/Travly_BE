@@ -2,13 +2,13 @@ package com.travelland.repository.trip.querydsl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.Member;
-import com.travelland.domain.TripLike;
+import com.travelland.domain.trip.TripLike;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.travelland.domain.QTripLike.tripLike;
+import static com.travelland.domain.trip.QTripLike.tripLike;
 
 @Repository
 @RequiredArgsConstructor

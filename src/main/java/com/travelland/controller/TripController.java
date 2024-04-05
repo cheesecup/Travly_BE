@@ -45,9 +45,9 @@ public class TripController implements TripControllerDocs {
     @GetMapping("/trips")
     public ResponseEntity<List<TripDto.GetList>> getTripList(@RequestParam(defaultValue = "1") int page,
                                                              @RequestParam(defaultValue = "20") int size,
-                                                             @RequestParam(required = false, defaultValue = "createdAt") String sort,
-                                                             @RequestParam(required = false, defaultValue = "false") boolean ASC) {
-        List<TripDto.GetList> responseDto = tripService.getTripList(page, size, sort, ASC);
+                                                             @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                                             @RequestParam(required = false, defaultValue = "false") boolean isAsc) {
+        List<TripDto.GetList> responseDto = tripService.getTripList(page, size, sortBy, isAsc);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -66,7 +66,7 @@ public class TripController implements TripControllerDocs {
     //여행정보 삭제
     @DeleteMapping("/trips/{tripId}")
     public ResponseEntity<TripDto.Delete> deleteTrip(@PathVariable Long tripId) {
-        tripService.deleteTrip(tripId, "test@email.com");
+        tripService.deleteTrip(tripId, "test@test.com");
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Delete(true));
     }
@@ -74,7 +74,7 @@ public class TripController implements TripControllerDocs {
     //여행정보 좋아요 등록
     @PostMapping("/trips/{tripId}/like")
     public ResponseEntity<TripDto.Result> createTripLike(@PathVariable Long tripId) {
-        tripLikeService.registerTripLike(tripId, "test@email.com");
+        tripLikeService.registerTripLike(tripId, "test@test.com");
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(true));
     }
@@ -82,7 +82,7 @@ public class TripController implements TripControllerDocs {
     //여행정보 좋아요 취소
     @DeleteMapping("/trips/{tripId}/like")
     public ResponseEntity<TripDto.Result> deleteTripLike(@PathVariable Long tripId) {
-        tripLikeService.cancelTripLike(tripId, "test@email.com");
+        tripLikeService.cancelTripLike(tripId, "test@test.com");
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(false));
     }
@@ -91,7 +91,7 @@ public class TripController implements TripControllerDocs {
     @GetMapping("/trips/like")
     public ResponseEntity<List<TripDto.Likes>> getTripLikeList(@RequestParam(defaultValue = "1") int page,
                                                                @RequestParam(defaultValue = "20") int size) {
-        List<TripDto.Likes> responseDto = tripLikeService.getTripLikeList(page, size, "test@email.com");
+        List<TripDto.Likes> responseDto = tripLikeService.getTripLikeList(page, size, "test@test.com");
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -99,7 +99,7 @@ public class TripController implements TripControllerDocs {
     //여행정보 스크랩 등록
     @PostMapping("/trips/{tripId}/scrap")
     public ResponseEntity<TripDto.Result> createTripScrap(@PathVariable Long tripId) {
-        tripScrapService.registerTripScrap(tripId, "test@email.com");
+        tripScrapService.registerTripScrap(tripId, "test@test.com");
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(true));
     }
@@ -107,7 +107,7 @@ public class TripController implements TripControllerDocs {
     //여행정보 스크랩 취소
     @DeleteMapping("/trips/{tripId}/scrap")
     public ResponseEntity<TripDto.Result> deleteTripScrap(@PathVariable Long tripId) {
-        tripScrapService.cancelTripScrap(tripId, "test@email.com");
+        tripScrapService.cancelTripScrap(tripId, "test@test.com");
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(false));
     }
@@ -116,7 +116,7 @@ public class TripController implements TripControllerDocs {
     @GetMapping("/trips/scrap")
     public ResponseEntity<List<TripDto.Scraps>> getTripScrapList(@RequestParam(defaultValue = "1") int page,
                                                                  @RequestParam(defaultValue = "20") int size) {
-        List<TripDto.Scraps> responseDto = tripScrapService.getTripScrapList(page, size, "test@email.com");
+        List<TripDto.Scraps> responseDto = tripScrapService.getTripScrapList(page, size, "test@test.com");
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -125,19 +125,19 @@ public class TripController implements TripControllerDocs {
     @GetMapping("/users/trips")
     public ResponseEntity<List<TripDto.GetByMember>> getMyTripList(@RequestParam(defaultValue = "1") int page,
                                                                    @RequestParam(defaultValue = "20") int size) {
-        List<TripDto.GetByMember> responseDto = tripService.getMyTripList(page, size, "test@email.com");
+        List<TripDto.GetByMember> responseDto = tripService.getMyTripList(page, size, "test@test.com");
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     //여행정보 해쉬태그 검색
     @GetMapping("/trips/hashtag")
-    public ResponseEntity searchTripByHashtag(@RequestParam String hashtag,
-                                              @RequestParam(defaultValue = "1") int page,
-                                              @RequestParam(defaultValue = "20") int size,
-                                              @RequestParam(required = false, defaultValue = "createdAt") String sort,
-                                              @RequestParam(required = false, defaultValue = "false") boolean ASC) {
-        List<TripDto.GetList> responseDto = tripService.searchTripByHashtag(hashtag, page, size, sort, ASC);
+    public ResponseEntity<List<TripDto.GetList>> searchTripByHashtag(@RequestParam String hashtag,
+                                                                     @RequestParam(defaultValue = "1") int page,
+                                                                     @RequestParam(defaultValue = "20") int size,
+                                                                     @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                                                     @RequestParam(required = false, defaultValue = "false") boolean isAsc) {
+        List<TripDto.GetList> responseDto = tripService.searchTripByHashtag(hashtag, page, size, sortBy, isAsc);
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
