@@ -1,11 +1,14 @@
 package com.travelland.document;
 
 import com.travelland.dto.TripSearchDto;
+import jakarta.persistence.Column;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -51,6 +54,18 @@ public class TripSearchDoc {
     @GeoPointField
     private GeoPoint location;
 
+    @Field(name = "address", type = FieldType.Text)
+    private String address;
+
+    @Field(name = "place_name", type = FieldType.Keyword)
+    private String placeName;
+
+    @Field(name = "x", type = FieldType.Scaled_Float)
+    private BigDecimal x;
+
+    @Field(name = "y", type = FieldType.Scaled_Float)
+    private BigDecimal y;
+
 
     @Builder
     public TripSearchDoc(TripSearchDto.CreateRequest requestDto) {
@@ -63,6 +78,10 @@ public class TripSearchDoc {
         this.tripEndDate = requestDto.getTripEndDate();
         this.location = requestDto.getLocation();
         this.createdAt = LocalDateTime.now();
+        this.address = requestDto.getAddress();
+        this.placeName = requestDto.getPlaceName();
+        this.x = new BigDecimal(requestDto.getX());
+        this.y = new BigDecimal(requestDto.getY());
     }
 
 }
