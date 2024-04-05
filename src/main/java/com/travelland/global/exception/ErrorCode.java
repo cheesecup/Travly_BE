@@ -33,6 +33,8 @@ public enum ErrorCode {
     POST_SCRAP_NOT_FOUND(NOT_FOUND, "해당 게시글은 스크랩되어 있지 않습니다."),
     POST_LIKE_NOT_FOUND(NOT_FOUND, "해당 게시글은 좋아요가 되어 있지 않습니다."),
     PLAN_NOT_FOUND(NOT_FOUND, "해당 여행 플랜을 찾을 수 없습니다."),
+    DAY_PLAN_NOT_FOUND(NOT_FOUND, "해당 일일 플랜을 찾을 수 없습니다."),
+    UNIT_PLAN_NOT_FOUND(NOT_FOUND, "해당 단위 플랜을 찾을 수 없습니다."),
     USER_NOT_FOUND(NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
 
     // 409 CONFLICT: 중복된 리소스 (요청이 현재 서버 상태와 충돌될 때)
