@@ -31,4 +31,15 @@ public class MemberDto {
     public static class Response {
         private boolean isSuccess;
     }
+
+    @Getter
+    @AllArgsConstructor
+    public static class DuplicateCheck {
+        private boolean isAvailable;
+    }
+
+    @Getter
+    public static class ChangeNicknameRequest {
+        private String nickname;
+    }
 }
