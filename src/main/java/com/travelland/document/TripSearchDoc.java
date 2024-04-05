@@ -15,8 +15,8 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Document(indexName = "tripdocs" )
-@Setting(settingPath = "logs/es-setting.json")
-@Mapping(mappingPath = "logs/es-mapping.json")
+@Setting(settingPath = "static/es-setting.json")
+@Mapping(mappingPath = "static/es-mapping.json")
 public class TripSearchDoc {
 
     @Id
