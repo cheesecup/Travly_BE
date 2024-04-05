@@ -21,9 +21,9 @@ public class TripDto {
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripStartDate;
-
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripEndDate;
+
         private Integer cost;
         private List<String> hashTag;
         private String area;
@@ -38,9 +38,9 @@ public class TripDto {
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripStartDate;
-
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripEndDate;
+
         private Integer cost;
         private List<String> hashTag;
         private String area;

@@ -83,7 +83,8 @@ public class TripSearchService {
         request.source(doc);
 
         try {
-            client.indexAsync(request, RequestOptions.DEFAULT, new ActionListener<IndexResponse>() {
+            client.indexAsync(request, RequestOptions.DEFAULT, new ActionListener<IndexResponse>()
+            {
 
                 @Override
                 public void onResponse(IndexResponse response) {
