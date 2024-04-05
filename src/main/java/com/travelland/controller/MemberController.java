@@ -25,6 +25,11 @@ public class MemberController implements MemberControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.Response(kakaoService.kakaoLogin(code, response)));
     }
 
+    @GetMapping("/logout")
+    public ResponseEntity<MemberDto.Response> logout(HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.Response(memberService.logout(request, response)));
+    }
+
     @PatchMapping
     public ResponseEntity<MemberDto.Response> changeNickname(@RequestBody MemberDto.ChangeNicknameRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.Response(memberService.changeNickname(request, "a@email.com")));
