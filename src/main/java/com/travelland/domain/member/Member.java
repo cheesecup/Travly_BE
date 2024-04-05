@@ -1,4 +1,4 @@
-package com.travelland.domain;
+package com.travelland.domain.member;
 
 import com.travelland.constant.Gender;
 import com.travelland.constant.Role;
@@ -26,6 +26,9 @@ public class Member {
 
     private String password;
 
+    @Column(length = 8)
+    private String name;
+
     @Column(length = 15)
     private String nickname;
 
@@ -40,10 +43,11 @@ public class Member {
     private Role role;
 
     @Builder
-    public Member(Long socialId, String email, String password, String nickname, Gender gender, LocalDate birth, Role role) {
+    public Member(Long socialId, String email, String password, String name, String nickname, Gender gender, LocalDate birth, Role role) {
         this.socialId = socialId;
         this.email = email;
         this.password = password;
+        this.name = name;
         this.nickname = nickname;
         this.gender = gender;
         this.birth = birth;

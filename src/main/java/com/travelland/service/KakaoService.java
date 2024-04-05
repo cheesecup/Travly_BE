@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelland.constant.Gender;
 import com.travelland.constant.Role;
-import com.travelland.domain.Member;
-import com.travelland.domain.RefreshToken;
+import com.travelland.domain.member.Member;
+import com.travelland.domain.member.RefreshToken;
 import com.travelland.dto.MemberDto;
 import com.travelland.global.jwt.JwtUtil;
 import com.travelland.repository.member.MemberRepository;
@@ -174,6 +174,7 @@ public class KakaoService {
                     .gender(gender)
                     .nickname(kakaoUserInfo.getNickname())
                     .role(Role.USER)
+                    .name(kakaoUserInfo.getName())
                     .build();
 
             memberRepository.save(kakaoUser);
