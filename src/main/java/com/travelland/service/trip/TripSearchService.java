@@ -23,6 +23,7 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -39,14 +40,25 @@ public class TripSearchService {
     private final TripSearchRepository tripSearchRepository;
     private final RestHighLevelClient client;
 
+    private static final String TOTAL_ELEMENTS = "trip:totalElements";
+
     public TripSearchDto.GetResponse createTripDocument(TripSearchDto.CreateRequest tripSearchDto){
         return new TripSearchDto.GetResponse(
                 tripSearchRepository.save(new TripSearchDoc(tripSearchDto)));
     }
-
+    
+    // elastic의 id로 조회
     public TripSearchDto.GetResponse searchTripById(Long tripId){
         TripSearchDoc tripSearchDoc = tripSearchRepository.findById(tripId).
                 orElseThrow(()-> new CustomException(ErrorCode.POST_NOT_FOUND));
+        return new TripSearchDto.GetResponse(tripSearchDoc);
+    }
+    
+    // DB의 trip id로 조회
+    public TripSearchDto.GetResponse searchTripByTripId(Long tripId) {
+        TripSearchDoc tripSearchDoc = tripSearchRepository.findByTripId(tripId).
+                orElseThrow(()-> new CustomException(ErrorCode.POST_NOT_FOUND));
+
         return new TripSearchDto.GetResponse(tripSearchDoc);
     }
 
@@ -63,6 +75,11 @@ public class TripSearchService {
         if (page.getTotalElements() > 0)
             putSearchLog(hashtag,"java@java.com");
         return page;
+    }
+
+    public List<TripSearchDoc> searchTripByHashtags(String hashtag) {
+        Pageable pageable = PageRequest.of(5, 20);
+        return tripSearchRepository.searchByHashtags(hashtag, pageable);
     }
 
     public void putSearchLog(String query,String memberId){
@@ -83,7 +100,8 @@ public class TripSearchService {
         request.source(doc);
 
         try {
-            client.indexAsync(request, RequestOptions.DEFAULT, new ActionListener<IndexResponse>() {
+            client.indexAsync(request, RequestOptions.DEFAULT, new ActionListener<IndexResponse>()
+            {
 
                 @Override
                 public void onResponse(IndexResponse response) {

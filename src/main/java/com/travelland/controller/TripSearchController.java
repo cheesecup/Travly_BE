@@ -41,6 +41,17 @@ public class TripSearchController {
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getPopwordList());
     }
 
+    @GetMapping("/list")
+    public ResponseEntity<List<TripSearchDoc>> getTripByHashtags(@RequestParam String hashtag) {
+        List<TripSearchDoc> tripDocuments = tripSearchService.searchTripByHashtags(hashtag);
+        return ResponseEntity.status(HttpStatus.OK).body(tripDocuments);
+    }
 
+    //여행정보 상세 조회
+    @GetMapping("/trip/{tripId}")
+    public ResponseEntity<TripSearchDto.GetResponse> getTripInfo(@PathVariable Long tripId) {
+        TripSearchDto.GetResponse responseDto = tripSearchService.searchTripByTripId(tripId);
+        return ResponseEntity.status(HttpStatus.OK).body(responseDto);
+    }
 
 }

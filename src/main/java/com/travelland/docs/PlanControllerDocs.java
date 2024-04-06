@@ -19,12 +19,17 @@ public interface PlanControllerDocs {
     @Operation(summary = "Plan 작성", description = " ")
     ResponseEntity createPlan(@RequestBody PlanDto.Create request);
 
-    @Operation(summary = "Plan 전체조회", description = "전체조회, /plans?page=0&size=20&sortBy=createdAt&isAsc=false, page는 1부터")
-    ResponseEntity readPlanList(
-            @RequestParam int page, @RequestParam int size, @RequestParam String sortBy, @RequestParam boolean isAsc);
+    @Operation(summary = "Plan 전체목록조회", description = "전체조회, /plans?page=0&size=20&sortBy=createdAt&isAsc=false, page는 1부터")
+    ResponseEntity readPlanList(@RequestParam int page, @RequestParam int size, @RequestParam String sortBy, @RequestParam boolean isAsc);
+
+    @Operation(summary = "Plan 전체목록조회", description = "전체조회, /plans?page=0&size=20&sortBy=createdAt&isAsc=false, page는 1부터")
+    ResponseEntity readPlanListRedis(@RequestParam Long lastId, @RequestParam int size, @RequestParam String sortBy, @RequestParam boolean isAsc);
 
     @Operation(summary = "Plan 상세조회", description = "상세조회, planId로 조회, userId는 로그인구현 후")
     ResponseEntity readPlanById(@PathVariable Long planId);
+
+    @Operation(summary = "Plan 한방 상세조회", description = "한방 상세조회, planId로 조회, userId는 로그인구현 후")
+    ResponseEntity readPlanByIdOne(@PathVariable Long planId);
 
     @Operation(summary = "Plan 수정", description = " ")
     ResponseEntity updatePlan(@PathVariable Long planId, @RequestBody PlanDto.Update request);

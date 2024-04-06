@@ -1,12 +1,15 @@
 package com.travelland.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.travelland.domain.Trip;
-import com.travelland.domain.TripLike;
-import com.travelland.domain.TripScrap;
+import com.travelland.domain.trip.Trip;
+import com.travelland.domain.trip.TripLike;
+import com.travelland.domain.trip.TripScrap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.val;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
@@ -21,12 +24,15 @@ public class TripDto {
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripStartDate;
-
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripEndDate;
+
         private Integer cost;
         private List<String> hashTag;
-        private String area;
+        private String address;
+        private String placeName;
+        private String x;
+        private String y;
         private boolean isPublic;
     }
 
@@ -38,9 +44,9 @@ public class TripDto {
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripStartDate;
-
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripEndDate;
+
         private Integer cost;
         private List<String> hashTag;
         private String area;
@@ -62,6 +68,10 @@ public class TripDto {
         private String content;
         private int cost;
         private String area;
+        private String address;
+        private String placeName;
+        private String x;
+        private String y;
         private LocalDate tripStartDate;
         private LocalDate tripEndDate;
         private int viewCount;
@@ -81,6 +91,10 @@ public class TripDto {
             this.content = trip.getContent();
             this.cost = trip.getCost();
             this.area = trip.getArea();
+            this.address = trip.getAddress();
+            this.placeName = trip.getPlaceName();
+            this.x = String.valueOf(trip.getX().setScale(4, RoundingMode.HALF_UP));
+            this.y = String.valueOf(trip.getY().setScale(4, RoundingMode.HALF_UP));
             this.tripStartDate = trip.getTripStartDate();
             this.tripEndDate = trip.getTripEndDate();
             this.viewCount = trip.getViewCount();
@@ -125,7 +139,7 @@ public class TripDto {
     @Getter
     @AllArgsConstructor
     public static class Result {
-        private boolean result;
+        private boolean isResult;
     }
 
     @Getter

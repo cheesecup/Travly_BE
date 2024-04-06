@@ -1,5 +1,6 @@
-package com.travelland.domain;
+package com.travelland.domain.trip;
 
+import com.travelland.domain.Member;
 import com.travelland.dto.TripDto;
 import com.travelland.dto.TripDto.Create;
 import jakarta.persistence.*;
@@ -10,6 +11,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -44,6 +46,16 @@ public class Trip {
 
     private int likeCount;
 
+    private String address;
+
+    private String placeName;
+
+    @Column(precision = 18, scale = 10)
+    private BigDecimal x;
+
+    @Column(precision = 18, scale = 10)
+    private BigDecimal y;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
@@ -59,7 +71,11 @@ public class Trip {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.cost = requestDto.getCost();
-        this.area = requestDto.getArea();
+        this.area = splitAddress(requestDto.getAddress());
+        this.address = requestDto.getAddress();
+        this.placeName = requestDto.getPlaceName();
+        this.x = new BigDecimal(requestDto.getX());
+        this.y = new BigDecimal(requestDto.getY());
         this.isPublic = requestDto.isPublic();
         this.tripStartDate = requestDto.getTripStartDate();
         this.tripEndDate = requestDto.getTripEndDate();
@@ -88,5 +104,11 @@ public class Trip {
 
     public void decreaseLikeCount() {
         this.likeCount--;
+    }
+
+    private String splitAddress(String address) {
+        if (address.isEmpty()) return "";
+
+        return address.split(" ")[0];
     }
 }
