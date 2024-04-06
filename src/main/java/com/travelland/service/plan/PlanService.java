@@ -63,11 +63,8 @@ public class PlanService {
     }
 
     // Plan 전체조회 - Redis
-    public List<PlanDto.Get> readPlanListRedis(int page, int size, String sortBy, boolean isASC) {
-        return planRepository.getPlanList(page, size, sortBy, isASC)
-                .stream()
-                .map(PlanDto.Get::new)
-                .toList();
+    public List<PlanDto.GetList> readPlanListRedis(Long lastId, int size, String sortBy, boolean isASC) {
+        return planRepository.getPlanList(lastId, size, sortBy, isASC);
     }
 
     // Plan 상세조회 (planId)

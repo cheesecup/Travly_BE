@@ -1,12 +1,12 @@
 package com.travelland.repository.plan.querydsl;
 
 
-import com.travelland.domain.plan.Plan;
+import com.travelland.dto.PlanDto;
 
 import java.util.List;
 
 public interface CustomPlanRepository {
 
-    List<Plan> getPlanList(int page, int size, String sort, boolean ASC);
+    List<PlanDto.GetList> getPlanList(Long lastId, int size, String sortBy, boolean isAsc);
 
 }
