@@ -1,10 +1,13 @@
 package com.travelland.repository.plan.querydsl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.plan.Plan;
+import com.travelland.dto.PlanDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -19,14 +22,27 @@ public class CustomPlanRepositoryImpl implements CustomPlanRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<Plan> getPlanList(int page, int size, String sort, boolean ASC) {
-        OrderSpecifier orderSpecifier = createOrderSpecifier(sort, ASC);
-
-        return jpaQueryFactory.selectFrom(plan)
-                .orderBy(orderSpecifier, plan.id.desc())
+    public List<PlanDto.GetList> getPlanList(Long lastId, int size, String sortBy, boolean isAsc) {
+        return jpaQueryFactory.select(
+                        Projections.constructor(
+                                PlanDto.GetList.class,
+                                plan.id,
+                                plan.title,
+                                plan.viewCount,
+                                plan.createdAt
+                        )
+                )
+                .from(plan)
+                .where(ltPlanId(lastId))
+                .orderBy(createOrderSpecifier(sortBy, isAsc))
                 .limit(size)
-                .offset((long) (page - 1) * size)
                 .fetch();
+    }
+    private BooleanExpression ltPlanId(Long planId) {
+        if (planId == null)
+            return null;
+
+        return plan.id.lt(planId);
     }
 
     private OrderSpecifier createOrderSpecifier(String sort, boolean ASC) {

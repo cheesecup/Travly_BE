@@ -112,19 +112,18 @@ public class PlanDto {
     }
 
     @Getter
+    @AllArgsConstructor
     public static class GetList {
         private final Long planId;
         private final String title;
         private final int viewCount;
         private final LocalDateTime createdAt;
-        private final String memberNickname;
 
         public GetList(Plan plan) {
             this.planId = plan.getId();
             this.title = plan.getTitle();
             this.viewCount = plan.getViewCount();
             this.createdAt = plan.getCreatedAt();
-            this.memberNickname = plan.getMember().getNickname();
         }
     }
 
