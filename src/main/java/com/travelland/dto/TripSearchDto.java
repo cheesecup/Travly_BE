@@ -2,11 +2,13 @@ package com.travelland.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.travelland.document.TripSearchDoc;
+import com.travelland.domain.trip.Trip;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -27,6 +29,25 @@ public class TripSearchDto {
 
         private GeoPoint location;
         private List<String> hashtag;
+
+        private String address;
+        private String placeName;
+        private String x;
+        private String y;
+
+        public CreateRequest(Trip trip, List<String> hashtag) {
+            this.tripId = trip.getId();
+            this.title = trip.getTitle();
+            this.cost = trip.getCost();
+            this.area = trip.getArea();
+            this.tripStartDate = trip.getTripStartDate();
+            this.tripEndDate = trip.getTripEndDate();
+            this.hashtag = hashtag;
+            this.address = trip.getAddress();
+            this.placeName = trip.getPlaceName();
+            this.x = String.valueOf(trip.getX().setScale(4, RoundingMode.HALF_UP));
+            this.y = String.valueOf(trip.getY().setScale(4, RoundingMode.HALF_UP));
+        }
     }
 
     @Getter

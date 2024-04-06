@@ -33,6 +33,18 @@
     "created_at": {
       "type": "date",
       "format": "yyyy-MM-dd'T'HH:mm:ss"
+    },
+    "address": {
+      "type": "text"
+    },
+    "place_name": {
+      "type": "keyword"
+    },
+    "x": {
+      "type": "scaled_float"
+    },
+    "y": {
+      "type": "scaled_float"
     }
   }
 }
