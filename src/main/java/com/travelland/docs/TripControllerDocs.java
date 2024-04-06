@@ -25,8 +25,8 @@ public interface TripControllerDocs {
     @Operation(summary = "여행정보 목록 조회", description = "등록되어 있는 여행정보 목록을 페이지별로 조회하는 API")
     ResponseEntity getTripList(@RequestParam(defaultValue = "1") int page,
                                @RequestParam(defaultValue = "20") int size,
-                               @RequestParam(required = false, defaultValue = "createdAt") String sort,
-                               @RequestParam(required = false, defaultValue = "false") boolean ASC);
+                               @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                               @RequestParam(required = false, defaultValue = "false") boolean isAsc);
 
     @Operation(summary = "여행정보 수정", description = "작성한 여행정보에 대한 내용을 수정하는 API")
     ResponseEntity updateTrip(@PathVariable Long tripId,
@@ -62,6 +62,6 @@ public interface TripControllerDocs {
     ResponseEntity searchTripByHashtag(@RequestParam String hashtag,
                                        @RequestParam(defaultValue = "1") int page,
                                        @RequestParam(defaultValue = "20") int size,
-                                       @RequestParam(required = false, defaultValue = "createdAt") String sort,
-                                       @RequestParam(required = false, defaultValue = "false") boolean ASC);
+                                       @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                       @RequestParam(required = false, defaultValue = "false") boolean isAsc);
 }

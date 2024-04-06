@@ -1,8 +1,8 @@
 package com.travelland.repository.trip;
 
 import com.travelland.domain.member.Member;
-import com.travelland.domain.Trip;
-import com.travelland.domain.TripLike;
+import com.travelland.domain.trip.Trip;
+import com.travelland.domain.trip.TripLike;
 import com.travelland.repository.trip.querydsl.CustomTripLikeRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 

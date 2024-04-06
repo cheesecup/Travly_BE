@@ -1,7 +1,7 @@
 package com.travelland.repository.trip;
 
-import com.travelland.domain.Trip;
-import com.travelland.domain.TripImage;
+import com.travelland.domain.trip.Trip;
+import com.travelland.domain.trip.TripImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

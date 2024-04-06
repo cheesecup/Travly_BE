@@ -1,7 +1,7 @@
 package com.travelland.repository.trip.querydsl;
 
 import com.travelland.domain.member.Member;
-import com.travelland.domain.Trip;
+import com.travelland.domain.trip.Trip;
 
 import java.util.List;
 

@@ -1,7 +1,8 @@
 package com.travelland.service.trip;
 
-import com.travelland.domain.*;
 import com.travelland.domain.member.Member;
+import com.travelland.domain.trip.Trip;
+import com.travelland.domain.trip.TripLike;
 import com.travelland.dto.TripDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;

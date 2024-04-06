@@ -1,15 +1,16 @@
 package com.travelland.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanLike;
 import com.travelland.domain.plan.PlanScrap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.List;
 
 public class PlanDto {
 
@@ -18,11 +19,16 @@ public class PlanDto {
     public static class Create {
         private String title;
         private String content;
+
         private int budget;
         private String area;
         private boolean isPublic;
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripStartDate;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripEndDate;
+
         private boolean isVotable;
     }
 
@@ -35,8 +41,7 @@ public class PlanDto {
     }
 
     @Getter
-    @ToString
-    public static class Read {
+    public static class Get {
         private final Long planId;
         private final String title;
         private final String content;
@@ -51,7 +56,7 @@ public class PlanDto {
         private final LocalDateTime createdAt;
         private final String memberNickname;
 
-        public Read(Plan plan) {
+        public Get(Plan plan) {
             this.planId = plan.getId();
             this.title = plan.getTitle();
             this.content = plan.getContent();
@@ -69,6 +74,60 @@ public class PlanDto {
     }
 
     @Getter
+    public static class AllInOne {
+        private final Long planId;
+        private final String title;
+        private final String content;
+        private final int budget;
+        private final String area;
+        private final boolean isPublic;
+        private final LocalDate tripStartDate;
+        private final LocalDate tripEndDate;
+        private final int viewCount;
+        private final int likeCount;
+        private final boolean isVotable;
+        private final LocalDateTime createdAt;
+        private final String memberNickname;
+        private List<DayPlanDto.AllInOne> dayPlans;
+
+        public AllInOne(Get plan) {
+            this.planId = plan.getPlanId();
+            this.title = plan.getTitle();
+            this.content = plan.getContent();
+            this.budget = plan.getBudget();
+            this.area = plan.getArea();
+            this.isPublic = plan.isPublic();
+            this.tripStartDate = plan.getTripStartDate();
+            this.tripEndDate = plan.getTripEndDate();
+            this.viewCount = plan.getViewCount();
+            this.likeCount = plan.getViewCount();
+            this.isVotable = plan.isVotable();
+            this.createdAt = plan.getCreatedAt();
+            this.memberNickname = plan.getMemberNickname();
+        }
+
+        public void updateDayPlan(List<DayPlanDto.AllInOne> dayPlans){
+            this.dayPlans = dayPlans;
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class GetList {
+        private final Long planId;
+        private final String title;
+        private final int viewCount;
+        private final LocalDateTime createdAt;
+
+        public GetList(Plan plan) {
+            this.planId = plan.getId();
+            this.title = plan.getTitle();
+            this.viewCount = plan.getViewCount();
+            this.createdAt = plan.getCreatedAt();
+        }
+    }
+
+    @Getter
     @AllArgsConstructor
     public static class Update {
         private String title;
@@ -76,8 +135,12 @@ public class PlanDto {
         private int budget;
         private String area;
         private boolean isPublic;
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripStartDate;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripEndDate;
+
         private boolean isVotable;
     }
 
