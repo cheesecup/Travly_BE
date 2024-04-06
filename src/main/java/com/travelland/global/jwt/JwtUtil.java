@@ -104,6 +104,8 @@ public class JwtUtil {
     // 쿠키 삭제
     public void deleteCookie(HttpServletResponse response){
         Cookie cookie = new Cookie(JwtUtil.AUTHORIZATION_HEADER, null); // 삭제할 쿠키에 대한 값을 null로 지정
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
         cookie.setMaxAge(0); // 유효시간을 0으로 설정해서 바로 만료시킨다.
         response.addCookie(cookie); // 응답에 추가해서 없어지도록 함
     }
