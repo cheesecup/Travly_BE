@@ -1,4 +1,4 @@
-package com.travelland.domain;
+package com.travelland.domain.trip;
 
 import com.travelland.domain.member.Member;
 import jakarta.persistence.*;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TripScrap {
+public class TripLike {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,17 +25,17 @@ public class TripScrap {
 
     private boolean isDeleted;
 
-    public TripScrap(Member member, Trip trip) {
+    public TripLike(Member member, Trip trip) {
         this.member = member;
         this.trip = trip;
         this.isDeleted = false;
     }
 
-    public void registerScrap() {
+    public void registerLike() {
         this.isDeleted = false;
     }
 
-    public void cancelScrap() {
+    public void cancelLike() {
         this.isDeleted = true;
     }
 }

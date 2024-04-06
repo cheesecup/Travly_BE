@@ -26,7 +26,7 @@ public class UnitPlanDto {
     }
 
     @Getter
-    public static class ReadResponse {
+    public static class GetResponse {
         private Long unitPlanId;
         private String title;
         private String content;
@@ -34,7 +34,7 @@ public class UnitPlanDto {
         private String location;
         private LocalDateTime time;
 
-        public ReadResponse(UnitPlan unitPlan) {
+        public GetResponse(UnitPlan unitPlan) {
             this.unitPlanId = unitPlan.getId();
             this.title = unitPlan.getTitle();
             this.content = unitPlan.getContent();

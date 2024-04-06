@@ -1,7 +1,7 @@
 package com.travelland.repository.trip.querydsl;
 
 import com.travelland.domain.member.Member;
-import com.travelland.domain.TripScrap;
+import com.travelland.domain.trip.TripScrap;
 
 import java.util.List;
 

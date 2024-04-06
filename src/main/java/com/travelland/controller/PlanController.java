@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -28,23 +29,52 @@ public class PlanController implements PlanControllerDocs {
     @PostMapping("/plans")
     public ResponseEntity<PlanDto.Id> createPlan(@RequestBody PlanDto.Create request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body( planService.createPlan(request, "a@email.com"));
+                .body( planService.createPlan(request, "test@test.com"));
     }
 
     // Plan 전체조회
     @GetMapping("/plans") // 예시: /plans?page=0&size=20&sortBy=createdAt&isAsc=false, page는 1부터
-    public ResponseEntity<Page<PlanDto.Read>> readPlanList(@RequestParam int page,
-                                                           @RequestParam int size,
-                                                           @RequestParam String sortBy,
-                                                           @RequestParam boolean isAsc) {
+    public ResponseEntity<Page<PlanDto.Get>> readPlanList(@RequestParam int page,
+                                                          @RequestParam int size,
+                                                          @RequestParam String sortBy,
+                                                          @RequestParam boolean isAsc) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(planService.readPlanList(page, size, sortBy, isAsc));
+//        return ResponseEntity.status(HttpStatus.OK)
+//                .body(planService.readPlanListRedis(lastId, size, sortBy, isAsc));
+
+    }
+
+    // Plan 전체조회 - Redis
+    @GetMapping("/plans/redis") // 예시: /plans?page=0&size=20&sortBy=createdAt&isAsc=false, page는 1부터
+    public ResponseEntity<List<PlanDto.GetList>> readPlanListRedis(@RequestParam Long lastId,
+                                                               @RequestParam int size,
+                                                               @RequestParam String sortBy,
+                                                               @RequestParam boolean isAsc) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(planService.readPlanListRedis(lastId, size, sortBy, isAsc));
     }
 
     // Plan 상세조회 (planId)
     @GetMapping("/plans/{planId}")
-    public ResponseEntity<PlanDto.Read> readPlanById(@PathVariable Long planId) {
+    public ResponseEntity<PlanDto.Get> readPlanById(@PathVariable Long planId) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanById(planId));
+    }
+
+    @GetMapping("/plans/allInOn/{planId}")
+    public ResponseEntity<PlanDto.AllInOne> readPlanByIdOne(@PathVariable Long planId) {
+        PlanDto.AllInOne allInOne = new PlanDto.AllInOne(planService.readPlanById(planId)) ;
+        List<DayPlanDto.GetResponse> dayPlans = planService.readDayPlan(planId);
+        List<DayPlanDto.AllInOne> ones = new ArrayList<>();
+
+        for(DayPlanDto.GetResponse dayPlan : dayPlans){
+            DayPlanDto.AllInOne newOne = new DayPlanDto.AllInOne(dayPlan);
+            newOne.update(planService.readUnitPlan(dayPlan.getDayPlanId()));
+            ones.add(newOne);
+        }
+        allInOne.updateDayPlan(ones);
+
+        return ResponseEntity.status(HttpStatus.OK).body(allInOne);
     }
 
 //    // Plan 유저별조회 (memberId)
@@ -68,17 +98,25 @@ public class PlanController implements PlanControllerDocs {
     }
 
 
+
+
+
+
+
+
+
+
     //여행정보 좋아요 등록
     @PostMapping("/plans/{planId}/like")
     public ResponseEntity<PlanDto.Result> createPlanLike(@PathVariable Long planId) {
-        planLikeService.registerPlanLike(planId, "test@email.com");
+        planLikeService.registerPlanLike(planId, "test@test.com");
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(true));
     }
 
     //여행정보 좋아요 취소
     @DeleteMapping("/plans/{planId}/like")
     public ResponseEntity<PlanDto.Result> deletePlanLike(@PathVariable Long planId) {
-        planLikeService.cancelPlanLike(planId, "test@email.com");
+        planLikeService.cancelPlanLike(planId, "test@test.com");
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(false));
     }
 
@@ -87,20 +125,20 @@ public class PlanController implements PlanControllerDocs {
     public ResponseEntity<List<PlanDto.Likes>> getPlanLikeList(@RequestParam(defaultValue = "1") int page,
                                                                @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(planLikeService.getPlanLikeList(page, size, "test@email.com"));
+                .body(planLikeService.getPlanLikeList(page, size, "test@test.com"));
     }
 
     //여행정보 스크랩 등록
     @PostMapping("/plans/{planId}/scrap")
     public ResponseEntity<PlanDto.Result> createPlanScrap(@PathVariable Long planId) {
-        planScrapService.registerPlanScrap(planId, "test@email.com");
+        planScrapService.registerPlanScrap(planId, "test@test.com");
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(true));
     }
 
     //여행정보 스크랩 취소
     @DeleteMapping("/plans/{planId}/scrap")
     public ResponseEntity<PlanDto.Result> deletePlanScrap(@PathVariable Long planId) {
-        planScrapService.cancelPlanScrap(planId, "test@email.com");
+        planScrapService.cancelPlanScrap(planId, "test@test.com");
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(false));
     }
 
@@ -109,8 +147,12 @@ public class PlanController implements PlanControllerDocs {
     public ResponseEntity<List<PlanDto.Scraps>> getPlanScrapList(@RequestParam(defaultValue = "1") int page,
                                                                  @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(planScrapService.getPlanScrapList(page, size, "test@email.com"));
+                .body(planScrapService.getPlanScrapList(page, size, "test@test.com"));
     }
+
+
+
+
 
 
 
@@ -118,32 +160,35 @@ public class PlanController implements PlanControllerDocs {
 
 
     // DayPlan 작성
-    @PostMapping("/plans/{planId}/dayplans")
+    @PostMapping("/dayPlans/{planId}")
     public ResponseEntity<DayPlanDto.CreateResponse> createDayPlan(@PathVariable Long planId, @RequestBody DayPlanDto.CreateRequest request) {
         DayPlanDto.CreateResponse response = planService.createDayPlan(planId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // DayPlan 상세조회 (dayPlanId)
-    @GetMapping("/plans/{planId}/dayplans/{dayPlanId}")
-    public ResponseEntity<DayPlanDto.ReadResponse> readDayPlan(@PathVariable Long planId, @PathVariable Long dayPlanId) {
-        DayPlanDto.ReadResponse response = planService.readDayPlan(planId, dayPlanId);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+    // DayPlan 조회 (planId)
+    @GetMapping("/dayPlans/{planId}")
+    public ResponseEntity<List<DayPlanDto.GetResponse>> readDayPlan(@PathVariable Long planId) {
+        List<DayPlanDto.GetResponse> responses = planService.readDayPlan(planId);
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
     // DayPlan 수정
-    @PutMapping("/plans/{planId}/dayplans/{dayPlanId}")
-    public ResponseEntity<DayPlanDto.UpdateResponse> updateDayPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @RequestBody DayPlanDto.UpdateRequest request) {
-        DayPlanDto.UpdateResponse response = planService.updateDayPlan(planId, dayPlanId, request);
+    @PutMapping("/dayPlans/{dayPlanId}")
+    public ResponseEntity<DayPlanDto.UpdateResponse> updateDayPlan(@PathVariable Long dayPlanId, @RequestBody DayPlanDto.UpdateRequest request) {
+        DayPlanDto.UpdateResponse response = planService.updateDayPlan(dayPlanId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // DayPlan 삭제
-    @DeleteMapping("/plans/{planId}/dayplans/{dayPlanId}")
-    public ResponseEntity<DayPlanDto.DeleteResponse> deleteDayPlan(@PathVariable Long planId, @PathVariable Long dayPlanId) {
-        DayPlanDto.DeleteResponse response = planService.deleteDayPlan(planId, dayPlanId);
+    @DeleteMapping("/dayPlans/{dayPlanId}")
+    public ResponseEntity<DayPlanDto.DeleteResponse> deleteDayPlan(@PathVariable Long dayPlanId) {
+        DayPlanDto.DeleteResponse response = planService.deleteDayPlan(dayPlanId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
+
+
 
 
 
@@ -152,36 +197,45 @@ public class PlanController implements PlanControllerDocs {
 
 
     // UnitPlan 작성
-    @PostMapping("/plans/{planId}/dayplans/{dayPlanId}/unitplans")
-    public ResponseEntity<UnitPlanDto.CreateResponse> createUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @RequestBody UnitPlanDto.CreateRequest request) {
-        UnitPlanDto.CreateResponse response = planService.createUnitPlan(planId, dayPlanId, request);
+    @PostMapping("/unitPlans/{dayPlanId}")
+    public ResponseEntity<UnitPlanDto.CreateResponse> createUnitPlan(@PathVariable Long dayPlanId, @RequestBody UnitPlanDto.CreateRequest request) {
+        UnitPlanDto.CreateResponse response = planService.createUnitPlan(dayPlanId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // UnitPlan 상세조회 (dayPlanId)
-    @GetMapping("/plans/{planId}/dayplans/{dayPlanId}/unitplans/{unitPlanId}")
-    public ResponseEntity<UnitPlanDto.ReadResponse> readUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @PathVariable Long unitPlanId) {
-        UnitPlanDto.ReadResponse response = planService.readUnitPlan(planId, dayPlanId, unitPlanId);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+    // UnitPlan 조회 (dayPlanId)
+    @GetMapping("/unitPlans/{dayPlanId}")
+    public ResponseEntity<List<UnitPlanDto.GetResponse>> readUnitPlan(@PathVariable Long dayPlanId) {
+        List<UnitPlanDto.GetResponse> responses = planService.readUnitPlan(dayPlanId);
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
     // UnitPlan 수정
-    @PutMapping("/plans/{planId}/dayplans/{dayPlanId}/unitplans/{unitPlanId}")
-    public ResponseEntity<UnitPlanDto.UpdateResponse> updateUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @PathVariable Long unitPlanId, @RequestBody UnitPlanDto.UpdateRequest request) {
-        UnitPlanDto.UpdateResponse response = planService.updateUnitPlan(planId, dayPlanId, unitPlanId, request);
+    @PutMapping("/unitPlans/{unitPlanId}")
+    public ResponseEntity<UnitPlanDto.UpdateResponse> updateUnitPlan(@PathVariable Long unitPlanId, @RequestBody UnitPlanDto.UpdateRequest request) {
+        UnitPlanDto.UpdateResponse response = planService.updateUnitPlan(unitPlanId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // UnitPlan 삭제
-    @DeleteMapping("/plans/{planId}/dayplans/{dayPlanId}/unitplans/{unitPlanId}")
-    public ResponseEntity<UnitPlanDto.DeleteResponse> deleteUnitPlan(@PathVariable Long planId, @PathVariable Long dayPlanId, @PathVariable Long unitPlanId) {
-        UnitPlanDto.DeleteResponse response = planService.deleteUnitPlan(planId, dayPlanId, unitPlanId);
+    @DeleteMapping("/unitPlans/{unitPlanId}")
+    public ResponseEntity<UnitPlanDto.DeleteResponse> deleteUnitPlan(@PathVariable Long unitPlanId) {
+        UnitPlanDto.DeleteResponse response = planService.deleteUnitPlan(unitPlanId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
 
-    /*
-    swagger
-    @AuthenticationPrincipal UserDetailsImpl userDetails
-     */
+
+
+
+
+
+
+
+
+    // HTTPS 수신상태가 양호함을 AWS와 통신하는 Controller
+    @GetMapping("/healthcheck")
+    public String healthcheck() {
+        return "OK";
+    }
 }
