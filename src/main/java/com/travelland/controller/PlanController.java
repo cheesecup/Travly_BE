@@ -34,25 +34,25 @@ public class PlanController implements PlanControllerDocs {
 
     // Plan 전체조회
     @GetMapping("/plans") // 예시: /plans?page=0&size=20&sortBy=createdAt&isAsc=false, page는 1부터
-    public ResponseEntity<List<PlanDto.Get>> readPlanList(@RequestParam int page,
+    public ResponseEntity<Page<PlanDto.Get>> readPlanList(@RequestParam int page,
                                                           @RequestParam int size,
                                                           @RequestParam String sortBy,
                                                           @RequestParam boolean isAsc) {
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(planService.readPlanList(page, size, sortBy, isAsc));
         return ResponseEntity.status(HttpStatus.OK)
-                .body(planService.readPlanListRedis(page, size, sortBy, isAsc));
+                .body(planService.readPlanList(page, size, sortBy, isAsc));
+//        return ResponseEntity.status(HttpStatus.OK)
+//                .body(planService.readPlanListRedis(lastId, size, sortBy, isAsc));
 
     }
 
     // Plan 전체조회 - Redis
     @GetMapping("/plans/redis") // 예시: /plans?page=0&size=20&sortBy=createdAt&isAsc=false, page는 1부터
-    public ResponseEntity<List<PlanDto.Get>> readPlanListRedis(@RequestParam int page,
+    public ResponseEntity<List<PlanDto.GetList>> readPlanListRedis(@RequestParam Long lastId,
                                                                @RequestParam int size,
                                                                @RequestParam String sortBy,
                                                                @RequestParam boolean isAsc) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(planService.readPlanListRedis(page, size, sortBy, isAsc));
+                .body(planService.readPlanListRedis(lastId, size, sortBy, isAsc));
     }
 
     // Plan 상세조회 (planId)
