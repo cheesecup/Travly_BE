@@ -1,6 +1,6 @@
 package com.travelland.domain.trip;
 
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.dto.TripDto;
 import com.travelland.dto.TripDto.Create;
 import jakarta.persistence.*;

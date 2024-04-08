@@ -1,6 +1,6 @@
-package com.travelland.repository;
+package com.travelland.repository.member;
 
-import com.travelland.domain.RefreshToken;
+import com.travelland.domain.member.RefreshToken;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;

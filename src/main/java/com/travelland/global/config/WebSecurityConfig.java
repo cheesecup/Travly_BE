@@ -3,8 +3,8 @@ package com.travelland.global.config;
 import com.travelland.global.jwt.JwtUtil;
 import com.travelland.global.security.JwtAuthorizationFilter;
 import com.travelland.global.security.UserDetailsServiceImpl;
-import com.travelland.repository.MemberRepository;
-import com.travelland.repository.RefreshTokenRepository;
+import com.travelland.repository.member.MemberRepository;
+import com.travelland.repository.member.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -57,7 +57,7 @@ public class WebSecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // 배포시 허용할 출처 추가하기
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080", "http://localhost:80", "http://localhost:3000", "https://localhost:443", "https://spparta.store"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowCredentials(true);
         configuration.addExposedHeader("Authorization");
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "TOKEN_ID", "X-Requested-With", "Content-Type", "Content-Length", "Cache-Control"));
