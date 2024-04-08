@@ -1,12 +1,12 @@
 package com.travelland.service.plan;
 
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanScrap;
 import com.travelland.dto.PlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.MemberRepository;
+import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.PlanRepository;
 import com.travelland.repository.plan.PlanScrapRepository;
 import lombok.RequiredArgsConstructor;

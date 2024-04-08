@@ -39,7 +39,7 @@ public class JwtUtil {
     private final long REFRESH_TOKEN_TIME = 60 * 60 * 24 * 3 * 1000L;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
-    @Value("${jwt.secret.key}") // Base64 Encode 한 SecretKey
+    @Value("${jwt.secret.key}")
     private String secretKey;
 
     private Key key;
@@ -56,11 +56,11 @@ public class JwtUtil {
 
         return BEARER_PREFIX +
                 Jwts.builder()
-                        .setSubject(username) // 사용자 식별자값(ID)
-                        .claim(AUTHORIZATION_KEY, role) // 사용자 권한
+                        .setSubject(username)
+                        .claim(AUTHORIZATION_KEY, role)
                         .setExpiration(new Date(date.getTime() + TOKEN_TIME)) // 만료 시간(1시간)
-                        .setIssuedAt(date) // 발급일
-                        .signWith(key, signatureAlgorithm) // 암호화 알고리즘
+                        .setIssuedAt(date)
+                        .signWith(key, signatureAlgorithm)
                         .compact();
     }
 
@@ -72,8 +72,8 @@ public class JwtUtil {
         return Jwts.builder()
                 .setClaims(claims)
                 .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME)) // 만료 시간(3일)
-                .setIssuedAt(date) // 발급일
-                .signWith(key, signatureAlgorithm) // 암호화 알고리즘
+                .setIssuedAt(date)
+                .signWith(key, signatureAlgorithm)
                 .compact();
     }
 
@@ -97,7 +97,16 @@ public class JwtUtil {
         Cookie cookie = new Cookie(JwtUtil.AUTHORIZATION_HEADER, token);
         cookie.setPath("/");
         cookie.setHttpOnly(true);
-        cookie.setMaxAge(60 * 60); // 1시간
+        cookie.setMaxAge(60 * 60 * 2); // 2시간
+        response.addCookie(cookie);
+    }
+
+    // 쿠키 삭제
+    public void deleteCookie(HttpServletResponse response){
+        Cookie cookie = new Cookie(JwtUtil.AUTHORIZATION_HEADER, null);
+        cookie.setPath("/");
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(0);
         response.addCookie(cookie);
     }
 

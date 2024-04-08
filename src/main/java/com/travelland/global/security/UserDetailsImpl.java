@@ -1,7 +1,7 @@
 package com.travelland.global.security;
 
 import com.travelland.constant.Role;
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
