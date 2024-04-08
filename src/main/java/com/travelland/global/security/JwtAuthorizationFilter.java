@@ -1,12 +1,12 @@
 package com.travelland.global.security;
 
-import com.travelland.domain.Member;
-import com.travelland.domain.RefreshToken;
+import com.travelland.domain.member.Member;
+import com.travelland.domain.member.RefreshToken;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.jwt.JwtUtil;
-import com.travelland.repository.MemberRepository;
-import com.travelland.repository.RefreshTokenRepository;
+import com.travelland.repository.member.MemberRepository;
+import com.travelland.repository.member.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
