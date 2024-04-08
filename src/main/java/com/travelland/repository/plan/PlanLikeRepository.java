@@ -1,6 +1,6 @@
 package com.travelland.repository.plan;
 
-import com.travelland.domain.*;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanLike;
 import com.travelland.repository.plan.querydsl.CustomPlanLikeRepository;

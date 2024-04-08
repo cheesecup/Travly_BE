@@ -1,10 +1,9 @@
-package com.travelland.domain;
+package com.travelland.domain.member;
 
 import com.travelland.constant.Gender;
 import com.travelland.constant.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -13,8 +12,7 @@ import java.time.LocalDate;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member {
-
+public class MemberHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,6 +23,9 @@ public class Member {
     private String email;
 
     private String password;
+
+    @Column(length = 8)
+    private String name;
 
     @Column(length = 15)
     private String nickname;
@@ -39,14 +40,14 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Builder
-    public Member(Long socialId, String email, String password, String nickname, Gender gender, LocalDate birth, Role role) {
-        this.socialId = socialId;
-        this.email = email;
-        this.password = password;
-        this.nickname = nickname;
-        this.gender = gender;
-        this.birth = birth;
-        this.role = role;
+    public MemberHistory(Member member) {
+        this.socialId = member.getSocialId();
+        this.email = member.getEmail();
+        this.password = member.getPassword();
+        this.name = member.getName();
+        this.nickname = member.getNickname();
+        this.gender = member.getGender();
+        this.birth = member.getBirth();
+        this.role = member.getRole();
     }
 }

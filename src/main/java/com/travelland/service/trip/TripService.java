@@ -1,14 +1,14 @@
 package com.travelland.service.trip;
 
 import com.travelland.document.TripSearchDoc;
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.domain.trip.TripHashtag;
 import com.travelland.dto.TripDto;
 import com.travelland.dto.TripSearchDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.MemberRepository;
+import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripHashtagRepository;
 import com.travelland.repository.trip.TripRepository;
 import com.travelland.repository.trip.TripSearchRepository;

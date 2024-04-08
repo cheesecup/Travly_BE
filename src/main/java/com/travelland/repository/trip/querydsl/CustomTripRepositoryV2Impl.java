@@ -3,7 +3,7 @@ package com.travelland.repository.trip.querydsl;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
