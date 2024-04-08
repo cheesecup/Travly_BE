@@ -19,6 +19,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -39,6 +40,7 @@ public class KakaoService {
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    @Transactional
     public boolean kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
         String accessToken = getToken(code);
 
@@ -130,6 +132,12 @@ public class KakaoService {
                 .get("birthday").asText();
         String gender = jsonNode.get("kakao_account")
                 .get("gender").asText();
+        String profileImage = jsonNode.get("kakao_account")
+                .get("profile")
+                .get("profile_image_url").asText();
+        String thumbnailProfileImage = jsonNode.get("kakao_account")
+                .get("profile")
+                .get("thumbnail_image_url").asText();
 
         log.info("카카오 사용자 정보: id=" + id + ", nickname=" + nickname + ", email=" + email + ", name=" + name + ", birthday=" + birth + ", gender=" + gender);
         return MemberDto.KakaoInfo.builder()
@@ -139,9 +147,12 @@ public class KakaoService {
                 .name(name)
                 .birth(birth)
                 .gender(gender)
+                .profileImage(profileImage)
+                .thumbnailProfileImage(thumbnailProfileImage)
                 .build();
     }
 
+    @Transactional
     public Member registerKakaoUserIfNeeded(MemberDto.KakaoInfo kakaoUserInfo) {
         // DB 에 중복된 Kakao Id 가 있는지 확인
         Long kakaoId = kakaoUserInfo.getId();
@@ -179,6 +190,10 @@ public class KakaoService {
 
             memberRepository.save(kakaoUser);
         }
+
+        if (kakaoUser.getProfileImage() == null || !kakaoUser.getProfileImage().equals(kakaoUserInfo.getProfileImage()))
+            kakaoUser.changeProfileImage(kakaoUserInfo.getProfileImage(), kakaoUserInfo.getThumbnailProfileImage());
+
         return kakaoUser;
     }
 }
