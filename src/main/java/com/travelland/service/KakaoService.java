@@ -41,7 +41,7 @@ public class KakaoService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
-    public boolean kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
+    public MemberDto.MemberInfo kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
         String accessToken = getToken(code);
 
         MemberDto.KakaoInfo kakaoUserInfo = getKakaoUserInfo(accessToken);
@@ -54,7 +54,7 @@ public class KakaoService {
         refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, createToken));
         jwtUtil.addJwtToCookie(createToken, response);
 
-        return true;
+        return new MemberDto.MemberInfo(member);
     }
 
     private String getToken(String code) throws JsonProcessingException {

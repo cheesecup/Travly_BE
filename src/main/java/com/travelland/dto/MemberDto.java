@@ -1,8 +1,11 @@
 package com.travelland.dto;
 
+import com.travelland.domain.member.Member;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.time.LocalDate;
 
 public class MemberDto {
 
@@ -45,5 +48,26 @@ public class MemberDto {
     @Getter
     public static class ChangeNicknameRequest {
         private String nickname;
+    }
+
+    @Getter
+    public static class MemberInfo {
+        private String nickname;
+        private String email;
+        private String name;
+        private LocalDate birth;
+        private String gender;
+        private String profileImage;
+        private String thumbnailProfileImage;
+
+        public MemberInfo(Member member) {
+            this.nickname = member.getNickname();
+            this.email = member.getEmail();
+            this.name = member.getName();
+            this.birth = member.getBirth();
+            this.gender = member.getGender().toString();
+            this.profileImage = member.getProfileImage();
+            this.thumbnailProfileImage = member.getThumbnailProfileImage();
+        }
     }
 }
