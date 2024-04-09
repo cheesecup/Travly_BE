@@ -31,7 +31,7 @@ public class Plan {
 
     private String area;
 
-    private boolean isPublic;
+    private Boolean isPublic;
 
     private LocalDate tripStartDate;
 
@@ -41,7 +41,7 @@ public class Plan {
 
     private int likeCount;
 
-    private boolean isVotable;
+    private Boolean isVotable;
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
@@ -55,32 +55,66 @@ public class Plan {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    public Plan(PlanDto.Create requestDto, Member member) {
-        this.title = requestDto.getTitle();
-        this.content = requestDto.getContent();
-        this.budget = requestDto.getBudget();
-        this.area = requestDto.getArea();
-        this.isPublic = requestDto.isPublic();
-        this.tripStartDate = requestDto.getTripStartDate();
-        this.tripEndDate = requestDto.getTripEndDate();
+    private Boolean isDeleted = false;
+
+    public Plan(PlanDto.Create request, Member member) {
+        this.title = request.getTitle();
+        this.content = request.getContent();
+        this.budget = request.getBudget();
+        this.area = request.getArea();
+        this.isPublic = request.getIsPublic();
+        this.tripStartDate = request.getTripStartDate();
+        this.tripEndDate = request.getTripEndDate();
         this.viewCount = 0;
         this.likeCount = 0;
-        this.isVotable = requestDto.isVotable();
+        this.isVotable = request.getIsVotable();
+        this.member = member;
+    }
+
+    public Plan(PlanDto.CreateAllInOne request, Member member) {
+        this.title = request.getTitle();
+        this.content = request.getContent();
+        this.budget = request.getBudget();
+        this.area = request.getArea();
+        this.isPublic = request.getIsPublic();
+        this.tripStartDate = request.getTripStartDate();
+        this.tripEndDate = request.getTripEndDate();
+        this.viewCount = 0;
+        this.likeCount = 0;
+        this.isVotable = request.getIsVotable();
         this.member = member;
     }
 
     public Plan update(PlanDto.Update request) {
         this.title = request.getTitle();
         this.content = request.getContent();
-        this.budget = request.getBudget();;
+        this.budget = request.getBudget();
         this.area = request.getArea();
-        this.isPublic = request.isPublic();;
+        this.isPublic = request.getIsPublic();
         this.tripStartDate = request.getTripStartDate();
         this.tripEndDate = request.getTripEndDate();
-        this.isVotable = request.isVotable();
+        this.isVotable = request.getIsVotable();
 
         return this;
     }
+
+    public Plan update(PlanDto.UpdateAllInOne request) {
+        this.title = request.getTitle();
+        this.content = request.getContent();
+        this.budget = request.getBudget();
+        this.area = request.getArea();
+        this.isPublic = request.getIsPublic();
+        this.tripStartDate = request.getTripStartDate();
+        this.tripEndDate = request.getTripEndDate();
+        this.isVotable = request.getIsVotable();
+
+        return this;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
+    }
+
     public void increaseViewCount() {
         this.viewCount++;
     }

@@ -20,10 +20,10 @@ public class PlanScrap {
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "trip_id")
+    @JoinColumn(name = "plan_id")
     private Plan plan;
 
-    private boolean isDeleted;
+    private Boolean isDeleted;
 
     public PlanScrap(Member member, Plan plan) {
         this.member = member;
