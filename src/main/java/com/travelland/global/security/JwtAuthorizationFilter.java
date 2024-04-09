@@ -4,7 +4,6 @@ import com.travelland.domain.member.Member;
 import com.travelland.domain.member.RefreshToken;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.global.jwt.JwtUtil;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.member.RefreshTokenRepository;
 import io.jsonwebtoken.Claims;

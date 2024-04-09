@@ -1,11 +1,11 @@
-package com.travelland.service;
+package com.travelland.service.member;
 
 import com.travelland.domain.member.Member;
 import com.travelland.domain.member.RefreshToken;
-import com.travelland.dto.MemberDto;
+import com.travelland.dto.member.MemberDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.global.jwt.JwtUtil;
+import com.travelland.global.security.JwtUtil;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.member.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;

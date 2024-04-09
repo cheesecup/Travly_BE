@@ -1,4 +1,4 @@
-package com.travelland.service;
+package com.travelland.service.member;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,8 +7,8 @@ import com.travelland.constant.Gender;
 import com.travelland.constant.Role;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.member.RefreshToken;
-import com.travelland.dto.MemberDto;
-import com.travelland.global.jwt.JwtUtil;
+import com.travelland.dto.member.MemberDto;
+import com.travelland.global.security.JwtUtil;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.member.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletResponse;

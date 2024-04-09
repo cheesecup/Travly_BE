@@ -1,6 +1,6 @@
 package com.travelland.domain.trip;
 
-import com.travelland.dto.TripImageDto.CreateRequest;
+import com.travelland.dto.trip.TripImageDto.CreateRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

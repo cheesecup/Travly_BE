@@ -1,6 +1,6 @@
-package com.travelland.docs;
+package com.travelland.swagger;
 
-import com.travelland.dto.TripDto;
+import com.travelland.dto.trip.TripDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;

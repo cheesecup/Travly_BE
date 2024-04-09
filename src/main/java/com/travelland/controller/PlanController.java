@@ -1,10 +1,10 @@
 package com.travelland.controller;
 
-import com.travelland.docs.PlanControllerDocs;
-import com.travelland.dto.DayPlanDto;
-import com.travelland.dto.PlanCommentDto;
-import com.travelland.dto.PlanDto;
-import com.travelland.dto.UnitPlanDto;
+import com.travelland.swagger.PlanControllerDocs;
+import com.travelland.dto.plan.DayPlanDto;
+import com.travelland.dto.plan.PlanCommentDto;
+import com.travelland.dto.plan.PlanDto;
+import com.travelland.dto.plan.UnitPlanDto;
 import com.travelland.service.plan.PlanLikeService;
 import com.travelland.service.plan.PlanScrapService;
 import com.travelland.service.plan.PlanService;

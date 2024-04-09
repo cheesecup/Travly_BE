@@ -1,4 +1,4 @@
-package com.travelland.dto;
+package com.travelland.dto.member;
 
 import com.travelland.domain.member.Member;
 import lombok.AllArgsConstructor;
