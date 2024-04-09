@@ -33,7 +33,7 @@ public class CustomPlanRepositoryImpl implements CustomPlanRepository {
                         )
                 )
                 .from(plan)
-                .where(ltPlanId(lastId))
+                .where(ltPlanId(lastId), plan.isDeleted.eq(false))
                 .orderBy(createOrderSpecifier(sortBy, isAsc))
                 .limit(size)
                 .fetch();
@@ -45,10 +45,10 @@ public class CustomPlanRepositoryImpl implements CustomPlanRepository {
         return plan.id.lt(planId);
     }
 
-    private OrderSpecifier createOrderSpecifier(String sort, boolean ASC) {
-        Order order = (ASC) ? Order.ASC : Order.DESC;
+    private OrderSpecifier createOrderSpecifier(String sortBy, boolean isAsc) {
+        Order order = (isAsc) ? Order.ASC : Order.DESC;
 
-        return switch (sort) {
+        return switch (sortBy) {
             case "viewCount" -> new OrderSpecifier<>(order, plan.viewCount);
             case "title" -> new OrderSpecifier<>(order, plan.title);
             default -> new OrderSpecifier<>(order, plan.createdAt);
