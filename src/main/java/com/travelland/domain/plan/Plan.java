@@ -1,7 +1,7 @@
 package com.travelland.domain.plan;
 
 import com.travelland.domain.member.Member;
-import com.travelland.dto.PlanDto;
+import com.travelland.dto.plan.PlanDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package com.travelland.dto;
+package com.travelland.dto.trip;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
