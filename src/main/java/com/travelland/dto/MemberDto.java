@@ -14,15 +14,19 @@ public class MemberDto {
         private String name;
         private String birth;
         private String gender;
+        private String profileImage;
+        private String thumbnailProfileImage;
 
         @Builder
-        public KakaoInfo(Long id, String nickname, String email, String name, String birth, String gender) {
+        public KakaoInfo(Long id, String nickname, String email, String name, String birth, String gender, String profileImage, String thumbnailProfileImage) {
             this.id = id;
             this.nickname = nickname;
             this.email = email;
             this.name = name;
             this.birth = birth;
             this.gender = gender;
+            this.profileImage = profileImage;
+            this.thumbnailProfileImage = thumbnailProfileImage;
         }
     }
 
