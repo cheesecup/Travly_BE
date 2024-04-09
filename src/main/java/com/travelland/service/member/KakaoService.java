@@ -1,4 +1,4 @@
-package com.travelland.service;
+package com.travelland.service.member;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -7,8 +7,8 @@ import com.travelland.constant.Gender;
 import com.travelland.constant.Role;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.member.RefreshToken;
-import com.travelland.dto.MemberDto;
-import com.travelland.global.jwt.JwtUtil;
+import com.travelland.dto.member.MemberDto;
+import com.travelland.global.security.JwtUtil;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.member.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,6 +19,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -39,7 +40,8 @@ public class KakaoService {
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public boolean kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
+    @Transactional
+    public MemberDto.MemberInfo kakaoLogin(String code, HttpServletResponse response) throws JsonProcessingException {
         String accessToken = getToken(code);
 
         MemberDto.KakaoInfo kakaoUserInfo = getKakaoUserInfo(accessToken);
@@ -52,7 +54,7 @@ public class KakaoService {
         refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, createToken));
         jwtUtil.addJwtToCookie(createToken, response);
 
-        return true;
+        return new MemberDto.MemberInfo(member);
     }
 
     private String getToken(String code) throws JsonProcessingException {
@@ -72,7 +74,7 @@ public class KakaoService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", "aa4b6a242e99488886c885baee1cd1ab");
-        body.add("redirect_uri", "http://localhost:3000/login/oauth"); //body.add("redirect_uri", "https://spparta.store/users/login/kakao");
+        body.add("redirect_uri", "http://localhost:3000/login/oauth");
         body.add("code", code);
 
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity
@@ -130,6 +132,12 @@ public class KakaoService {
                 .get("birthday").asText();
         String gender = jsonNode.get("kakao_account")
                 .get("gender").asText();
+        String profileImage = jsonNode.get("kakao_account")
+                .get("profile")
+                .get("profile_image_url").asText();
+        String thumbnailProfileImage = jsonNode.get("kakao_account")
+                .get("profile")
+                .get("thumbnail_image_url").asText();
 
         log.info("카카오 사용자 정보: id=" + id + ", nickname=" + nickname + ", email=" + email + ", name=" + name + ", birthday=" + birth + ", gender=" + gender);
         return MemberDto.KakaoInfo.builder()
@@ -139,9 +147,12 @@ public class KakaoService {
                 .name(name)
                 .birth(birth)
                 .gender(gender)
+                .profileImage(profileImage)
+                .thumbnailProfileImage(thumbnailProfileImage)
                 .build();
     }
 
+    @Transactional
     public Member registerKakaoUserIfNeeded(MemberDto.KakaoInfo kakaoUserInfo) {
         // DB 에 중복된 Kakao Id 가 있는지 확인
         Long kakaoId = kakaoUserInfo.getId();
@@ -179,6 +190,10 @@ public class KakaoService {
 
             memberRepository.save(kakaoUser);
         }
+
+        if (kakaoUser.getProfileImage() == null || !kakaoUser.getProfileImage().equals(kakaoUserInfo.getProfileImage()))
+            kakaoUser.changeProfileImage(kakaoUserInfo.getProfileImage(), kakaoUserInfo.getThumbnailProfileImage());
+
         return kakaoUser;
     }
 }

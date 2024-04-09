@@ -1,8 +1,8 @@
 package com.travelland.domain.trip;
 
 import com.travelland.domain.member.Member;
-import com.travelland.dto.TripDto;
-import com.travelland.dto.TripDto.Create;
+import com.travelland.dto.trip.TripDto;
+import com.travelland.dto.trip.TripDto.Create;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -11,7 +11,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 

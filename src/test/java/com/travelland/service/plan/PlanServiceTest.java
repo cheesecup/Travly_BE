@@ -1,6 +1,6 @@
 //package com.travelland.service.plan;
 //
-//import com.travelland.dto.PlanDto;
+//import com.travelland.dto.plan.PlanDto;
 //import jakarta.transaction.Transactional;
 //import net.datafaker.Faker;
 //import org.junit.jupiter.api.Test;

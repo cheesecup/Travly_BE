@@ -1,13 +1,12 @@
 package com.travelland.controller;
 
-import com.travelland.docs.TripControllerDocs;
-import com.travelland.dto.TripDto;
+import com.travelland.swagger.TripControllerDocs;
+import com.travelland.dto.trip.TripDto;
 import com.travelland.service.trip.TripLikeService;
 import com.travelland.service.trip.TripScrapService;
 import com.travelland.service.trip.TripSearchService;
 import com.travelland.service.trip.TripService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
