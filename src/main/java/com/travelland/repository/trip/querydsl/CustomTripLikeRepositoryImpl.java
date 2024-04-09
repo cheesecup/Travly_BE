@@ -2,6 +2,7 @@ package com.travelland.repository.trip.querydsl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.member.Member;
+import com.travelland.domain.trip.Trip;
 import com.travelland.domain.trip.TripLike;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -19,10 +20,18 @@ public class CustomTripLikeRepositoryImpl implements CustomTripLikeRepository {
     @Override
     public List<TripLike> getLikeListByMember(Member member, int size, int page) {
         return jpaQueryFactory.selectFrom(tripLike)
-                .where(tripLike.member.eq(member), tripLike.isDeleted.eq(false))
+                .where(tripLike.member.eq(member), tripLike.isDeleted.eq(false), tripLike.trip.isDeleted.eq(false))
                 .orderBy(tripLike.trip.createdAt.desc())
                 .limit(size)
                 .offset((long) (page - 1) * size)
                 .fetch();
+    }
+
+    @Override
+    public long deleteByTrip(Trip trip) {
+        return jpaQueryFactory.update(tripLike)
+                .set(tripLike.isDeleted, true)
+                .where(tripLike.trip.eq(trip))
+                .execute();
     }
 }

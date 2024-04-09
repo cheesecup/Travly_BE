@@ -11,6 +11,4 @@ public interface TripHashtagRepository extends JpaRepository<TripHashtag, Long> 
     List<TripHashtag> findAllByTrip(Trip trip);
 
     void deleteByTrip(Trip trip);
-
-    long countByTitle(String title);
 }
