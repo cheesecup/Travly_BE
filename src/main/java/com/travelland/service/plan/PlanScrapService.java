@@ -23,6 +23,7 @@ public class PlanScrapService {
     private final MemberRepository memberRepository;
     private final PlanRepository planRepository;
 
+    // Plan 스크랩 등록
     @Transactional
     public void registerPlanScrap(Long planId, String email) {
         Member member = getMember(email);
@@ -34,22 +35,25 @@ public class PlanScrapService {
                         () -> planScrapRepository.save(new PlanScrap(member, plan)));
     }
 
+    // Plan 스크랩 취소
     @Transactional
     public void cancelPlanScrap(Long planId, String email) {
          planScrapRepository.findByMemberAndPlan(getMember(email), getPlan(planId))
                 .orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND)).cancelScrap();
     }
 
+    // Plan 스크랩 목록조회
     @Transactional(readOnly = true)
     public List<PlanDto.Scraps> getPlanScrapList(int page, int size, String email) {
         return planScrapRepository.getScrapListByMember(getMember(email),size, page)
                 .stream().map(PlanDto.Scraps::new).toList();
     }
 
-    @Transactional
-    public void deleteTripScrap(Plan plan) {
-        planScrapRepository.deleteAllByPlan(plan);
-    }
+    // Plan 스크랩 데이터삭제
+//    @Transactional
+//    public void deletePlanScrap(Plan plan) {
+//        planScrapRepository.deleteAllByPlan(plan);
+//    }
 
     private Member getMember(String email) {
         return memberRepository.findByEmail(email)

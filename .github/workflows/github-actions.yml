@@ -26,7 +26,7 @@ jobs: # 실제 어떤 작업을 실행할지에 대한 명시
       - name: copy jar to server
         uses: appleboy/scp-action@master
         with:
-          host: 13.125.236.200 # EC2 주소
+          host: 13.125.206.3 # EC2 주소
           username: ubuntu     # EC2 OS
           key: ${{ secrets.SSH_KEY }}
           port: 22
@@ -37,7 +37,7 @@ jobs: # 실제 어떤 작업을 실행할지에 대한 명시
       - name: SSH Commands
         uses: appleboy/ssh-action@v0.1.6
         with:
-          host: 13.125.236.200 # EC2 주소
+          host: 13.125.206.3 # EC2 주소
           username: ubuntu     # EC2 OS
           key: ${{ secrets.SSH_KEY }}
           port: 22 # SSH접속은 22포트를 사용
