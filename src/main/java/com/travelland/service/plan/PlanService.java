@@ -1,7 +1,7 @@
 package com.travelland.service.plan;
 
 import com.travelland.domain.plan.DayPlan;
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.UnitPlan;
 import com.travelland.dto.DayPlanDto;
@@ -10,7 +10,7 @@ import com.travelland.dto.UnitPlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.plan.DayPlanRepository;
-import com.travelland.repository.MemberRepository;
+import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.PlanRepository;
 import com.travelland.repository.plan.UnitPlanRepository;
 import lombok.RequiredArgsConstructor;

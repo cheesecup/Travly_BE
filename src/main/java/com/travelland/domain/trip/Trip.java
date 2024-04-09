@@ -1,6 +1,6 @@
 package com.travelland.domain.trip;
 
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.dto.TripDto;
 import com.travelland.dto.TripDto.Create;
 import jakarta.persistence.*;
@@ -34,7 +34,9 @@ public class Trip {
     private int cost;
 
     @Column(length = 30)
-    private String area;
+    private String area; //여행 지역
+
+    private String address; //도로명 주소
 
     private boolean isPublic;
 
@@ -45,16 +47,6 @@ public class Trip {
     private int viewCount;
 
     private int likeCount;
-
-    private String address;
-
-    private String placeName;
-
-    @Column(precision = 18, scale = 10)
-    private BigDecimal x;
-
-    @Column(precision = 18, scale = 10)
-    private BigDecimal y;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -67,21 +59,20 @@ public class Trip {
     @LastModifiedDate
     private LocalDateTime modifiedAt;
 
+    private boolean isDeleted;
+
     public Trip(Create requestDto, Member member) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.cost = requestDto.getCost();
-        this.area = splitAddress(requestDto.getAddress());
         this.address = requestDto.getAddress();
-        this.placeName = requestDto.getPlaceName();
-        this.x = new BigDecimal(requestDto.getX());
-        this.y = new BigDecimal(requestDto.getY());
-        this.isPublic = requestDto.isPublic();
+        this.isPublic = requestDto.getIsPublic();
         this.tripStartDate = requestDto.getTripStartDate();
         this.tripEndDate = requestDto.getTripEndDate();
         this.viewCount = 0;
         this.likeCount = 0;
         this.member = member;
+        this.isDeleted = false;
     }
 
     public void update(TripDto.Update requestDto) {
@@ -89,9 +80,13 @@ public class Trip {
         this.content = requestDto.getContent();
         this.cost = requestDto.getCost();
         this.area = requestDto.getArea();
-        this.isPublic = requestDto.isPublic();
+        this.isPublic = requestDto.getIsPublic();
         this.tripStartDate = requestDto.getTripStartDate();
         this.tripEndDate = requestDto.getTripEndDate();
+    }
+
+    public void delete() {
+        this.isDeleted = true;
     }
 
     public void increaseViewCount() {
@@ -106,9 +101,9 @@ public class Trip {
         this.likeCount--;
     }
 
-    private String splitAddress(String address) {
-        if (address.isEmpty()) return "";
+    private String splitArea(String area) {
+        if (area.isEmpty()) return "";
 
-        return address.split(" ")[0];
+        return area.split(" ")[0];
     }
 }

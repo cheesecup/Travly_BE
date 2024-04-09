@@ -22,10 +22,16 @@ public class TripImageService {
 
     // 이미지 정보 저장
     @Transactional
-    public void createTripImage(List<MultipartFile> imageList, Trip trip) {
-        imageList.stream()
-                .map(image -> new TripImage(s3FileService.s3Upload(image), imageList.indexOf(image) == 0, trip))
-                .forEach(tripImageRepository::save);
+    public String createTripImage(MultipartFile thumbnail, List<MultipartFile> imageList, Trip trip) {
+        TripImage tripImage = tripImageRepository.save(new TripImage(s3FileService.s3Upload(thumbnail), true, trip));// 썸네일 이미지 저장
+
+        if (imageList != null) {
+            imageList.stream()
+                    .map(image -> new TripImage(s3FileService.s3Upload(image), false, trip))
+                    .forEach(tripImageRepository::save);
+        }
+
+        return tripImage.getImageUrl();
     }
 
     // 선택한 게시글 이미지 URL 리스트 가져오기

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Tag(name = "여행 정보 API", description = "여행정보 관련 API 명세서입니다.")
@@ -16,7 +17,8 @@ public interface TripControllerDocs {
 
     @Operation(summary = "여행정보 등록", description = "작성한 여행정보를 등록하는 API")
     ResponseEntity createTrip(@RequestPart TripDto.Create requestDto,
-                              @RequestPart List<MultipartFile> imageList,
+                              @RequestPart MultipartFile thumbnail,
+                              @RequestPart(required = false) List<MultipartFile> imageList,
                               @RequestParam String email);
 
     @Operation(summary = "여행정보 상세조회", description = "선택한 여행정보에 대한 내용을 조회하는 API")
@@ -31,7 +33,8 @@ public interface TripControllerDocs {
     @Operation(summary = "여행정보 수정", description = "작성한 여행정보에 대한 내용을 수정하는 API")
     ResponseEntity updateTrip(@PathVariable Long tripId,
                               @RequestPart TripDto.Update requestDto,
-                              @RequestPart List<MultipartFile> imageList,
+                              @RequestPart MultipartFile thumbnail,
+                              @RequestPart(required = false) List<MultipartFile> imageList,
                               @RequestParam String email);
 
     @Operation(summary = "여행정보 삭제", description = "등록한 여행정보를 삭제하는 API")
@@ -64,4 +67,7 @@ public interface TripControllerDocs {
                                        @RequestParam(defaultValue = "20") int size,
                                        @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                                        @RequestParam(required = false, defaultValue = "false") boolean isAsc);
+
+    @Operation(summary = "인기 해쉬태그 TOP 5", description = "일일 검색량 상위 5개를 보여주는 API")
+    ResponseEntity<List<TripDto.Rank>> getRecentTop5Keywords() throws IOException;
 }

@@ -1,12 +1,13 @@
 package com.travelland.service.trip;
 
-import com.travelland.domain.Member;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
+import com.travelland.domain.trip.TripLike;
 import com.travelland.domain.trip.TripScrap;
 import com.travelland.dto.TripDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.MemberRepository;
+import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripRepository;
 import com.travelland.repository.trip.TripScrapRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +59,14 @@ public class TripScrapService {
     //스크랩 데이터 삭제
     @Transactional
     public void deleteTripScrap(Trip trip) {
-        tripScrapRepository.deleteAllByTrip(trip);
+        tripScrapRepository.deleteByTrip(trip);
+    }
+
+    public boolean statusTripScrap(String email, Long tripId) {
+        Member member = getMember(email);
+        Trip trip = getTrip(tripId);
+
+        return tripScrapRepository.existsByMemberAndTripAndIsDeleted(member, trip, false);
     }
 
     private Member getMember(String email) {
