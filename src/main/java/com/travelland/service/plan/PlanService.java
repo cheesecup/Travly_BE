@@ -108,13 +108,12 @@ public class PlanService {
 
             // unitPlanList의 각 요소인 unitPlan의 address를 StringBuilder에 추가
             for (UnitPlan unitPlan : unitPlanList) {
-                path.append(unitPlan.getAddress());
-
                 // 만약 현재 unitPlan이 마지막 요소가 아니라면 " >> "를 추가
-                if (isFirst) {
-                    isFirst = false;
+                if (!isFirst) {
+                    path.append(" >> ");
                 }
-                path.append(" >> ");
+                isFirst = false;
+                path.append(unitPlan.getAddress());
             }
 
             // path 변수에 저장된 값을 가져옴
