@@ -23,7 +23,7 @@ public class PlanLike {
     @JoinColumn(name = "plan_id")
     private Plan plan;
 
-    private boolean isDeleted;
+    private Boolean isDeleted;
 
     public PlanLike(Member member, Plan plan) {
         this.member = member;

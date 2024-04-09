@@ -23,7 +23,7 @@ public class PlanLikeService {
     private final MemberRepository memberRepository;
     private final PlanRepository planRepository;
 
-    //여행정보 좋아요 등록
+    // Plan 좋아요 등록
     @Transactional
     public void registerPlanLike(Long planId, String email) {
         Member member = getMember(email);
@@ -40,7 +40,7 @@ public class PlanLikeService {
                 );
     }
 
-    //여행정보 좋아요 취소
+    // Plan 좋아요 취소
     @Transactional
     public void cancelPlanLike(Long planId, String email) {
         Plan plan = getPlan(planId);
@@ -52,7 +52,7 @@ public class PlanLikeService {
         plan.decreaseLikeCount();
     }
 
-    //여행정보 좋아요 목록 조회
+    // Plan 좋아요 목록조회
     @Transactional(readOnly = true)
     public List<PlanDto.Likes> getPlanLikeList(int page, int size, String email) {
         return planLikeRepository
@@ -60,11 +60,11 @@ public class PlanLikeService {
                 .stream().map(PlanDto.Likes::new).toList();
     }
     
-    //좋아요 데이터 삭제
-    @Transactional
-    public void deletePlanLike(Plan plan) {
-        planLikeRepository.deleteAllByPlan(plan);
-    }
+//    // Plan 좋아요 데이터삭제
+//    @Transactional
+//    public void deletePlanLike(Plan plan) {
+//        planLikeRepository.deleteAllByPlan(plan);
+//    }
 
     private Member getMember(String email) {
         return memberRepository.findByEmail(email)

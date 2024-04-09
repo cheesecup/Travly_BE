@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,7 +24,11 @@ public class UnitPlan {
 
     private int budget;
 
-    private String location;
+    private String address;
+
+    private BigDecimal x;
+
+    private BigDecimal y;
 
     private LocalDateTime time;
 
@@ -31,22 +36,53 @@ public class UnitPlan {
     @JoinColumn(name = "day_plan_id")
     private DayPlan dayPlan;
 
-    public UnitPlan(UnitPlanDto.CreateRequest request, DayPlan dayPlan) {
+    private Boolean isDeleted = false;
+
+    public UnitPlan(UnitPlanDto.Create request, DayPlan dayPlan) {
         this.title = request.getTitle();
         this.content = request.getContent();
         this.budget = request.getBudget();
-        this.location = request.getLocation();
-        this.time = request.getTime();
+        this.address = request.getAddress();
+        this.x = request.getX();
+        this.y = request.getY();
         this.dayPlan = dayPlan;
     }
 
-    public UnitPlan update(UnitPlanDto.UpdateRequest request) {
+    public UnitPlan(UnitPlanDto.CreateAllInOne request, DayPlan dayPlan) {
         this.title = request.getTitle();
         this.content = request.getContent();
         this.budget = request.getBudget();
-        this.location = request.getLocation();
+        this.address = request.getAddress();
+        this.x = request.getX();
+        this.y = request.getY();
+        this.dayPlan = dayPlan;
+    }
+
+    public UnitPlan update(UnitPlanDto.Update request) {
+        this.title = request.getTitle();
+        this.content = request.getContent();
+        this.budget = request.getBudget();
+        this.address = request.getAddress();
+        this.x = request.getX();
+        this.y = request.getY();
         this.time = request.getTime();
 
         return this;
+    }
+
+    public UnitPlan update(UnitPlanDto.UpdateAllInOne request) {
+        this.title = request.getTitle();
+        this.content = request.getContent();
+        this.budget = request.getBudget();
+        this.address = request.getAddress();
+        this.x = request.getX();
+        this.y = request.getY();
+        this.time = request.getTime();
+
+        return this;
+    }
+
+    public void delete() {
+        this.isDeleted = true;
     }
 }
