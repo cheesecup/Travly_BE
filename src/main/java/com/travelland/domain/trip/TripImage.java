@@ -1,6 +1,5 @@
 package com.travelland.domain.trip;
 
-import com.travelland.domain.trip.Trip;
 import com.travelland.dto.TripImageDto.CreateRequest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -26,10 +25,13 @@ public class TripImage {
     @JoinColumn(name = "trip_id")
     private Trip trip;
 
+    private boolean isDeleted;
+
     public TripImage(CreateRequest requestDto, boolean isThumbnail, Trip trip) {
         this.imageUrl = requestDto.getImageUrl();
         this.storeImageName = requestDto.getStoreImageName();
         this.isThumbnail = isThumbnail;
         this.trip = trip;
+        this.isDeleted = false;
     }
 }

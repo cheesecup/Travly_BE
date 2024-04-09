@@ -5,11 +5,12 @@ import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanLike;
 import com.travelland.domain.plan.PlanScrap;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.util.List;
 
 public class PlanDto {
@@ -19,17 +20,29 @@ public class PlanDto {
     public static class Create {
         private String title;
         private String content;
-
         private int budget;
         private String area;
-        private boolean isPublic;
-
+        private Boolean isPublic = false;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripStartDate;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripEndDate;
+        private Boolean isVotable = false;
+    }
 
-        private boolean isVotable;
+    @Getter
+    public static class CreateAllInOne {
+        private String title;
+        private String content;
+        private int budget;
+        private String area;
+        private Boolean isPublic;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+        private LocalDate tripStartDate;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+        private LocalDate tripEndDate;
+        private Boolean isVotable;
+        private List<DayPlanDto.CreateAllInOne> dayPlans;
     }
 
     @Getter
@@ -47,12 +60,12 @@ public class PlanDto {
         private final String content;
         private final int budget;
         private final String area;
-        private final boolean isPublic;
+        private final Boolean isPublic;
         private final LocalDate tripStartDate;
         private final LocalDate tripEndDate;
         private final int viewCount;
         private final int likeCount;
-        private final boolean isVotable;
+        private final Boolean isVotable;
         private final LocalDateTime createdAt;
         private final String memberNickname;
 
@@ -62,52 +75,14 @@ public class PlanDto {
             this.content = plan.getContent();
             this.budget = plan.getBudget();
             this.area = plan.getArea();
-            this.isPublic = plan.isPublic();
+            this.isPublic = plan.getIsPublic();
             this.tripStartDate = plan.getTripStartDate();
             this.tripEndDate = plan.getTripEndDate();
             this.viewCount = plan.getViewCount();
             this.likeCount = plan.getViewCount();
-            this.isVotable = plan.isVotable();
+            this.isVotable = plan.getIsVotable();
             this.createdAt = plan.getCreatedAt();
             this.memberNickname = plan.getMember().getNickname();
-        }
-    }
-
-    @Getter
-    public static class AllInOne {
-        private final Long planId;
-        private final String title;
-        private final String content;
-        private final int budget;
-        private final String area;
-        private final boolean isPublic;
-        private final LocalDate tripStartDate;
-        private final LocalDate tripEndDate;
-        private final int viewCount;
-        private final int likeCount;
-        private final boolean isVotable;
-        private final LocalDateTime createdAt;
-        private final String memberNickname;
-        private List<DayPlanDto.AllInOne> dayPlans;
-
-        public AllInOne(Get plan) {
-            this.planId = plan.getPlanId();
-            this.title = plan.getTitle();
-            this.content = plan.getContent();
-            this.budget = plan.getBudget();
-            this.area = plan.getArea();
-            this.isPublic = plan.isPublic();
-            this.tripStartDate = plan.getTripStartDate();
-            this.tripEndDate = plan.getTripEndDate();
-            this.viewCount = plan.getViewCount();
-            this.likeCount = plan.getViewCount();
-            this.isVotable = plan.isVotable();
-            this.createdAt = plan.getCreatedAt();
-            this.memberNickname = plan.getMemberNickname();
-        }
-
-        public void updateDayPlan(List<DayPlanDto.AllInOne> dayPlans){
-            this.dayPlans = dayPlans;
         }
     }
 
@@ -129,35 +104,89 @@ public class PlanDto {
 
     @Getter
     @AllArgsConstructor
+    public static class GetLists {
+        private List<PlanDto.GetList> listList;
+        private Long totalCount;
+    }
+
+    @Getter
+    public static class GetAllInOne {
+        private final Long planId;
+        private final String title;
+        private final String content;
+        private final int budget;
+        private final String area;
+        private final Boolean isPublic;
+        private final LocalDate tripStartDate;
+        private final LocalDate tripEndDate;
+        private final int viewCount;
+        private final int likeCount;
+        private final Boolean isVotable;
+        private final LocalDateTime createdAt;
+        private final String memberNickname;
+        private final String profileUrl;
+        private List<DayPlanDto.GetAllInOne> dayPlans;
+
+        @Builder
+        public GetAllInOne(Get plan, String profileUrl, List<DayPlanDto.GetAllInOne> dayPlans) {
+            this.planId = plan.getPlanId();
+            this.title = plan.getTitle();
+            this.content = plan.getContent();
+            this.budget = plan.getBudget();
+            this.area = plan.getArea();
+            this.isPublic = plan.getIsPublic();
+            this.tripStartDate = plan.getTripStartDate();
+            this.tripEndDate = plan.getTripEndDate();
+            this.viewCount = plan.getViewCount();
+            this.likeCount = plan.getViewCount();
+            this.isVotable = plan.getIsVotable();
+            this.createdAt = plan.getCreatedAt();
+            this.memberNickname = plan.getMemberNickname();
+            this.profileUrl = profileUrl;
+            this.dayPlans = dayPlans;
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
     public static class Update {
         private String title;
         private String content;
         private int budget;
         private String area;
-        private boolean isPublic;
-
+        private Boolean isPublic;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripStartDate;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripEndDate;
-
-        private boolean isVotable;
+        private Boolean isVotable;
     }
 
     @Getter
+    public static class UpdateAllInOne {
+        private String title;
+        private String content;
+        private int budget;
+        private String area;
+        private Boolean isPublic;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+        private LocalDate tripStartDate;
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+        private LocalDate tripEndDate;
+        private Boolean isVotable;
+        private List<DayPlanDto.UpdateAllInOne> dayPlans;
+    }
+
+    @Getter
+    @RequiredArgsConstructor
     public static class Delete {
-        private final boolean isDeleted;
-        public Delete(boolean result) {
-            this.isDeleted = result;
-        }
+        private final Boolean isDeleted;
     }
 
     @Getter
+    @RequiredArgsConstructor
     public static class Result {
-        private final boolean result;
-        public Result(boolean result) {
-            this.result = result;
-        }
+        private final Boolean result;
     }
 
     @Getter
@@ -166,14 +195,15 @@ public class PlanDto {
         private Long planId;
         private String title;
         private String nickname;
-        private String planPeriod;
+        private LocalDate tripStartDate;
+        private LocalDate tripEndDate;
 
         public Likes(PlanLike planLike){
             this.planId = planLike.getPlan().getId();
             this.title = planLike.getPlan().getTitle();
             this.nickname = planLike.getMember().getNickname();
-            this.planPeriod = Period.between(planLike.getPlan().getTripStartDate(),
-                            planLike.getPlan().getTripEndDate()).getDays() + "일";
+            this.tripStartDate = planLike.getPlan().getTripStartDate();
+            this.tripEndDate = planLike.getPlan().getTripEndDate();
         }
     }
     @Getter
@@ -182,14 +212,15 @@ public class PlanDto {
         private Long planId;
         private String title;
         private String nickname;
-        private String planPeriod;
+        private LocalDate tripStartDate;
+        private LocalDate tripEndDate;
 
         public Scraps(PlanScrap planScrap){
             this.planId = planScrap.getPlan().getId();
             this.title = planScrap.getPlan().getTitle();
             this.nickname = planScrap.getMember().getNickname();
-            this.planPeriod = Period.between(planScrap.getPlan().getTripStartDate(),
-                                    planScrap.getPlan().getTripEndDate()).getDays() + "일";
+            this.tripStartDate = planScrap.getPlan().getTripStartDate();
+            this.tripEndDate = planScrap.getPlan().getTripEndDate();
         }
     }
 }

@@ -1,15 +1,17 @@
 package com.travelland.repository.es;
 
 import com.travelland.document.TripSearchDoc;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.SearchHits;
 
 import java.util.List;
 
 public interface CustomTripRepository {
-    Page<TripSearchDoc> searchByTitle(String title, Pageable pageable);
+    SearchHits<TripSearchDoc> searchByTitle(String title, Pageable pageable);
 
-    Page<TripSearchDoc> searchByHashtag(String hashtag, Pageable pageable);
+    SearchHits<TripSearchDoc> searchByHashtag(String hashtag, Pageable pageable);
 
-    List<TripSearchDoc> searchByHashtags(String hashtag, Pageable pageable);
+    List<String> searchByAddress(String address);
+
+    SearchHits<TripSearchDoc> searchByEmail(Pageable pageable, String email);
 }
