@@ -1,7 +1,10 @@
 {
   "properties": {
-    "trip_id": {
+    "id": {
       "type": "keyword"
+    },
+    "trip_id": {
+      "type": "long"
     },
     "title": {
       "type": "text",
@@ -13,14 +16,14 @@
     "cost": {
       "type": "integer"
     },
+    "nickname": {
+      "type": "keyword"
+    },
     "area": {
       "type": "keyword"
     },
     "hashtag": {
       "type": "keyword"
-    },
-    "location": {
-      "type": "geo_point"
     },
     "trip_start_date": {
       "type": "date",
@@ -34,17 +37,23 @@
       "type": "date",
       "format": "yyyy-MM-dd'T'HH:mm:ss"
     },
-    "address": {
-      "type": "text"
-    },
-    "place_name": {
+    "profile_url": {
       "type": "keyword"
     },
-    "x": {
-      "type": "scaled_float"
+    "address": {
+      "type": "keyword"
     },
-    "y": {
-      "type": "scaled_float"
+    "view_count": {
+      "type": "integer"
+    },
+    "thumbnail_url": {
+      "type": "keyword"
+    },
+    "email": {
+      "type": "keyword"
+    },
+    "is_public": {
+      "type": "boolean"
     }
   }
 }

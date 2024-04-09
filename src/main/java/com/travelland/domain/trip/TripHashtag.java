@@ -1,6 +1,5 @@
 package com.travelland.domain.trip;
 
-import com.travelland.domain.trip.Trip;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,9 +21,12 @@ public class TripHashtag {
     @JoinColumn(name = "trip_id")
     private Trip trip;
 
+    private boolean isDeleted;
+
     public TripHashtag(String title, Trip trip) {
         this.title = title;
         this.trip = trip;
+        this.isDeleted = false;
     }
 
     public void update(String title) {
