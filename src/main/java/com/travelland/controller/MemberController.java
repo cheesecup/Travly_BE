@@ -1,10 +1,10 @@
 package com.travelland.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.travelland.docs.MemberControllerDocs;
-import com.travelland.dto.MemberDto;
-import com.travelland.service.KakaoService;
-import com.travelland.service.MemberService;
+import com.travelland.swagger.MemberControllerDocs;
+import com.travelland.dto.member.MemberDto;
+import com.travelland.service.member.KakaoService;
+import com.travelland.service.member.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

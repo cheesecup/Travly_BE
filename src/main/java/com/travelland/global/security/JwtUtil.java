@@ -1,4 +1,4 @@
-package com.travelland.global.jwt;
+package com.travelland.global.security;
 
 import com.travelland.constant.Role;
 import io.jsonwebtoken.*;

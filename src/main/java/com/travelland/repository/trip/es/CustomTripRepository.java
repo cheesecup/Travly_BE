@@ -1,6 +1,6 @@
-package com.travelland.repository.es;
+package com.travelland.repository.trip.es;
 
-import com.travelland.document.TripSearchDoc;
+import com.travelland.esdoc.TripSearchDoc;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.SearchHits;
 

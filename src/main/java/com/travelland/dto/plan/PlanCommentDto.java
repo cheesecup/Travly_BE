@@ -1,4 +1,4 @@
-package com.travelland.dto;
+package com.travelland.dto.plan;
 
 import com.travelland.domain.plan.PlanComment;
 import lombok.Getter;

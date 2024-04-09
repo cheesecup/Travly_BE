@@ -1,7 +1,7 @@
-package com.travelland.dto;
+package com.travelland.dto.trip;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.travelland.document.TripSearchDoc;
+import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.domain.trip.Trip;
 import com.travelland.domain.trip.TripLike;
 import com.travelland.domain.trip.TripScrap;

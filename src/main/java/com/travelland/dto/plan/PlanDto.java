@@ -1,4 +1,4 @@
-package com.travelland.dto;
+package com.travelland.dto.plan;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.travelland.domain.plan.Plan;

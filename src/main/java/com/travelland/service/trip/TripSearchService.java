@@ -1,9 +1,9 @@
 package com.travelland.service.trip;
 
-import com.travelland.document.TripSearchDoc;
+import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
-import com.travelland.dto.TripDto;
+import com.travelland.dto.trip.TripDto;
 import com.travelland.repository.trip.TripSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,9 +20,7 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
