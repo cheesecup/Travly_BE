@@ -1,7 +1,7 @@
 package com.travelland.repository.plan.querydsl;
 
 
-import com.travelland.dto.PlanDto;
+import com.travelland.dto.plan.PlanDto;
 
 import java.util.List;
 

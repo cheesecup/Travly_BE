@@ -1,13 +1,11 @@
 package com.travelland.repository.plan.querydsl;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.travelland.domain.plan.Plan;
-import com.travelland.dto.PlanDto;
+import com.travelland.dto.plan.PlanDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

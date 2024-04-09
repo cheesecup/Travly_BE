@@ -1,7 +1,7 @@
-package com.travelland.docs;
+package com.travelland.swagger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.travelland.dto.MemberDto;
+import com.travelland.dto.member.MemberDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;

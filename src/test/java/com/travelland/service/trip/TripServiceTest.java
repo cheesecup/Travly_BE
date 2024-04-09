@@ -1,16 +1,7 @@
 package com.travelland.service.trip;
 
-import com.travelland.dto.TripDto;
-import net.datafaker.Faker;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @SpringBootTest
 class TripServiceTest {
