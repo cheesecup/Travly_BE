@@ -1,7 +1,7 @@
 package com.travelland.service.plan;
 
-import com.travelland.domain.plan.DayPlan;
 import com.travelland.domain.member.Member;
+import com.travelland.domain.plan.DayPlan;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanComment;
 import com.travelland.domain.plan.UnitPlan;
@@ -11,8 +11,8 @@ import com.travelland.dto.plan.PlanDto;
 import com.travelland.dto.plan.UnitPlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.plan.DayPlanRepository;
 import com.travelland.repository.member.MemberRepository;
+import com.travelland.repository.plan.DayPlanRepository;
 import com.travelland.repository.plan.PlanCommentRepository;
 import com.travelland.repository.plan.PlanRepository;
 import com.travelland.repository.plan.UnitPlanRepository;
@@ -51,7 +51,7 @@ public class PlanService {
 
         Plan plan = new Plan(request, member);
         Plan savedPlan = planRepository.save(plan);
-        //redisTemplate.opsForValue().increment(PLAN_TOTAL_COUNT);
+        redisTemplate.opsForValue().increment(PLAN_TOTAL_COUNT);
 
         return new PlanDto.Id(savedPlan);
     }
@@ -62,7 +62,7 @@ public class PlanService {
 
         Plan plan = new Plan(request, member);
         Plan savedPlan = planRepository.save(plan);
-        //redisTemplate.opsForValue().increment(PLAN_TOTAL_COUNT);
+        redisTemplate.opsForValue().increment(PLAN_TOTAL_COUNT);
 
         List<DayPlanDto.CreateAllInOne> dayPlanDtos = request.getDayPlans();
         for (DayPlanDto.CreateAllInOne dayPlanDto : dayPlanDtos) {
