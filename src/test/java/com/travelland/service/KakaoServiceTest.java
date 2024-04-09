@@ -1,6 +1,6 @@
 //package com.travelland.service;
 //
-//import com.travelland.dto.MemberDto;
+//import com.travelland.dto.member.MemberDto;
 //import net.datafaker.Faker;
 //import org.junit.jupiter.api.Test;
 //import org.springframework.beans.factory.annotation.Autowired;

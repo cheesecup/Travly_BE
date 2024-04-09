@@ -1,7 +1,7 @@
 package com.travelland.repository.trip;
 
-import com.travelland.document.TripSearchDoc;
-import com.travelland.repository.es.CustomTripRepository;
+import com.travelland.esdoc.TripSearchDoc;
+import com.travelland.repository.trip.es.CustomTripRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;

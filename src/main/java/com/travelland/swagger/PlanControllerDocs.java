@@ -1,12 +1,11 @@
-package com.travelland.docs;
+package com.travelland.swagger;
 
-import com.travelland.dto.DayPlanDto;
-import com.travelland.dto.PlanCommentDto;
-import com.travelland.dto.PlanDto;
-import com.travelland.dto.UnitPlanDto;
+import com.travelland.dto.plan.DayPlanDto;
+import com.travelland.dto.plan.PlanCommentDto;
+import com.travelland.dto.plan.PlanDto;
+import com.travelland.dto.plan.UnitPlanDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

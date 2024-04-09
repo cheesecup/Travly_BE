@@ -43,8 +43,12 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private String profileImage;
+
+    private String thumbnailProfileImage;
+
     @Builder
-    public Member(Long socialId, String email, String password, String name, String nickname, Gender gender, LocalDate birth, Role role) {
+    public Member(Long socialId, String email, String password, String name, String nickname, Gender gender, LocalDate birth, Role role, String profileImage, String thumbnailProfileImage) {
         this.socialId = socialId;
         this.email = email;
         this.password = password;
@@ -53,9 +57,16 @@ public class Member {
         this.gender = gender;
         this.birth = birth;
         this.role = role;
+        this.profileImage = profileImage;
+        this.thumbnailProfileImage = thumbnailProfileImage;
     }
 
     public void changeNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void changeProfileImage(String profileImage, String thumbnailProfileImage) {
+        this.profileImage = profileImage;
+        this.thumbnailProfileImage = thumbnailProfileImage;
     }
 }

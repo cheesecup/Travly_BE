@@ -1,4 +1,4 @@
-package com.travelland.document;
+package com.travelland.esdoc;
 
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;

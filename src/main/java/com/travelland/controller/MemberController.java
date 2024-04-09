@@ -1,10 +1,10 @@
 package com.travelland.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.travelland.docs.MemberControllerDocs;
-import com.travelland.dto.MemberDto;
-import com.travelland.service.KakaoService;
-import com.travelland.service.MemberService;
+import com.travelland.swagger.MemberControllerDocs;
+import com.travelland.dto.member.MemberDto;
+import com.travelland.service.member.KakaoService;
+import com.travelland.service.member.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +21,8 @@ public class MemberController implements MemberControllerDocs {
     private final MemberService memberService;
 
     @GetMapping("/login/kakao")
-    public ResponseEntity<MemberDto.Response> kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
-        return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.Response(kakaoService.kakaoLogin(code, response)));
+    public ResponseEntity<MemberDto.MemberInfo> kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
+        return ResponseEntity.status(HttpStatus.OK).body(kakaoService.kakaoLogin(code, response));
     }
 
     @GetMapping("/logout")

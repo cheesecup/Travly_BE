@@ -1,6 +1,6 @@
 package com.travelland.global.config;
 
-import com.travelland.global.jwt.JwtUtil;
+import com.travelland.global.security.JwtUtil;
 import com.travelland.global.security.JwtAuthorizationFilter;
 import com.travelland.global.security.UserDetailsServiceImpl;
 import com.travelland.repository.member.MemberRepository;
