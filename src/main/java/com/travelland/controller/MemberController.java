@@ -21,8 +21,8 @@ public class MemberController implements MemberControllerDocs {
     private final MemberService memberService;
 
     @GetMapping("/login/kakao")
-    public ResponseEntity<MemberDto.Response> kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
-        return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.Response(kakaoService.kakaoLogin(code, response)));
+    public ResponseEntity<MemberDto.MemberInfo> kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
+        return ResponseEntity.status(HttpStatus.OK).body(kakaoService.kakaoLogin(code, response));
     }
 
     @GetMapping("/logout")
