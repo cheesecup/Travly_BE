@@ -1,0 +1,62 @@
+spring:
+
+  servlet:
+    multipart:
+      max-file-size: 10MB # 최대 용량 설정
+      max-request-size: 10MB # 최대 용량 설정
+
+  datasource:
+    url: ${{ secrets.DB_URL }}
+    username: admin
+    password: ${{ secrets.DB_PW }}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  data:
+    redis:
+      port: 6379
+      host: ${{ secrets.REDIS_URL }}
+      password: ${{ secrets.REDIS_PW }}
+
+  elasticsearch:
+    username: elastic
+    password: ${{ secrets.ES_PW }}
+    uris: ${{ secrets.ES_URL }}
+
+jwt:
+  secret:
+    key: ${{ secrets.JWT_KEY }}
+
+app:
+  security:
+    ceoToken: ${{ secrets.CEO_KEY }}
+
+# AWS S3
+cloud:
+  aws:
+    s3:
+      bucket: dev-travelland
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    credentials:
+      access-key: ${{ secrets.S3_ACCESSKEY }}
+      secret-key: ${{ secrets.S3_SECRETKEY }}
+
+# Swagger 설정
+springdoc:
+  show-login-endpoint: true # 시큐리티 로그인 endpoint 사용
+  use-fqn: true # 클래스 경로 관리시 패키지 경로를 포함해서 관리
