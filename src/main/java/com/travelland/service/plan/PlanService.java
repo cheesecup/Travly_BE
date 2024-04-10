@@ -11,6 +11,7 @@ import com.travelland.dto.plan.PlanDto;
 import com.travelland.dto.plan.UnitPlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
+import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.DayPlanRepository;
 import com.travelland.repository.plan.PlanCommentRepository;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +60,8 @@ public class PlanService {
 
     // Plan 올인원작성
     public PlanDto.Id createPlanAllInOne(PlanDto.CreateAllInOne request) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
         Member member = memberRepository.findByEmail("test@test.com").orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
 
         Plan plan = new Plan(request, member);
@@ -81,7 +85,7 @@ public class PlanService {
 
     // Plan 상세조회  (planId)
     public PlanDto.Get readPlanById(Long planId) {
-        Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        Plan plan = planRepository.findByIdAndIsDeletedAndIsPublic(planId, false, true).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
         return new PlanDto.Get(plan);
     }
 
@@ -140,7 +144,7 @@ public class PlanService {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page-1, size, sort);
 
-        Page<Plan> plans = planRepository.findAllByIsDeleted(pageable, false);
+        Page<Plan> plans = planRepository.findAllByIsDeletedAndIsPublic(pageable, false, true);
         return plans.map(PlanDto.Get::new);
     }
 
@@ -152,14 +156,28 @@ public class PlanService {
 
     // Plan 수정
     public PlanDto.Id updatePlan(Long planId, PlanDto.Update request) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+
+//        if (member.getId() != plan.getId()) {
+//            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
+//        }
+
         Plan updatedPlan = plan.update(request);
         return new PlanDto.Id(updatedPlan);
     }
 
     // Plan 올인원수정
     public PlanDto.Id updatePlanAllInOne(Long planId, PlanDto.UpdateAllInOne request) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+
+//        if (member.getId() != plan.getId()) {
+//            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
+//        }
+
         Plan updatedPlan = plan.update(request);
 
         List<DayPlanDto.UpdateAllInOne> dayPlanDtos = request.getDayPlans();
@@ -179,7 +197,13 @@ public class PlanService {
 
     // Plan 삭제
     public PlanDto.Delete deletePlanAllInOne(Long planId) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+
+//        if (member.getId() != plan.getId()) {
+//            throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
+//        }
 
         // 연관된 DayPlan 과 UnitPlan 을 먼저 삭제
         List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId,false);
@@ -237,6 +261,7 @@ public class PlanService {
     // DayPlan 수정
     public DayPlanDto.Id updateDayPlan(Long dayPlanId, DayPlanDto.Update request) {
         DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.DAY_PLAN_NOT_FOUND));
+
         DayPlan updatedDayPlan = dayPlan.update(request);
         return new DayPlanDto.Id(updatedDayPlan);
     }
@@ -289,6 +314,7 @@ public class PlanService {
     // UnitPlan 수정
     public UnitPlanDto.Id updateUnitPlan(Long unitPlanId, UnitPlanDto.Update request) {
         UnitPlan unitPlan = unitPlanRepository.findById(unitPlanId).orElseThrow(() -> new CustomException(ErrorCode.UNIT_PLAN_NOT_FOUND));
+
         UnitPlan updatedUnitPlan = unitPlan.update(request);
         return new UnitPlanDto.Id(updatedUnitPlan);
     }
@@ -312,6 +338,8 @@ public class PlanService {
 
     // Plan 댓글 등록
     public PlanCommentDto.Id createPlanComment(Long planId, PlanCommentDto.Create request) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
         Member member = getMember("test@test.com");
         Plan plan = getPlan(planId);
 
@@ -333,14 +361,27 @@ public class PlanService {
 
     // Plan 댓글 수정
     public PlanCommentDto.Id updatePlanComment(Long commentId, PlanCommentDto.Update request) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
         PlanComment planComment = planCommentRepository.findById(commentId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_COMMENT_NOT_FOUND));
+
+//        if (member.getId() != planComment.getId()) {
+//            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
+//        }
+
         PlanComment updatedPlanComment = planComment.update(request);
         return new PlanCommentDto.Id(updatedPlanComment);
     }
 
     // Plan 댓글 삭제
     public PlanCommentDto.Delete deletePlanComment(Long commentId) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
         PlanComment planComment = planCommentRepository.findById(commentId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_COMMENT_NOT_FOUND));
+
+//        if (member.getId() != planComment.getId()) {
+//            throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
+//        }
 
         planComment.delete();
         return new PlanCommentDto.Delete(planComment.getIsDeleted());
