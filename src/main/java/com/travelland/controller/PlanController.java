@@ -1,5 +1,6 @@
 package com.travelland.controller;
 
+import com.travelland.controller.valid.PlanValidationSequence;
 import com.travelland.swagger.PlanControllerDocs;
 import com.travelland.dto.plan.DayPlanDto;
 import com.travelland.dto.plan.PlanCommentDto;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,13 +29,13 @@ public class PlanController implements PlanControllerDocs {
 
     // Plan 작성
     @PostMapping("/plans")
-    public ResponseEntity<PlanDto.Id> createPlan(@RequestBody PlanDto.Create request) {
+    public ResponseEntity<PlanDto.Id> createPlan(@Validated(PlanValidationSequence.class) @RequestBody PlanDto.Create request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(planService.createPlan(request));
     }
 
     // Plan 올인원작성
     @PostMapping("/plans/allInOn")
-    public ResponseEntity<PlanDto.Id> createPlanAllInOne(@RequestBody PlanDto.CreateAllInOne request) {
+    public ResponseEntity<PlanDto.Id> createPlanAllInOne(@Validated(PlanValidationSequence.class) @RequestBody PlanDto.CreateAllInOne request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(planService.createPlanAllInOne(request));
     }
 
@@ -69,13 +71,13 @@ public class PlanController implements PlanControllerDocs {
 
     // Plan 수정
     @PutMapping("/plans/{planId}")
-    public ResponseEntity<PlanDto.Id> updatePlan(@PathVariable Long planId, @RequestBody PlanDto.Update request) {
+    public ResponseEntity<PlanDto.Id> updatePlan(@PathVariable Long planId, @Validated(PlanValidationSequence.class) @RequestBody PlanDto.Update request) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.updatePlan(planId, request));
     }
 
     // Plan 올인원수정
     @PutMapping("/plans/allInOn/{planId}")
-    public ResponseEntity<PlanDto.Id> updatePlanAllInOne(@PathVariable Long planId, @RequestBody PlanDto.UpdateAllInOne request) {
+    public ResponseEntity<PlanDto.Id> updatePlanAllInOne(@PathVariable Long planId, @Validated(PlanValidationSequence.class) @RequestBody PlanDto.UpdateAllInOne request) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.updatePlanAllInOne(planId, request));
     }
 
@@ -102,7 +104,7 @@ public class PlanController implements PlanControllerDocs {
 
     // DayPlan 작성
     @PostMapping("/dayPlans/{planId}")
-    public ResponseEntity<DayPlanDto.Id> createDayPlan(@PathVariable Long planId, @RequestBody DayPlanDto.Create request) {
+    public ResponseEntity<DayPlanDto.Id> createDayPlan(@PathVariable Long planId, @Validated(PlanValidationSequence.class) @RequestBody DayPlanDto.Create request) {
         DayPlanDto.Id response = planService.createDayPlan(planId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -116,7 +118,7 @@ public class PlanController implements PlanControllerDocs {
 
     // DayPlan 수정
     @PutMapping("/dayPlans/{dayPlanId}")
-    public ResponseEntity<DayPlanDto.Id> updateDayPlan(@PathVariable Long dayPlanId, @RequestBody DayPlanDto.Update request) {
+    public ResponseEntity<DayPlanDto.Id> updateDayPlan(@PathVariable Long dayPlanId, @Validated(PlanValidationSequence.class) @RequestBody DayPlanDto.Update request) {
         DayPlanDto.Id response = planService.updateDayPlan(dayPlanId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -139,7 +141,7 @@ public class PlanController implements PlanControllerDocs {
 
     // UnitPlan 작성
     @PostMapping("/unitPlans/{dayPlanId}")
-    public ResponseEntity<UnitPlanDto.Id> createUnitPlan(@PathVariable Long dayPlanId, @RequestBody UnitPlanDto.Create request) {
+    public ResponseEntity<UnitPlanDto.Id> createUnitPlan(@PathVariable Long dayPlanId, @Validated(PlanValidationSequence.class) @RequestBody UnitPlanDto.Create request) {
         UnitPlanDto.Id response = planService.createUnitPlan(dayPlanId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -153,7 +155,7 @@ public class PlanController implements PlanControllerDocs {
 
     // UnitPlan 수정
     @PutMapping("/unitPlans/{unitPlanId}")
-    public ResponseEntity<UnitPlanDto.Id> updateUnitPlan(@PathVariable Long unitPlanId, @RequestBody UnitPlanDto.Update request) {
+    public ResponseEntity<UnitPlanDto.Id> updateUnitPlan(@PathVariable Long unitPlanId, @Validated(PlanValidationSequence.class) @RequestBody UnitPlanDto.Update request) {
         UnitPlanDto.Id response = planService.updateUnitPlan(unitPlanId, request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -176,7 +178,7 @@ public class PlanController implements PlanControllerDocs {
 
     // Plan 댓글 등록
     @PostMapping("/plans/{planId}/comments")
-    public ResponseEntity<PlanCommentDto.Id> createPlanComment(@PathVariable Long planId, @RequestBody PlanCommentDto.Create request) {
+    public ResponseEntity<PlanCommentDto.Id> createPlanComment(@PathVariable Long planId, @Validated(PlanValidationSequence.class) @RequestBody PlanCommentDto.Create request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(planService.createPlanComment(planId, request));
     }
 
@@ -192,7 +194,7 @@ public class PlanController implements PlanControllerDocs {
 
     // Plan 댓글 수정
     @PutMapping("/plans/{planId}/comments/{commentId}")
-    public ResponseEntity<PlanCommentDto.Id> updatePlanComment(@PathVariable Long planId, @PathVariable Long commentId, @RequestBody PlanCommentDto.Update request) {
+    public ResponseEntity<PlanCommentDto.Id> updatePlanComment(@PathVariable Long planId, @PathVariable Long commentId, @Validated(PlanValidationSequence.class) @RequestBody PlanCommentDto.Update request) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.updatePlanComment(commentId, request));
     }
 

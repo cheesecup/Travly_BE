@@ -7,12 +7,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface PlanRepository extends JpaRepository<Plan, Long>, CustomPlanRepository {
-    Optional<Plan> findByIdAndIsDeleted(Long planId, boolean isDeleted);
+    Optional<Plan> findByIdAndIsDeletedAndIsPublic(Long planId, boolean isDeleted, boolean isPublic);
 
-    Page<Plan> findAllByIsDeleted(Pageable pageable, boolean isDeleted);
+    Page<Plan> findAllByIsDeletedAndIsPublic(Pageable pageable, boolean isDeleted, boolean isPublic);
 }

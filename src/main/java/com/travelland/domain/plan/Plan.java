@@ -23,12 +23,15 @@ public class Plan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 100)
     private String title;
 
+    @Column(length = 1000)
     private String content;
 
     private int budget;
 
+    @Column(length = 30)
     private String area;
 
     private Boolean isPublic;
