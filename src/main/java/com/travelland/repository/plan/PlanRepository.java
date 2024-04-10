@@ -13,5 +13,9 @@ import java.util.Optional;
 public interface PlanRepository extends JpaRepository<Plan, Long>, CustomPlanRepository {
     Optional<Plan> findByIdAndIsDeletedAndIsPublic(Long planId, boolean isDeleted, boolean isPublic);
 
+    Optional<Plan> findByMemberIdAndIsDeleted(Long memberId, boolean isDeleted);
+
     Page<Plan> findAllByIsDeletedAndIsPublic(Pageable pageable, boolean isDeleted, boolean isPublic);
+
+    Page<Plan> findAllByMemberIdAndIsDeleted(Long memberId, Pageable pageable, boolean isDeleted);
 }
