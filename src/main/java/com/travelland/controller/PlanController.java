@@ -45,11 +45,23 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanById(planId));
     }
 
+//    // Plan 유저별 상세조회 (memberId)
+//    /@GetMapping("/plans/{planId}")
+//    public ResponseEntity<PlanDto.Get> readPlanByMemberId(@PathVariable Long planId) {
+//        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanByMemberId());
+//    }
+
     // Plan 올인원조회 (planId)
     @GetMapping("/plans/allInOn/{planId}")
     public ResponseEntity<PlanDto.GetAllInOne> readPlanAllInOne(@PathVariable Long planId) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanAllInOne(planId));
     }
+
+//    // Plan 올인원조회 (planId)
+//    @GetMapping("/plans/allInOn/{planId}")
+//    public ResponseEntity<PlanDto.GetAllInOne> readPlanAllInOne(@PathVariable Long planId) {
+//        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanAllInOne(planId));
+//    }
 
     // Plan 전체조회
     @GetMapping("/plans") // 예시: /plans?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터
@@ -60,12 +72,21 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanList(page, size, sortBy, isAsc));
     }
 
+//    // Plan 유저별 전체조회 (memberId)
+//    /@GetMapping("/plans") // 예시: /plans?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터
+//    public ResponseEntity<Page<PlanDto.Get>> readPlanListByMemberId(@RequestParam int page,
+//                                                                    @RequestParam int size,
+//                                                                    @RequestParam String sortBy,
+//                                                                    @RequestParam boolean isAsc) {
+//        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanListByMemberId(page, size, sortBy, isAsc));
+//    }
+
     // Plan 전체조회 (Redis)
     @GetMapping("/plans/redis")
     public ResponseEntity<PlanDto.GetLists> readPlanListRedis(@RequestParam Long lastId,
-                                                               @RequestParam int size,
-                                                               @RequestParam String sortBy,
-                                                               @RequestParam boolean isAsc) {
+                                                              @RequestParam int size,
+                                                              @RequestParam String sortBy,
+                                                              @RequestParam boolean isAsc) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanListRedis(lastId, size, sortBy, isAsc));
     }
 

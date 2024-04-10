@@ -89,6 +89,16 @@ public class PlanService {
         return new PlanDto.Get(plan);
     }
 
+    // Plan 유저별 상세조회  (memberId)
+    public PlanDto.Get readPlanByMemberId() {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+        Member member = memberRepository.findByEmail("test@test.com").orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
+
+        Plan plan = planRepository.findByMemberIdAndIsDeleted(member.getId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        return new PlanDto.Get(plan);
+    }
+
     // Plan 올인원조회 (planId): Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     public PlanDto.GetAllInOne readPlanAllInOne(Long planId) {
         List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
@@ -138,6 +148,26 @@ public class PlanService {
                 .dayPlans(ones).build();
     }
 
+    // Plan 유저별 전체조회
+    public Page<PlanDto.Get> readPlanListByMemberId(int page, int size, String sortBy, boolean isAsc) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+        Member member = memberRepository.findByEmail("test@test.com").orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
+
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page-1, size, sort);
+
+        Page<Plan> plans = planRepository.findAllByMemberIdAndIsDeleted(member.getId(), pageable, false);
+        return plans.map(PlanDto.Get::new);
+    }
+
+    // Plan 전체조회 (Redis)
+    public PlanDto.GetLists readPlanListRedis(Long lastId, int size, String sortBy, boolean isASC) {
+        List<PlanDto.GetList> list = planRepository.getPlanList(lastId, size, sortBy, isASC);
+        return new PlanDto.GetLists(list, Long.parseLong(redisTemplate.opsForValue().get(PLAN_TOTAL_COUNT)));
+    }
+
     // Plan 전체조회
     public Page<PlanDto.Get> readPlanList(int page, int size, String sortBy, boolean isAsc) {
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -146,12 +176,6 @@ public class PlanService {
 
         Page<Plan> plans = planRepository.findAllByIsDeletedAndIsPublic(pageable, false, true);
         return plans.map(PlanDto.Get::new);
-    }
-
-    // Plan 전체조회 (Redis)
-    public PlanDto.GetLists readPlanListRedis(Long lastId, int size, String sortBy, boolean isASC) {
-        List<PlanDto.GetList> list = planRepository.getPlanList(lastId, size, sortBy, isASC);
-        return new PlanDto.GetLists(list, Long.parseLong(redisTemplate.opsForValue().get(PLAN_TOTAL_COUNT)));
     }
 
     // Plan 수정
