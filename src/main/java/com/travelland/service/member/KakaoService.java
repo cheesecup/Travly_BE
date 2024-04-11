@@ -74,7 +74,7 @@ public class KakaoService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", "aa4b6a242e99488886c885baee1cd1ab");
-        body.add("redirect_uri", "https://spparta.store/users/login/kakao");
+        body.add("redirect_uri", "https://www.travly.site/login/oauth");
         body.add("code", code);
 
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity
