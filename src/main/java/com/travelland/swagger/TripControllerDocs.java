@@ -13,7 +13,8 @@ import java.io.IOException;
 import java.util.List;
 
 @Tag(name = "여행 정보 API", description = "여행정보 관련 API 명세서입니다.")
-public interface TripControllerDocs {
+public interface
+TripControllerDocs {
 
     @Operation(summary = "여행정보 등록", description = "작성한 여행정보를 등록하는 API")
     ResponseEntity createTrip(@RequestPart TripDto.Create requestDto,
