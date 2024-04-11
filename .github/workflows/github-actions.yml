@@ -1,15 +1,15 @@
 name: Deploy on PR merge  # Actions 식별이름
 
 on: # 발동조건
-#  push:
-#    branches: [ main, dev, master, features/plan ]
-  pull_request: # github에서 pull-request일때
-    types: [ closed ] # 특히 pull-request가 close(완료)되었을 때 (단 완료는 동의완료와 반대완료가 존재하기에 동의완료만 되도록 아래서 if문)
-    branches: [ main, dev ] # 2개 이상시 '[]'를 이용해 가로나열 하거나 '-'를 이용해 세로나열
+  push:
+    branches: [ main, dev, master, features/plan ]
+#  pull_request: # github에서 pull-request일때
+#    types: [ closed ] # 특히 pull-request가 close(완료)되었을 때 (단 완료는 동의완료와 반대완료가 존재하기에 동의완료만 되도록 아래서 if문)
+#    branches: [ main, dev ] # 2개 이상시 '[]'를 이용해 가로나열 하거나 '-'를 이용해 세로나열
 
 jobs: # 실제 어떤 작업을 실행할지에 대한 명시
   deploy: # 예약어x, 임의의 사용자지정명칭
-    if: github.event.pull_request.merged == true # pull-request 동의완료일때만으로 제한
+#    if: github.event.pull_request.merged == true # pull-request 동의완료일때만으로 제한
     runs-on: [ ubuntu-latest ] # 스크립트 실행 환경 (OS), 배열로 선언시 개수 만큼 반복해서 실행
 
     steps:
@@ -22,11 +22,11 @@ jobs: # 실제 어떤 작업을 실행할지에 대한 명시
           distribution: 'adopt'
 
       # Github Repository Secrets를 통해 환경 변수 파일을 생성합니다.
-      - name: Generate application.yml from Secrets
+
+      - name: make application.yml
         run: |
-          echo "$APPLICATION_YML" > ./src/main/resources/application.yml
-        env:
-          APPLICATION_YML: ${{ secrets.APPLICATION_YML }}
+          touch ./src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
