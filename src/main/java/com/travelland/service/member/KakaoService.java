@@ -52,9 +52,9 @@ public class KakaoService {
         String refreshToken = jwtUtil.createRefreshToken();
 
         refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, createToken));
-        jwtUtil.addJwtToCookie(createToken, response);
+//        jwtUtil.addJwtToCookie(createToken, response);
 
-        return new MemberDto.MemberInfo(member);
+        return new MemberDto.MemberInfo(member, createToken);
     }
 
     private String getToken(String code) throws JsonProcessingException {
@@ -139,7 +139,7 @@ public class KakaoService {
                 .get("profile")
                 .get("thumbnail_image_url").asText();
 
-        log.info("카카오 사용자 정보: id=" + id + ", nickname=" + nickname + ", email=" + email + ", name=" + name + ", birthday=" + birth + ", gender=" + gender);
+        log.info("카카오 사용자 정보: email=" + email);
         return MemberDto.KakaoInfo.builder()
                 .id(id)
                 .nickname(nickname)
