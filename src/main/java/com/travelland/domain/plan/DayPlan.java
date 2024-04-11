@@ -18,8 +18,10 @@ public class DayPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 100)
     private String title;
 
+    @Column(length = 500)
     private String content;
 
     private int budget;

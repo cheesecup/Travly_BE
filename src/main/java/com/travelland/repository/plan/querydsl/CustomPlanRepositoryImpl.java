@@ -31,7 +31,7 @@ public class CustomPlanRepositoryImpl implements CustomPlanRepository {
                         )
                 )
                 .from(plan)
-                .where(ltPlanId(lastId), plan.isDeleted.eq(false))
+                .where(ltPlanId(lastId), plan.isDeleted.eq(false), plan.isPublic.eq(true))
                 .orderBy(createOrderSpecifier(sortBy, isAsc))
                 .limit(size)
                 .fetch();
