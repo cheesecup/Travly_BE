@@ -23,6 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,9 +48,9 @@ public class PlanService {
 
     // Plan 작성
     public PlanDto.Id createPlan(PlanDto.Create request) {
-//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Member member = userDetails.getMember();
-        Member member = memberRepository.findByEmail("test@test.com").orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Member member = userDetails.getMember();
+//        Member member = memberRepository.findByEmail("test@test.com").orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
 
         Plan plan = new Plan(request, member);
         Plan savedPlan = planRepository.save(plan);
@@ -58,11 +59,11 @@ public class PlanService {
         return new PlanDto.Id(savedPlan);
     }
 
-    // Plan 올인원작성
+    // Plan 올인원한방 작성: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     public PlanDto.Id createPlanAllInOne(PlanDto.CreateAllInOne request) {
-//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Member member = userDetails.getMember();
-        Member member = memberRepository.findByEmail("test@test.com").orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Member member = userDetails.getMember();
+//        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
 
         Plan plan = new Plan(request, member);
         Plan savedPlan = planRepository.save(plan);
@@ -83,23 +84,23 @@ public class PlanService {
         return new PlanDto.Id(savedPlan);
     }
 
-    // Plan 상세조회  (planId)
-    public PlanDto.Get readPlanById(Long planId) {
+    // Plan 상세단일 조회
+    public PlanDto.Get readPlan(Long planId) {
         Plan plan = planRepository.findByIdAndIsDeletedAndIsPublic(planId, false, true).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
         return new PlanDto.Get(plan);
     }
 
-    // Plan 유저별 상세조회  (memberId)
-    public PlanDto.Get readPlanByMemberId() {
+    // Plan 유저별 단일상세 조회
+    public PlanDto.Get readPlanForMember(Long planId) {
 //        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        Member member = userDetails.getMember();
         Member member = memberRepository.findByEmail("test@test.com").orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
 
-        Plan plan = planRepository.findByMemberIdAndIsDeleted(member.getId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
         return new PlanDto.Get(plan);
     }
 
-    // Plan 올인원조회 (planId): Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
+    // Plan 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     public PlanDto.GetAllInOne readPlanAllInOne(Long planId) {
         List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
         List<DayPlanDto.Get> dayPlanDtos = dayPlanList.stream().map(DayPlanDto.Get::new).toList();
@@ -143,13 +144,72 @@ public class PlanService {
         }
 
         return PlanDto.GetAllInOne.builder()
-                .plan(readPlanById(planId))
+                .plan(readPlan(planId))
                 .profileUrl("profileUrl")
                 .dayPlans(ones).build();
     }
 
-    // Plan 유저별 전체조회
-    public Page<PlanDto.Get> readPlanListByMemberId(int page, int size, String sortBy, boolean isAsc) {
+    // Plan 유저별 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
+    public PlanDto.GetAllInOne readPlanAllInOneForMember(Long planId) {
+        List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
+        List<DayPlanDto.Get> dayPlanDtos = dayPlanList.stream().map(DayPlanDto.Get::new).toList();
+
+        List<DayPlanDto.GetAllInOne> ones = new ArrayList<>();
+
+        for (DayPlanDto.Get dayPlan : dayPlanDtos) {
+            List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanIdAndIsDeleted(dayPlan.getDayPlanId(), false);
+            if (unitPlanList == null)
+                break;
+            List<UnitPlanDto.GetAllInOne> unitPlanDtos = unitPlanList.stream().map(UnitPlanDto.GetAllInOne::new).toList();
+
+            // 첫번째/마지막 unitPlanList 의 address 를 가져옴
+            String startAddress = unitPlanList.get(0).getAddress();
+            String endAddress = unitPlanList.get(unitPlanList.size() - 1).getAddress();
+
+            // Path 변수를 저장할 StringBuilder 생성
+            StringBuilder path = new StringBuilder();
+            boolean isFirst = true;
+
+            // unitPlanList의 각 요소인 unitPlan의 address를 StringBuilder에 추가
+            for (UnitPlan unitPlan : unitPlanList) {
+                // 만약 현재 unitPlan이 마지막 요소가 아니라면 " >> "를 추가
+                if (!isFirst) {
+                    path.append(" >> ");
+                }
+                isFirst = false;
+                path.append(unitPlan.getAddress());
+            }
+
+            // path 변수에 저장된 값을 가져옴
+            String pathString = path.toString();
+
+            ones.add(DayPlanDto.GetAllInOne.builder()
+                    .dayPlan(dayPlan)
+                    .unitPlans(unitPlanDtos)
+                    .startAddress(startAddress)
+                    .endAddress(endAddress)
+                    .path(pathString)
+                    .build());
+        }
+
+        return PlanDto.GetAllInOne.builder()
+                .plan(readPlanForMember(planId))
+                .profileUrl("profileUrl")
+                .dayPlans(ones).build();
+    }
+
+    // Plan 전체목록 조회
+    public Page<PlanDto.Get> readPlanList(int page, int size, String sortBy, boolean isAsc) {
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page-1, size, sort);
+
+        Page<Plan> plans = planRepository.findAllByIsDeletedAndIsPublic(pageable, false, true);
+        return plans.map(PlanDto.Get::new);
+    }
+
+    // Plan 유저별 전체목록 조회 (memberId)
+    public Page<PlanDto.Get> readPlanListForMember(int page, int size, String sortBy, boolean isAsc) {
 //        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        Member member = userDetails.getMember();
         Member member = memberRepository.findByEmail("test@test.com").orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
@@ -158,24 +218,14 @@ public class PlanService {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page-1, size, sort);
 
-        Page<Plan> plans = planRepository.findAllByMemberIdAndIsDeleted(member.getId(), pageable, false);
+        Page<Plan> plans = planRepository.findAllByMemberIdAndIsDeleted(pageable, false, member.getId());
         return plans.map(PlanDto.Get::new);
     }
 
-    // Plan 전체조회 (Redis)
+    // Plan 전체목록 조회 (Redis)
     public PlanDto.GetLists readPlanListRedis(Long lastId, int size, String sortBy, boolean isASC) {
         List<PlanDto.GetList> list = planRepository.getPlanList(lastId, size, sortBy, isASC);
         return new PlanDto.GetLists(list, Long.parseLong(redisTemplate.opsForValue().get(PLAN_TOTAL_COUNT)));
-    }
-
-    // Plan 전체조회
-    public Page<PlanDto.Get> readPlanList(int page, int size, String sortBy, boolean isAsc) {
-        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
-
-        Page<Plan> plans = planRepository.findAllByIsDeletedAndIsPublic(pageable, false, true);
-        return plans.map(PlanDto.Get::new);
     }
 
     // Plan 수정
@@ -192,7 +242,7 @@ public class PlanService {
         return new PlanDto.Id(updatedPlan);
     }
 
-    // Plan 올인원수정
+    // Plan 올인원한방 수정: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     public PlanDto.Id updatePlanAllInOne(Long planId, PlanDto.UpdateAllInOne request) {
 //        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        Member member = userDetails.getMember();
@@ -219,7 +269,7 @@ public class PlanService {
         return new PlanDto.Id(updatedPlan);
     }
 
-    // Plan 삭제
+    // Plan 올인원한방 삭제
     public PlanDto.Delete deletePlanAllInOne(Long planId) {
 //        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        Member member = userDetails.getMember();
@@ -373,7 +423,7 @@ public class PlanService {
         return new PlanCommentDto.Id(savedPlanComment);
     }
 
-    // Plan 댓글 목록조회 (planId)
+    // Plan 댓글 전체목록 조회 (planId)
     public Page<PlanCommentDto.Get> readPlanCommentList(Long planId, int page, int size, String sortBy, boolean isAsc) {
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortBy);

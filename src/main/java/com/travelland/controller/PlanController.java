@@ -1,6 +1,7 @@
 package com.travelland.controller;
 
 import com.travelland.controller.valid.PlanValidationSequence;
+import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.swagger.PlanControllerDocs;
 import com.travelland.dto.plan.DayPlanDto;
 import com.travelland.dto.plan.PlanCommentDto;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,37 +35,37 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.CREATED).body(planService.createPlan(request));
     }
 
-    // Plan 올인원작성
+    // Plan 올인원한방 작성: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     @PostMapping("/plans/allInOn")
     public ResponseEntity<PlanDto.Id> createPlanAllInOne(@Validated(PlanValidationSequence.class) @RequestBody PlanDto.CreateAllInOne request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(planService.createPlanAllInOne(request));
     }
 
-    // Plan 상세조회 (planId)
+    // Plan 상세단일 조회
     @GetMapping("/plans/{planId}")
-    public ResponseEntity<PlanDto.Get> readPlanById(@PathVariable Long planId) {
-        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanById(planId));
+    public ResponseEntity<PlanDto.Get> readPlan(@PathVariable Long planId) {
+        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlan(planId));
     }
 
-//    // Plan 유저별 상세조회 (memberId)
-//    /@GetMapping("/plans/{planId}")
-//    public ResponseEntity<PlanDto.Get> readPlanByMemberId(@PathVariable Long planId) {
-//        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanByMemberId());
-//    }
+    // Plan 유저별 상세단일 조회
+    @GetMapping("/users/plans/{planId}")
+    public ResponseEntity<PlanDto.Get> readPlanForMember(@PathVariable Long planId) {
+        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanForMember(planId));
+    }
 
-    // Plan 올인원조회 (planId)
-    @GetMapping("/plans/allInOn/{planId}")
+    // Plan 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
+    @GetMapping("/users/plans/allInOn/{planId}")
     public ResponseEntity<PlanDto.GetAllInOne> readPlanAllInOne(@PathVariable Long planId) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanAllInOne(planId));
     }
 
-//    // Plan 올인원조회 (planId)
-//    @GetMapping("/plans/allInOn/{planId}")
-//    public ResponseEntity<PlanDto.GetAllInOne> readPlanAllInOne(@PathVariable Long planId) {
-//        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanAllInOne(planId));
-//    }
+    // Plan 유저별 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
+    @GetMapping("/plans/allInOn/{planId}")
+    public ResponseEntity<PlanDto.GetAllInOne> readPlanAllInOneForMember(@PathVariable Long planId) {
+        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanAllInOneForMember(planId));
+    }
 
-    // Plan 전체조회
+    // Plan 전체목록 조회
     @GetMapping("/plans") // 예시: /plans?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터
     public ResponseEntity<Page<PlanDto.Get>> readPlanList(@RequestParam int page,
                                                           @RequestParam int size,
@@ -72,14 +74,14 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanList(page, size, sortBy, isAsc));
     }
 
-//    // Plan 유저별 전체조회 (memberId)
-//    /@GetMapping("/plans") // 예시: /plans?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터
-//    public ResponseEntity<Page<PlanDto.Get>> readPlanListByMemberId(@RequestParam int page,
-//                                                                    @RequestParam int size,
-//                                                                    @RequestParam String sortBy,
-//                                                                    @RequestParam boolean isAsc) {
-//        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanListByMemberId(page, size, sortBy, isAsc));
-//    }
+    // Plan 유저별 전체목록 조회 (memberId)
+    @GetMapping("/users/plans") // 예시: /plans?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터
+    public ResponseEntity<Page<PlanDto.Get>> readPlanListForMember(@RequestParam int page,
+                                                                   @RequestParam int size,
+                                                                   @RequestParam String sortBy,
+                                                                   @RequestParam boolean isAsc) {
+        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanListForMember(page, size, sortBy, isAsc));
+    }
 
     // Plan 전체조회 (Redis)
     @GetMapping("/plans/redis")
@@ -96,7 +98,7 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(planService.updatePlan(planId, request));
     }
 
-    // Plan 올인원수정
+    // Plan 올인원한방 수정: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     @PutMapping("/plans/allInOn/{planId}")
     public ResponseEntity<PlanDto.Id> updatePlanAllInOne(@PathVariable Long planId, @Validated(PlanValidationSequence.class) @RequestBody PlanDto.UpdateAllInOne request) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.updatePlanAllInOne(planId, request));
@@ -108,7 +110,7 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(planService.deletePlanAllInOne(planId));
     }
 
-    // Plan 올인원삭제
+    // Plan 올인원한방 삭제: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     @DeleteMapping("/plans/allInOn/{planId}")
     public ResponseEntity<PlanDto.Delete> deletePlanAllInOne(@PathVariable Long planId) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.deletePlanAllInOne(planId));
@@ -203,7 +205,7 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.CREATED).body(planService.createPlanComment(planId, request));
     }
 
-    // Plan 댓글 목록조회 (planId)
+    // Plan 댓글 전체목록 조회 (planId)
     @GetMapping("/plans/{planId}/comments") // 예시: /plans/{planId}/comments?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터
     public ResponseEntity<Page<PlanCommentDto.Get>> readPlanCommentList(@PathVariable Long planId,
                                                                         @RequestParam int page,
@@ -247,7 +249,7 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(false));
     }
 
-    // Plan 좋아요 목록조회
+    // Plan 좋아요 전체목록 조회
     @GetMapping("/plans/like")
     public ResponseEntity<List<PlanDto.Likes>> getPlanLikeList(@RequestParam(defaultValue = "1") int page,
                                                                @RequestParam(defaultValue = "20") int size) {
@@ -269,7 +271,7 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(false));
     }
 
-    // Plan 스크랩 목록조회
+    // Plan 스크랩 전체목록 조회
     @GetMapping("/plans/scrap")
     public ResponseEntity<List<PlanDto.Scraps>> getPlanScrapList(@RequestParam(defaultValue = "1") int page,
                                                                  @RequestParam(defaultValue = "20") int size) {
