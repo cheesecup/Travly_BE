@@ -234,7 +234,7 @@ public class PlanService {
 
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
 
-        if (member.getId() != plan.getId()) {
+        if (member.getId() != plan.getMember().getId()) {
             throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
         }
 
@@ -249,7 +249,7 @@ public class PlanService {
 
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
 
-        if (member.getId() != plan.getId()) {
+        if (member.getId() != plan.getMember().getId()) {
             throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
         }
 
@@ -276,8 +276,10 @@ public class PlanService {
         Member member = userDetails.getMember();
 
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-
-        if (member.getId() != plan.getId()) {
+        System.out.println(plan.getId());
+        System.out.println(plan.getMember().getId());
+        System.out.println(member.getId());
+        if (member.getId() != plan.getMember().getId()) {
             throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
         }
 
@@ -443,7 +445,7 @@ public class PlanService {
 
         PlanComment planComment = planCommentRepository.findById(commentId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_COMMENT_NOT_FOUND));
 
-        if (member.getId() != planComment.getId()) {
+        if (member.getId() != planComment.getMember().getId()) {
             throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
         }
 
@@ -458,7 +460,7 @@ public class PlanService {
 
         PlanComment planComment = planCommentRepository.findById(commentId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_COMMENT_NOT_FOUND));
 
-        if (member.getId() != planComment.getId()) {
+        if (member.getId() != planComment.getMember().getId()) {
             throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
         }
 
