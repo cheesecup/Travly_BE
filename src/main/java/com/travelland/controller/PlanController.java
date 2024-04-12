@@ -1,5 +1,6 @@
 package com.travelland.controller;
 
+import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.swagger.PlanControllerDocs;
 import com.travelland.dto.plan.DayPlanDto;
 import com.travelland.dto.plan.PlanCommentDto;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -61,9 +63,9 @@ public class PlanController implements PlanControllerDocs {
     // Plan 전체조회 (Redis)
     @GetMapping("/plans/redis")
     public ResponseEntity<PlanDto.GetLists> readPlanListRedis(@RequestParam Long lastId,
-                                                               @RequestParam int size,
-                                                               @RequestParam String sortBy,
-                                                               @RequestParam boolean isAsc) {
+                                                              @RequestParam int size,
+                                                              @RequestParam String sortBy,
+                                                              @RequestParam boolean isAsc) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanListRedis(lastId, size, sortBy, isAsc));
     }
 
@@ -90,14 +92,6 @@ public class PlanController implements PlanControllerDocs {
     public ResponseEntity<PlanDto.Delete> deletePlanAllInOne(@PathVariable Long planId) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.deletePlanAllInOne(planId));
     }
-
-
-
-
-
-
-
-
 
 
     // DayPlan 작성
@@ -129,14 +123,6 @@ public class PlanController implements PlanControllerDocs {
     }
 
 
-
-
-
-
-
-
-
-
     // UnitPlan 작성
     @PostMapping("/unitPlans/{dayPlanId}")
     public ResponseEntity<UnitPlanDto.Id> createUnitPlan(@PathVariable Long dayPlanId, @RequestBody UnitPlanDto.Create request) {
@@ -166,14 +152,6 @@ public class PlanController implements PlanControllerDocs {
     }
 
 
-
-
-
-
-
-
-
-
     // Plan 댓글 등록
     @PostMapping("/plans/{planId}/comments")
     public ResponseEntity<PlanCommentDto.Id> createPlanComment(@PathVariable Long planId, @RequestBody PlanCommentDto.Create request) {
@@ -181,7 +159,8 @@ public class PlanController implements PlanControllerDocs {
     }
 
     // Plan 댓글 목록조회 (planId)
-    @GetMapping("/plans/{planId}/comments") // 예시: /plans/{planId}/comments?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터
+    @GetMapping("/plans/{planId}/comments")
+    // 예시: /plans/{planId}/comments?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터
     public ResponseEntity<Page<PlanCommentDto.Get>> readPlanCommentList(@PathVariable Long planId,
                                                                         @RequestParam int page,
                                                                         @RequestParam int size,
@@ -201,13 +180,6 @@ public class PlanController implements PlanControllerDocs {
     public ResponseEntity<PlanCommentDto.Delete> deletePlanComment(@PathVariable Long planId, @PathVariable Long commentId) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.deletePlanComment(commentId));
     }
-
-
-
-
-
-
-
 
 
     // Plan 좋아요 등록
@@ -254,13 +226,27 @@ public class PlanController implements PlanControllerDocs {
                 .body(planScrapService.getPlanScrapList(page, size, "test@test.com"));
     }
 
+    @PostMapping("/plans/{planId}/invite")
+    public ResponseEntity<?> invitePlan(@PathVariable Long planId,
+                                        @RequestBody PlanDto.Invitee invitee,
+                                        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        planService.invitePlan(planId, invitee, userDetails.getMember().getNickname());
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
+    @PostMapping("/plans/{planId}/invite/agree")
+    public ResponseEntity<?> agreeInvitedPlan(@PathVariable Long planId,
+                                              @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        planService.agreeInvitedPlan(planId, userDetails.getMember().getNickname());
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
-
-
-
-
-
+    @PostMapping("/plans/{planId}/invite/disagree")
+    public ResponseEntity<?> disagreeInvitedPlan(@PathVariable Long planId,
+                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        planService.disagreeInvitedPlan(planId, userDetails.getMember().getNickname());
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
 
     // HTTPS 수신상태가 양호함을 AWS 와 통신하는 API

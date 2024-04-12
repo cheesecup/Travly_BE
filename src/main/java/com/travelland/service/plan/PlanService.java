@@ -11,12 +11,14 @@ import com.travelland.dto.plan.PlanDto;
 import com.travelland.dto.plan.UnitPlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
+import com.travelland.global.notify.DoEvent;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.DayPlanRepository;
 import com.travelland.repository.plan.PlanCommentRepository;
 import com.travelland.repository.plan.PlanRepository;
 import com.travelland.repository.plan.UnitPlanRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +43,7 @@ public class PlanService {
     private final PlanCommentRepository planCommentRepository;
 
     private final StringRedisTemplate redisTemplate;
+    private final ApplicationEventPublisher eventPublisher;
     private static final String PLAN_TOTAL_COUNT = "plan_total_count";
 
     // Plan 작성
@@ -354,5 +357,20 @@ public class PlanService {
     private Plan getPlan(Long planId) {
         return planRepository.findById(planId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+    }
+
+    @Transactional
+    public void invitePlan(Long planId, PlanDto.Invitee invitee, String invitor) {
+        eventPublisher.publishEvent(new DoEvent.DoInviteEvent(this, planId, invitee.getInvitee(), invitor));
+    }
+
+    @Transactional
+    public void agreeInvitedPlan(Long planId, String invitee) {
+        eventPublisher.publishEvent(new DoEvent.DoAgreeEvent(this, planId, invitee));
+    }
+
+    @Transactional
+    public void disagreeInvitedPlan(Long planId, String invitee) {
+        eventPublisher.publishEvent(new DoEvent.DoDisagreeEvent(this, planId, invitee));
     }
 }

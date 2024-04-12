@@ -223,4 +223,9 @@ public class PlanDto {
             this.tripEndDate = planScrap.getPlan().getTripEndDate();
         }
     }
+
+    @Getter
+    public static class Invitee {
+        private List<String> invitee;
+    }
 }
