@@ -2,7 +2,7 @@ name: Deploy on PR merge  # Actions 식별이름
 
 on: # 발동조건
   push:
-    branches: [ main, dev, master, features/plan ]
+    branches: [ main, dev, master, features/plan, features/login ]
 #  pull_request: # github에서 pull-request일때
 #    types: [ closed ] # 특히 pull-request가 close(완료)되었을 때 (단 완료는 동의완료와 반대완료가 존재하기에 동의완료만 되도록 아래서 if문)
 #    branches: [ main, dev ] # 2개 이상시 '[]'를 이용해 가로나열 하거나 '-'를 이용해 세로나열
