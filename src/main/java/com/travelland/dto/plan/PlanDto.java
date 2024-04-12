@@ -25,9 +25,9 @@ public class PlanDto {
         @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
         @Size(max = 100)
         private String title;
-        //FE에없음 //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
-        @Size(max = 1000)
-        private String content;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 1000)
+//        private String content;
         @Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
         private int budget;
         @NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)
@@ -46,9 +46,9 @@ public class PlanDto {
         @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
         @Size(max = 100)
         private String title;
-        //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
-        @Size(max = 1000)
-        private String content;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 1000)
+//        private String content;
         @Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
         private int budget;
         @NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)
@@ -75,7 +75,7 @@ public class PlanDto {
     public static class Get {
         private final Long planId;
         private final String title;
-        private final String content;
+//        private final String content;
         private final int budget;
         private final String area;
         private final Boolean isPublic;
@@ -90,7 +90,7 @@ public class PlanDto {
         public Get(Plan plan) {
             this.planId = plan.getId();
             this.title = plan.getTitle();
-            this.content = plan.getContent();
+//            this.content = plan.getContent();
             this.budget = plan.getBudget();
             this.area = plan.getArea();
             this.isPublic = plan.getIsPublic();
@@ -131,7 +131,7 @@ public class PlanDto {
     public static class GetAllInOne {
         private final Long planId;
         private final String title;
-        private final String content;
+//        private final String content;
         private final int budget;
         private final String area;
         private final Boolean isPublic;
@@ -149,7 +149,7 @@ public class PlanDto {
         public GetAllInOne(Get plan, String profileUrl, List<DayPlanDto.GetAllInOne> dayPlans) {
             this.planId = plan.getPlanId();
             this.title = plan.getTitle();
-            this.content = plan.getContent();
+//            this.content = plan.getContent();
             this.budget = plan.getBudget();
             this.area = plan.getArea();
             this.isPublic = plan.getIsPublic();
@@ -171,9 +171,9 @@ public class PlanDto {
         @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
         @Size(max = 100)
         private String title;
-        //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
-        @Size(max = 1000)
-        private String content;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 1000)
+//        private String content;
         @Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
         private int budget;
         @NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)
@@ -192,9 +192,9 @@ public class PlanDto {
         @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
         @Size(max = 100)
         private String title;
-        //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
-        @Size(max = 1000)
-        private String content;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 1000)
+//        private String content;
         @Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
         private int budget;
         @NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)

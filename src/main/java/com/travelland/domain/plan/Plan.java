@@ -27,7 +27,7 @@ public class Plan {
     private String title;
 
     @Column(length = 1000)
-    private String content;
+//    private String content;
 
     private int budget;
 
@@ -62,7 +62,7 @@ public class Plan {
 
     public Plan(PlanDto.Create request, Member member) {
         this.title = request.getTitle();
-        this.content = request.getContent();
+//        this.content = request.getContent();
         this.budget = request.getBudget();
         this.area = request.getArea();
         this.isPublic = request.getIsPublic();
@@ -76,7 +76,7 @@ public class Plan {
 
     public Plan(PlanDto.CreateAllInOne request, Member member) {
         this.title = request.getTitle();
-        this.content = request.getContent();
+//        this.content = request.getContent();
         this.budget = request.getBudget();
         this.area = request.getArea();
         this.isPublic = request.getIsPublic();
@@ -90,7 +90,7 @@ public class Plan {
 
     public Plan update(PlanDto.Update request) {
         this.title = request.getTitle();
-        this.content = request.getContent();
+//        this.content = request.getContent();
         this.budget = request.getBudget();
         this.area = request.getArea();
         this.isPublic = request.getIsPublic();
@@ -103,7 +103,7 @@ public class Plan {
 
     public Plan update(PlanDto.UpdateAllInOne request) {
         this.title = request.getTitle();
-        this.content = request.getContent();
+//        this.content = request.getContent();
         this.budget = request.getBudget();
         this.area = request.getArea();
         this.isPublic = request.getIsPublic();
