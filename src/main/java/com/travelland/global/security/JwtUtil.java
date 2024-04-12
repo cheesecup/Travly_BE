@@ -91,6 +91,15 @@ public class JwtUtil {
         return null;
     }
 
+    // header 에서 JWT 가져오기
+    public String getJwtFromHeader(HttpServletRequest request) {
+        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
     // Set JWT cookie
     public void addJwtToCookie(String token, HttpServletResponse response) {
         token = URLEncoder.encode(token, StandardCharsets.UTF_8).replace("+", "%20"); // Cookie Value 에는 공백이 불가능해서 encoding 진행
