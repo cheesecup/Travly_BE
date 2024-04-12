@@ -59,9 +59,9 @@ public class MemberDto {
         private String gender;
         private String profileImage;
         private String thumbnailProfileImage;
-        private String code;
+//        private String code;
 
-        public MemberInfo(Member member, String code) {
+        public MemberInfo(Member member) {
             this.nickname = member.getNickname();
             this.email = member.getEmail();
             this.name = member.getName();
@@ -69,7 +69,7 @@ public class MemberDto {
             this.gender = member.getGender().toString();
             this.profileImage = member.getProfileImage();
             this.thumbnailProfileImage = member.getThumbnailProfileImage();
-            this.code = code;
+//            this.code = code;
         }
     }
 }

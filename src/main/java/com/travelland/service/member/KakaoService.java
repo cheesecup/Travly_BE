@@ -52,9 +52,9 @@ public class KakaoService {
         String refreshToken = jwtUtil.createRefreshToken();
 
         refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, createToken));
-//        jwtUtil.addJwtToCookie(createToken, response);
+        jwtUtil.addJwtToCookie(createToken, response);
 
-        return new MemberDto.MemberInfo(member, createToken);
+        return new MemberDto.MemberInfo(member);
     }
 
     private String getToken(String code) throws JsonProcessingException {
@@ -74,7 +74,7 @@ public class KakaoService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", "aa4b6a242e99488886c885baee1cd1ab");
-        body.add("redirect_uri", "https://spparta.store/users/login/kakao");
+        body.add("redirect_uri", "http://localhost:8080/users/login/kakao");
         body.add("code", code);
 
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity
