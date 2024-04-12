@@ -18,13 +18,13 @@ public class DayPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 100)
-    private String title;
-
-    @Column(length = 500)
-    private String content;
-
-    private int budget;
+//    @Column(length = 100)
+//    private String title;
+//
+//    @Column(length = 500)
+//    private String content;
+//
+//    private int budget;
 
     private LocalDate date;
 
@@ -35,34 +35,34 @@ public class DayPlan {
     private Boolean isDeleted = false;
 
     public DayPlan(DayPlanDto.Create request, Plan plan) {
-        this.title = request.getTitle();
-        this.content = request.getContent();
-        this.budget = request.getBudget();
+//        this.title = request.getTitle();
+//        this.content = request.getContent();
+//        this.budget = request.getBudget();
         this.date = request.getDate();
         this.plan = plan;
     }
 
     public DayPlan(DayPlanDto.CreateAllInOne request, Plan plan) {
-        this.title = request.getTitle();
-        this.content = request.getContent();
-        this.budget = request.getBudget();
+//        this.title = request.getTitle();
+//        this.content = request.getContent();
+//        this.budget = request.getBudget();
         this.date = request.getDate();
         this.plan = plan;
     }
 
     public DayPlan update(DayPlanDto.Update request) {
-        this.title = request.getTitle();
-        this.content = request.getContent();
-        this.budget = request.getBudget();
+//        this.title = request.getTitle();
+//        this.content = request.getContent();
+//        this.budget = request.getBudget();
         this.date = request.getDate();
 
         return this;
     }
 
     public DayPlan update(DayPlanDto.UpdateAllInOne request) {
-        this.title = request.getTitle();
-        this.content = request.getContent();
-        this.budget = request.getBudget();
+//        this.title = request.getTitle();
+//        this.content = request.getContent();
+//        this.budget = request.getBudget();
         this.date = request.getDate();
 
         return this;
