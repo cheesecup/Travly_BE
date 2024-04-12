@@ -35,7 +35,9 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String tokenValue = jwtUtil.getJwtFromCookie(request);
+        //String tokenValue = jwtUtil.getJwtFromCookie(request);
+        String tokenValue = jwtUtil.getJwtFromHeader(request);
+        //log.info("Header = " + tokenValue);
 
         if (!StringUtils.hasText(tokenValue)) {
             filterChain.doFilter(request, response);
