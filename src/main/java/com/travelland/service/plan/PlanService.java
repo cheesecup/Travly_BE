@@ -86,6 +86,7 @@ public class PlanService {
     // Plan 상세단일 조회
     public PlanDto.Get readPlan(Long planId) {
         Plan plan = planRepository.findByIdAndIsDeletedAndIsPublic(planId, false, true).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        plan.increaseViewCount(); // 조회수 증가
         return new PlanDto.Get(plan);
     }
 
@@ -96,6 +97,7 @@ public class PlanService {
 //        Member member = memberRepository.findByEmail("test@test.com").orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
 
         Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        plan.increaseViewCount(); // 조회수 증가
         return new PlanDto.Get(plan);
     }
 
