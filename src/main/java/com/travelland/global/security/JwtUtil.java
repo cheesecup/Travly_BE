@@ -83,11 +83,17 @@ public class JwtUtil {
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if (AUTHORIZATION_HEADER.equals(cookie.getName())) {
+                    log.info("cookie: " + cookie.getValue());
                     return URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8);
                 }
             }
         }
         return null;
+    }
+
+    // header 에서 JWT 가져오기
+    public String getJwtFromHeader(HttpServletRequest request) {
+        return request.getHeader(AUTHORIZATION_HEADER);
     }
 
     // Set JWT cookie

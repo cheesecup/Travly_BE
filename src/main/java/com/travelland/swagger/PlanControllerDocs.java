@@ -13,19 +13,19 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "여행 플랜 API", description = "Plan, DayPlan, UnitPlan 모두 포함")
-public interface PlanControllerDocs {
+@Tag(name = "여행 플랜 API", description = "여행 전 플랜 관련 API")
+public interface PlanControllerDocs {//
 
-    @Operation(summary = "Plan 작성", description = " ")
+    @Operation(summary = "Plan 작성", description = "시간은 yyyy-MM-dd 포맷")
     ResponseEntity createPlan(@RequestBody PlanDto.Create request);
 
-    @Operation(summary = "Plan 한방 작성", description = "Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재")
+    @Operation(summary = "Plan 한방 작성", description = "Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재\n Plan/DayPlan의 시간은 yyyy-MM-dd 포맷, UnitPlan은 HH:mm 포맷")
     ResponseEntity createPlanAllInOne(@RequestBody PlanDto.CreateAllInOne request);
 
-    @Operation(summary = "Plan 상세/단일 조회", description = "상세조회, planId로 조회, userId는 로그인구현 후")
+    @Operation(summary = "Plan 상세/단일 조회", description = "상세조회, planId로 조회")
     ResponseEntity readPlan(@PathVariable Long planId);
 
-    @Operation(summary = "(마이페이지용) Plan 유저별 상세/단일 조회", description = "상세조회, planId로 조회, userId는 로그인구현 후")
+    @Operation(summary = "(마이페이지용) Plan 유저별 상세/단일 조회", description = "상세조회, planId로 조회")
     ResponseEntity readPlanForMember(@PathVariable Long planId);
 
     @Operation(summary = "Plan 한방 상세/단일 조회", description = "Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재")
