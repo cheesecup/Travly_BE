@@ -18,28 +18,28 @@ public class DayPlanDto {
 
     @Getter
     public static class Create {
-        //FE에없음 //@NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
-        @Size(max = 100)
-        private String title;
-        //FE에없음 //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
-        @Size(max = 500)
-        private String content;
-        //FE에없음 //@Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
-        private int budget;
+//        @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
+//        @Size(max = 100)
+//        private String title;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 500)
+//        private String content;
+//        @Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
+//        private int budget;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate date;
     }
 
     @Getter
     public static class CreateAllInOne {
-        //@NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
-        @Size(max = 100)
-        private String title;
-        //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
-        @Size(max = 500)
-        private String content;
-        //@Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
-        private int budget;
+//        @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
+//        @Size(max = 100)
+//        private String title;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 500)
+//        private String content;
+//        @Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
+//        private int budget;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate date;
         private List<UnitPlanDto.CreateAllInOne> unitPlans;
@@ -57,16 +57,16 @@ public class DayPlanDto {
     @Getter
     public static class Get {
         private final Long dayPlanId;
-        private final String title;
-        private final String content;
-        private final int budget;
+//        private final String title;
+//        private final String content;
+//        private final int budget;
         private final LocalDate date;
 
         public Get(DayPlan dayPlan) {
             this.dayPlanId = dayPlan.getId();
-            this.title = dayPlan.getTitle();
-            this.content = dayPlan.getContent();
-            this.budget = dayPlan.getBudget();
+//            this.title = dayPlan.getTitle();
+//            this.content = dayPlan.getContent();
+//            this.budget = dayPlan.getBudget();
             this.date = dayPlan.getDate();
         }
     }
@@ -75,9 +75,9 @@ public class DayPlanDto {
     @ToString
     public static class GetAllInOne {
         private final Long dayPlanId;
-        private final String title;
-        private final String content;
-        private final int budget;
+//        private final String title;
+//        private final String content;
+//        private final int budget;
         private final LocalDate date;
         private final List<UnitPlanDto.GetAllInOne> unitPlans;
         private final String startAddress; // 당일의 첫번재 UnitPlan 장소
@@ -87,9 +87,9 @@ public class DayPlanDto {
         @Builder
         public GetAllInOne(Get dayPlan, List<UnitPlanDto.GetAllInOne> unitPlans, String startAddress, String endAddress, String path) {
             this.dayPlanId = dayPlan.getDayPlanId();
-            this.title = dayPlan.getTitle();
-            this.content = dayPlan.getContent();
-            this.budget = dayPlan.getBudget();
+//            this.title = dayPlan.getTitle();
+//            this.content = dayPlan.getContent();
+//            this.budget = dayPlan.getBudget();
             this.date = dayPlan.getDate();
             this.unitPlans = unitPlans;
             this.startAddress = startAddress;
@@ -100,14 +100,14 @@ public class DayPlanDto {
 
     @Getter
     public static class Update {
-        //@NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
-        @Size(max = 100)
-        private String title;
-        //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
-        @Size(max = 500)
-        private String content;
-        //@Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
-        private int budget;
+//        @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
+//        @Size(max = 100)
+//        private String title;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 500)
+//        private String content;
+//        @Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
+//        private int budget;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate date;
     }
@@ -115,14 +115,14 @@ public class DayPlanDto {
     @Getter
     public static class UpdateAllInOne {
         private Long dayPlanId;
-        //@NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
-        @Size(max = 100)
-        private String title;
-        //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
-        @Size(max = 500)
-        private String content;
-        //@Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
-        private int budget;
+//        @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
+//        @Size(max = 100)
+//        private String title;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 500)
+//        private String content;
+//        @Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
+//        private int budget;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate date;
         private List<UnitPlanDto.UpdateAllInOne> unitPlans;
