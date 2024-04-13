@@ -40,9 +40,9 @@ public class Plan {
 
     private LocalDate tripEndDate;
 
-    private int viewCount;
+    private int viewCount = 0;
 
-    private int likeCount;
+    private int likeCount = 0;
 
     private Boolean isVotable;
 
@@ -68,8 +68,6 @@ public class Plan {
         this.isPublic = request.getIsPublic();
         this.tripStartDate = request.getTripStartDate();
         this.tripEndDate = request.getTripEndDate();
-        this.viewCount = 0;
-        this.likeCount = 0;
         this.isVotable = request.getIsVotable();
         this.member = member;
     }
@@ -82,8 +80,6 @@ public class Plan {
         this.isPublic = request.getIsPublic();
         this.tripStartDate = request.getTripStartDate();
         this.tripEndDate = request.getTripEndDate();
-        this.viewCount = 0;
-        this.likeCount = 0;
         this.isVotable = request.getIsVotable();
         this.member = member;
     }
