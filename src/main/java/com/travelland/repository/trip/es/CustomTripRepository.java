@@ -1,6 +1,7 @@
 package com.travelland.repository.trip.es;
 
 import com.travelland.esdoc.TripSearchDoc;
+import com.travelland.global.job.DataSet;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.SearchHits;
 
@@ -14,4 +15,9 @@ public interface CustomTripRepository {
     List<String> searchByAddress(String address);
 
     SearchHits<TripSearchDoc> searchByEmail(Pageable pageable, String email);
+
+    SearchHits<TripSearchDoc> findAllList(Pageable pageable);
+
+    List<DataSet> readViewCount(Pageable pageable);
+
 }

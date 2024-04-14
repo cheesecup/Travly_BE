@@ -10,9 +10,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@ToString
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+
+@Data
+@NoArgsConstructor
 @Document(indexName = "tripdocs" )
 @Setting(settingPath = "static/es-setting.json")
 @Mapping(mappingPath = "static/es-mapping.json")
@@ -51,10 +51,6 @@ public class TripSearchDoc {
 
     @Field(name = "created_at", type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     private LocalDateTime createdAt;
-
-//    @Field(name = "location", type = FieldType.Object)
-//    @GeoPointField
-//    private GeoPoint location;
 
     @Field(name = "address", type = FieldType.Text)
     private String address;
