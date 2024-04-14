@@ -1,5 +1,6 @@
 package com.travelland.controller;
 
+import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.swagger.TripControllerDocs;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.service.trip.TripLikeService;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +26,7 @@ public class TripController implements TripControllerDocs {
     private final TripService tripService;
     private final TripLikeService tripLikeService;
     private final TripScrapService tripScrapService;
+
     private final TripSearchService tripSearchService;
 
     //여행정보 작성
@@ -31,8 +34,8 @@ public class TripController implements TripControllerDocs {
     public ResponseEntity<TripDto.Id> createTrip(@RequestPart TripDto.Create requestDto,
                                                  @RequestPart MultipartFile thumbnail,
                                                  @RequestPart(required = false) List<MultipartFile> imageList,
-                                                 @RequestParam String email) {
-        TripDto.Id responseDto = tripService.createTrip(requestDto, thumbnail, imageList, email);
+                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        TripDto.Id responseDto = tripService.createTrip(requestDto, thumbnail, imageList, userDetails.getUsername());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -60,32 +63,32 @@ public class TripController implements TripControllerDocs {
                                                  @RequestPart TripDto.Update requestDto,
                                                  @RequestPart(required = false) MultipartFile thumbnail,
                                                  @RequestPart(required = false) List<MultipartFile> imageList,
-                                                 @RequestParam String email){
-        TripDto.Id responseDto = tripService.updateTrip(tripId, requestDto, thumbnail, imageList, email);
+                                                 @AuthenticationPrincipal UserDetailsImpl userDetails){
+        TripDto.Id responseDto = tripService.updateTrip(tripId, requestDto, thumbnail, imageList, userDetails.getUsername());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     //여행정보 삭제
     @DeleteMapping("/trips/{tripId}")
-    public ResponseEntity<TripDto.Delete> deleteTrip(@PathVariable Long tripId) {
-        tripService.deleteTrip(tripId, "test@test.com");
+    public ResponseEntity<TripDto.Delete> deleteTrip(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        tripService.deleteTrip(tripId, userDetails.getUsername());
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Delete(true));
     }
 
     //여행정보 좋아요 등록
     @PostMapping("/trips/{tripId}/like")
-    public ResponseEntity<TripDto.Result> createTripLike(@PathVariable Long tripId) {
-        tripLikeService.registerTripLike(tripId, "test@test.com");
+    public ResponseEntity<TripDto.Result> createTripLike(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        tripLikeService.registerTripLike(tripId, userDetails.getUsername());
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(true));
     }
 
     //여행정보 좋아요 취소
     @DeleteMapping("/trips/{tripId}/like")
-    public ResponseEntity<TripDto.Result> deleteTripLike(@PathVariable Long tripId) {
-        tripLikeService.cancelTripLike(tripId, "test@test.com");
+    public ResponseEntity<TripDto.Result> deleteTripLike(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        tripLikeService.cancelTripLike(tripId, userDetails.getUsername());
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(false));
     }
@@ -93,24 +96,25 @@ public class TripController implements TripControllerDocs {
     //여행정보 좋아요 목록 조회
     @GetMapping("/trips/like")
     public ResponseEntity<List<TripDto.Likes>> getTripLikeList(@RequestParam(defaultValue = "1") int page,
-                                                               @RequestParam(defaultValue = "9") int size) {
-        List<TripDto.Likes> responseDto = tripLikeService.getTripLikeList(page, size, "test@test.com");
+                                                               @RequestParam(defaultValue = "9") int size,
+                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        List<TripDto.Likes> responseDto = tripLikeService.getTripLikeList(page, size, userDetails.getUsername());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     //여행정보 스크랩 등록
     @PostMapping("/trips/{tripId}/scrap")
-    public ResponseEntity<TripDto.Result> createTripScrap(@PathVariable Long tripId) {
-        tripScrapService.registerTripScrap(tripId, "test@test.com");
+    public ResponseEntity<TripDto.Result> createTripScrap(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        tripScrapService.registerTripScrap(tripId, userDetails.getUsername());
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(true));
     }
 
     //여행정보 스크랩 취소
     @DeleteMapping("/trips/{tripId}/scrap")
-    public ResponseEntity<TripDto.Result> deleteTripScrap(@PathVariable Long tripId) {
-        tripScrapService.cancelTripScrap(tripId, "test@test.com");
+    public ResponseEntity<TripDto.Result> deleteTripScrap(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        tripScrapService.cancelTripScrap(tripId, userDetails.getUsername());
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(false));
     }
@@ -118,8 +122,9 @@ public class TripController implements TripControllerDocs {
     //여행정보 스크랩 목록 조회
     @GetMapping("/trips/scrap")
     public ResponseEntity<List<TripDto.Scraps>> getTripScrapList(@RequestParam(defaultValue = "1") int page,
-                                                                 @RequestParam(defaultValue = "9") int size) {
-        List<TripDto.Scraps> responseDto = tripScrapService.getTripScrapList(page, size, "test@test.com");
+                                                                 @RequestParam(defaultValue = "9") int size,
+                                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        List<TripDto.Scraps> responseDto = tripScrapService.getTripScrapList(page, size, userDetails.getUsername());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -127,8 +132,9 @@ public class TripController implements TripControllerDocs {
     // 작성한 여행정보 게시글 목록 조회
     @GetMapping("/users/trips")
     public ResponseEntity<List<TripDto.GetList>> getMyTripList(@RequestParam(defaultValue = "1") int page,
-                                                                   @RequestParam(defaultValue = "9") int size) {
-        return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getMyTripList(page, size, "test@test.com"));
+                                                               @RequestParam(defaultValue = "9") int size,
+                                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getMyTripList(page, size, userDetails.getUsername()));
     }
 
     //여행정보 해쉬태그 검색
