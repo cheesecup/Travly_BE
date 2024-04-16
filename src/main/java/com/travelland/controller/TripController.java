@@ -122,7 +122,7 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(false));
     }
 
-    //여행정보 스크랩 목록 조회
+    //스크랩한 여행 목록 조회
     @GetMapping("/trips/scrap")
     public ResponseEntity<List<TripDto.Scraps>> getTripScrapList(@RequestParam(defaultValue = "1") int page,
                                                                  @RequestParam(defaultValue = "9") int size,
@@ -197,5 +197,13 @@ public class TripController implements TripControllerDocs {
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripCommentDto.Delete(true));
     }
+
+    //여행정보 조회수 TOP 10 목록 조회
+    @GetMapping("/trips/rank")
+    public ResponseEntity<List<TripDto.GetList>> getTripListTop10() {
+        return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getTripListTop10());
+    }
+
+    //지역 카테고리별 목록 조회
 
 }

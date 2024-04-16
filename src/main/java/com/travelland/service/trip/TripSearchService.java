@@ -1,10 +1,12 @@
 package com.travelland.service.trip;
 
-import com.travelland.esdoc.TripSearchDoc;
+import com.amazonaws.util.CollectionUtils;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.dto.trip.TripDto;
+import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.repository.trip.TripSearchESRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.ActionListener;
@@ -24,6 +26,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -32,6 +36,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j(topic = "ES")
 @Service
@@ -39,6 +44,14 @@ import java.util.concurrent.TimeUnit;
 public class TripSearchService {
     private final TripSearchESRepository tripSearchRepository;
     private final RestHighLevelClient client;
+
+    private final StringRedisTemplate redisTemplate;
+    private ZSetOperations<String, String> zSetOperations;
+
+    @PostConstruct
+    public void init() {
+        zSetOperations = redisTemplate.opsForZSet();
+    }
 
     private static final String TOTAL_ELEMENTS = "trip:totalElements";
 
@@ -95,11 +108,6 @@ public class TripSearchService {
                 .resultAddress(addr)
                 .nearPlaces(tripSearchRepository.searchByAddress(addr))
                 .build();
-    }
-
-    public List<TripDto.GetList> getTripList(int page, int size, String sortBy, boolean isAsc){
-        return tripSearchRepository.findAll(PageRequest.of(page-1, size,
-                Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy))).map(TripDto.GetList::new).getContent();
     }
 
     public void putSearchLog(String query,String memberId){
@@ -169,10 +177,22 @@ public class TripSearchService {
     public void deleteTrip(Long tripId) {
         tripSearchRepository.deleteByTripId(tripId);
     }
-
+    
+    //여행정복 목록 조회
+    public List<TripDto.GetList> getTripList(int page, int size, String sortBy, boolean isAsc){
+        return tripSearchRepository.findAll(PageRequest.of(page-1, size,
+                Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy))).map(TripDto.GetList::new).getContent();
+    }
+    
+    //내가 작성한 여행정보 게시글 목록 조회
     public List<TripDto.GetList> getMyTripList(int page, int size, String email) {
         return tripSearchRepository.findByEmail(PageRequest.of(page-1, size,
                 Sort.by(Sort.Direction.DESC, "createdAt")), email).map(TripDto.GetList::new).getContent();
+    }
+    
+    //여행정보 조회수 top10 목록 조회
+    public List<TripDto.GetList> getTripListTop10() {
+        return getTop10Ids().stream().map(id -> new TripDto.GetList(tripSearchRepository.findByTripId(id))).toList();
     }
 
     public void increaseViewCount(Long tripId) {
@@ -226,5 +246,16 @@ public class TripSearchService {
             }
         }
         return 0;
+    }
+    
+    //여행정보 조회수 top 10 tripId 조회
+    private List<Long> getTop10Ids() {
+        Set<String> ids = zSetOperations.reverseRange("tripViewRank", 0, 9);
+
+        if (CollectionUtils.isNullOrEmpty(ids)) {
+            return new ArrayList<>();
+        }
+
+        return ids.stream().map(Long::parseLong).collect(Collectors.toList());
     }
 }
