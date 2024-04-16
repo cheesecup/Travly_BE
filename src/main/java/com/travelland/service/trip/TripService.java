@@ -1,6 +1,5 @@
 package com.travelland.service.trip;
 
-import com.amazonaws.util.CollectionUtils;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.domain.trip.TripHashtag;
@@ -11,17 +10,12 @@ import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripHashtagRepository;
 import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +31,8 @@ public class TripService {
     private final TripSearchService tripSearchService;
 
     private static final String TRIP_TOTAL_ELEMENTS = "trip:totalElements";
+    private static final String VIEW_COUNT = "viewCount:tripId:";
+    private static final String VIEW_RANK = "tripViewRank";
 
     @Transactional
     public TripDto.Id createTrip(TripDto.Create requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, String email) {
@@ -72,11 +68,11 @@ public class TripService {
             isScrap = tripScrapService.statusTripScrap(tripId, email);
 
             //조회수 증가
-            Long result = redisTemplate.opsForSet().add("viewCount:tripId:" + tripId, email); //redis 조회수 증가
+            Long result = redisTemplate.opsForSet().add(VIEW_COUNT + tripId, email); //redis 조회수 증가
 
             if (result != null && result == 1L) {
-                Long view = redisTemplate.opsForSet().size("viewCount:tripId:" + tripId); //redis 조회수 Get
-                redisTemplate.opsForZSet().add("tripViewRank", tripId.toString(), view);
+                Long view = redisTemplate.opsForSet().size(VIEW_COUNT + tripId); //redis 조회수 Get
+                redisTemplate.opsForZSet().add(VIEW_RANK, tripId.toString(), view);
             }
         }
 
