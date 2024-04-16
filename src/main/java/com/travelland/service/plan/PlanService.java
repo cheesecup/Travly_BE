@@ -278,9 +278,7 @@ public class PlanService {
         Member member = userDetails.getMember();
 
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        System.out.println(plan.getId());
-        System.out.println(plan.getMember().getId());
-        System.out.println(member.getId());
+
         if (member.getId() != plan.getMember().getId()) {
             throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
         }

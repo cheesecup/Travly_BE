@@ -38,11 +38,15 @@ public class UnitPlan {
 
     private String time;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "day_plan_id")
     private DayPlan dayPlan;
 
     private Boolean isDeleted = false;
+
+//    public void setDayPlan(DayPlan dayPlan) {
+//        this.dayPlan = dayPlan;
+//    }
 
     public UnitPlan(UnitPlanDto.Create request, DayPlan dayPlan) {
         this.title = request.getTitle();
