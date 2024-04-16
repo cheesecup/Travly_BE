@@ -48,7 +48,7 @@ public class PlanController implements PlanControllerDocs {
     // Plan 유저별 상세단일 조회
     @GetMapping("/users/plans/{planId}")
     public ResponseEntity<PlanDto.Get> readPlanForMember(@PathVariable Long planId) {
-        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanForMember(planId));
+        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlan/*ForMember*/(planId));
     }
 
     // Plan 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
@@ -60,7 +60,7 @@ public class PlanController implements PlanControllerDocs {
     // Plan 유저별 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     @GetMapping("/users/plans/allInOn/{planId}")
     public ResponseEntity<PlanDto.GetAllInOne> readPlanAllInOneForMember(@PathVariable Long planId) {
-        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanAllInOneForMember(planId));
+        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanAllInOne/*ForMember*/(planId));
     }
 
     // Plan 전체목록 조회
@@ -78,7 +78,7 @@ public class PlanController implements PlanControllerDocs {
                                                                    @RequestParam int size,
                                                                    @RequestParam String sortBy,
                                                                    @RequestParam boolean isAsc) {
-        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanListForMember(page, size, sortBy, isAsc));
+        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanList/*ForMember*/(page, size, sortBy, isAsc));
     }
 
     // Plan 전체조회 (Redis)

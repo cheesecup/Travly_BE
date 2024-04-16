@@ -96,7 +96,7 @@ public class PlanService {
         Member member = userDetails.getMember();
 //        Member member = memberRepository.findByEmail("test@test.com").orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
 
-        Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        Plan plan = planRepository.findByMemberIdAndIsDeleted(member.getId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
         plan.increaseViewCount(); // 조회수 증가
         return new PlanDto.Get(plan);
     }
@@ -144,14 +144,19 @@ public class PlanService {
                     .build());
         }
 
+        Plan plan = planRepository.findByIdAndIsDeletedAndIsPublic(planId, false, true).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
         return PlanDto.GetAllInOne.builder()
-                .plan(readPlan(planId))
-                .profileUrl("profileUrl")
+                .plan(new PlanDto.Get(plan))
+                .profileUrl(plan.getMember().getProfileImage())
                 .dayPlans(ones).build();
     }
 
     // Plan 유저별 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     public PlanDto.GetAllInOne readPlanAllInOneForMember(Long planId) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Member member = userDetails.getMember();
+//        Member member = memberRepository.findByEmail("test@test.com").orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER));
+
         List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
         List<DayPlanDto.Get> dayPlanDtos = dayPlanList.stream().map(DayPlanDto.Get::new).toList();
 
@@ -193,9 +198,10 @@ public class PlanService {
                     .build());
         }
 
+        Plan plan = planRepository.findByMemberIdAndIsDeleted(member.getId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
         return PlanDto.GetAllInOne.builder()
-                .plan(readPlanForMember(planId))
-                .profileUrl("profileUrl")
+                .plan(new PlanDto.Get(plan))
+                .profileUrl(plan.getMember().getProfileImage())
                 .dayPlans(ones).build();
     }
 
