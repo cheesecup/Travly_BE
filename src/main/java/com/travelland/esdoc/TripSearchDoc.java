@@ -79,7 +79,7 @@ public class TripSearchDoc {
 
 
     @Builder
-    public TripSearchDoc(Trip trip, List<String> hashtag, Member member, String thumbnail) {
+    public TripSearchDoc(Trip trip, List<String> hashtag, Member member, String thumbnailUrl, String profileUrl) {
         this.tripId =trip.getId();
         this.title = trip.getTitle();
         this.cost = trip.getCost();
@@ -91,9 +91,9 @@ public class TripSearchDoc {
         this.createdAt = LocalDateTime.now();
         this.address = trip.getAddress();
         this.nickname = member.getNickname();
-        this.profileUrl = "https://profileUrl.com";
+        this.profileUrl = profileUrl;
         this.viewCount = trip.getViewCount();
-        this.thumbnailUrl = thumbnail;
+        this.thumbnailUrl = thumbnailUrl;
         this.email = member.getEmail();
         this.isPublic = trip.isPublic();
     }
