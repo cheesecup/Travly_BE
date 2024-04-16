@@ -10,6 +10,7 @@ import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripHashtagRepository;
 import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,11 +31,11 @@ public class TripService {
     private final TripScrapService tripScrapService;
     private final TripSearchService tripSearchService;
 
-    private static final String TOTAL_ELEMENTS = "trip:totalElements";
+    private static final String TRIP_TOTAL_ELEMENTS = "trip:totalElements";
 
     @Transactional
     public TripDto.Id createTrip(TripDto.Create requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, String email) {
-        Member member = memberRepository.findByEmail(email).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        Member member = getMember(email);
         Trip trip = tripRepository.save(new Trip(requestDto, member));
 
         if (!requestDto.getHashTag().isEmpty()) //해쉬태그 저장
@@ -44,37 +45,45 @@ public class TripService {
         if (!thumbnail.isEmpty()) //여행정보 이미지 정보 저장
             thumbnailUrl = tripImageService.createTripImage(thumbnail, imageList, trip);
 
-        tripSearchService.createTripDocument(trip, requestDto.getHashTag(), member, thumbnailUrl); //ES
+        redisTemplate.opsForValue().increment(TRIP_TOTAL_ELEMENTS);
 
-        redisTemplate.opsForValue().increment(TOTAL_ELEMENTS);
+        tripSearchService.createTripDocument(trip, requestDto.getHashTag(), member, thumbnailUrl, member.getThumbnailProfileImage()); //ES 저장
 
         return new TripDto.Id(trip.getId());
     }
 
     @Transactional
-    public TripDto.Get getTrip(Long tripId) {
-//        Trip trip = tripRepository.findByIdAndIsDeletedAndIsPublic(tripId, false, true).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
-        Trip trip = tripRepository.findByIdAndIsDeleted(tripId, false).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
-        
-        // 조회수 증가
-        trip.increaseViewCount();
-        tripSearchService.increaseViewCount(tripId);
+    public TripDto.Get getTrip(Long tripId, String email) {
+        Trip trip = tripRepository.findByIdAndIsDeletedAndIsPublic(tripId, false, true).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
-        // 해쉬태그 가져오기
-        List<String> hashTag = tripHashtagRepository.findAllByTrip(trip).stream()
-                .map(TripHashtag::getTitle).toList();
-
+        List<String> hashtagList = tripHashtagRepository.findAllByTrip(trip).stream().map(TripHashtag::getTitle).toList();
         List<String> imageUrlList = tripImageService.getTripImageUrl(trip);
+        
+        // 로그인한 회원 스크랩/좋아요 여부 확인
+        boolean isLike = false;
+        boolean isScrap = false;
+        if (!email.isEmpty()) {
+            isLike = tripLikeService.statusTripLike(tripId, email);
+            isScrap = tripScrapService.statusTripScrap(tripId, email);
+        }
 
-        boolean isLike = tripLikeService.statusTripLike("test@test.com", tripId);
-        boolean isScrap = tripScrapService.statusTripScrap("test@test.com", tripId);
+        // 조회수 증가
+//        trip.increaseViewCount(); //MySQL
+        Long result = redisTemplate.opsForSet().add("viewCount:tripId:" + tripId, email); //redis 조회수 증가
 
-        return new TripDto.Get(trip, hashTag, imageUrlList, isLike, isScrap);
+        if (result != null && result == 1L) {
+            Long view = redisTemplate.opsForSet().size("viewCount:tripId:" + tripId); //redis 조회수 Get
+            redisTemplate.opsForZSet().add("tripViewRank", tripId.toString(), view);
+        }
+
+//        tripSearchService.increaseViewCount(tripId);
+
+        return new TripDto.Get(trip, hashtagList, imageUrlList, isLike, isScrap);
     }
 
     @Transactional
     public TripDto.Id updateTrip(Long tripId, TripDto.Update requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, String email) {
-        Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        Trip trip = getTrip(tripId);
 
         if (!trip.getMember().getEmail().equals(email))
             throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
@@ -99,7 +108,7 @@ public class TripService {
 
     @Transactional
     public void deleteTrip(Long tripId, String email) {
-        Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        Trip trip = getTrip(tripId);
 
         if (!trip.getMember().getEmail().equals(email))
             throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
@@ -115,11 +124,16 @@ public class TripService {
 
         trip.delete();
 
-        redisTemplate.opsForValue().decrement(TOTAL_ELEMENTS);
+        redisTemplate.opsForValue().decrement(TRIP_TOTAL_ELEMENTS);
     }
 
     private Member getMember(String email) {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    private Trip getTrip(Long tripId) {
+        return tripRepository.findById(tripId)
+                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
     }
 }

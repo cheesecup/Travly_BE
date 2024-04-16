@@ -13,6 +13,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -47,6 +49,8 @@ public class Trip {
 
     private int likeCount;
 
+    private boolean isDeleted;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
@@ -58,13 +62,12 @@ public class Trip {
     @LastModifiedDate
     private LocalDateTime modifiedAt;
 
-    private boolean isDeleted;
-
     public Trip(Create requestDto, Member member) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.cost = requestDto.getCost();
         this.address = requestDto.getAddress();
+        this.area = splitAddress(requestDto.getAddress());
         this.isPublic = requestDto.getIsPublic();
         this.tripStartDate = requestDto.getTripStartDate();
         this.tripEndDate = requestDto.getTripEndDate();
@@ -77,32 +80,16 @@ public class Trip {
     public void update(TripDto.Update requestDto) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
-        this.cost = requestDto.getCost();
-        this.area = requestDto.getArea();
         this.isPublic = requestDto.getIsPublic();
-        this.tripStartDate = requestDto.getTripStartDate();
-        this.tripEndDate = requestDto.getTripEndDate();
     }
 
     public void delete() {
         this.isDeleted = true;
     }
 
-    public void increaseViewCount() {
-        this.viewCount++;
-    }
+    private String splitAddress(String address) {
+        if (address.isEmpty()) return "";
 
-    public void increaseLikeCount() {
-        this.likeCount++;
-    }
-
-    public void decreaseLikeCount() {
-        this.likeCount--;
-    }
-
-    private String splitArea(String area) {
-        if (area.isEmpty()) return "";
-
-        return area.split(" ")[0];
+        return address.split(" ")[0];
     }
 }

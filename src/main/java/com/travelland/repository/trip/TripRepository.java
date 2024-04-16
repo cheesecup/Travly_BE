@@ -1,14 +1,16 @@
 package com.travelland.repository.trip;
 
 import com.travelland.domain.trip.Trip;
-import com.travelland.repository.trip.querydsl.CustomTripRepositoryV2;
+import com.travelland.repository.trip.querydsl.CustomTripRepository;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 
-import javax.swing.text.html.Option;
 import java.util.Optional;
 
-public interface TripRepository extends JpaRepository<Trip, Long>, CustomTripRepositoryV2 {
+public interface TripRepository extends JpaRepository<Trip, Long>, CustomTripRepository {
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Trip> findByIdAndIsDeletedAndIsPublic(Long tripId, boolean isDeleted, boolean isPublic);
 
     Optional<Trip> findByIdAndIsDeleted(Long tripId, boolean isDeleted);

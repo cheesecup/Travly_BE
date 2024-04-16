@@ -20,10 +20,10 @@ public class TripImageService {
     private final TripImageRepository tripImageRepository;
     private final S3FileService s3FileService;
 
-    // 이미지 정보 저장
+    // 이미지 정보 저장, 썸네일 이미지 URL 반환
     @Transactional
     public String createTripImage(MultipartFile thumbnail, List<MultipartFile> imageList, Trip trip) {
-        TripImage tripImage = tripImageRepository.save(new TripImage(s3FileService.s3Upload(thumbnail), true, trip));// 썸네일 이미지 저장
+        TripImage tripImage = tripImageRepository.save(new TripImage(s3FileService.s3Upload(thumbnail), true, trip)); // 썸네일 이미지 저장
 
         if (imageList != null) {
             imageList.stream()
@@ -43,12 +43,13 @@ public class TripImageService {
 
     // 선택한 게시글 썸네일 이미지 URL 가져오기
     @Transactional(readOnly = true)
-    public String getTripImageThumbnailUrl(Trip trip) {
+    public String getTripThumbnailUrl(Trip trip) {
         TripImage tripImage =  tripImageRepository.findByTripAndIsThumbnail(trip, true)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_IMAGE_NOT_FOUND));
         return tripImage.getImageUrl();
     }
-
+    
+    // 게시글 이미지 삭제
     @Transactional
     public void deleteTripImage(Trip trip) {
         List<String> storeImageNameList = tripImageRepository.findAllByTrip(trip).stream()
