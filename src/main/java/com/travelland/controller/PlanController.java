@@ -1,7 +1,6 @@
 package com.travelland.controller;
 
 import com.travelland.controller.valid.PlanValidationSequence;
-import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.swagger.PlanControllerDocs;
 import com.travelland.dto.plan.DayPlanDto;
 import com.travelland.dto.plan.PlanCommentDto;
@@ -237,14 +236,14 @@ public class PlanController implements PlanControllerDocs {
     // Plan 좋아요 등록
     @PostMapping("/plans/{planId}/like")
     public ResponseEntity<PlanDto.Result> createPlanLike(@PathVariable Long planId) {
-        planLikeService.registerPlanLike(planId, "test@test.com");
+        planLikeService.registerPlanLike(planId);
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(true));
     }
 
     // Plan 좋아요 취소
     @DeleteMapping("/plans/{planId}/like")
     public ResponseEntity<PlanDto.Result> deletePlanLike(@PathVariable Long planId) {
-        planLikeService.cancelPlanLike(planId, "test@test.com");
+        planLikeService.cancelPlanLike(planId);
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(false));
     }
 
@@ -253,20 +252,20 @@ public class PlanController implements PlanControllerDocs {
     public ResponseEntity<List<PlanDto.Likes>> getPlanLikeList(@RequestParam(defaultValue = "1") int page,
                                                                @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(planLikeService.getPlanLikeList(page, size, "test@test.com"));
+                .body(planLikeService.getPlanLikeList(page, size));
     }
 
     // Plan 스크랩 등록
     @PostMapping("/plans/{planId}/scrap")
     public ResponseEntity<PlanDto.Result> createPlanScrap(@PathVariable Long planId) {
-        planScrapService.registerPlanScrap(planId, "test@test.com");
+        planScrapService.registerPlanScrap(planId);
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(true));
     }
 
     // Plan 스크랩 취소
     @DeleteMapping("/plans/{planId}/scrap")
     public ResponseEntity<PlanDto.Result> deletePlanScrap(@PathVariable Long planId) {
-        planScrapService.cancelPlanScrap(planId, "test@test.com");
+        planScrapService.cancelPlanScrap(planId);
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(false));
     }
 
@@ -275,7 +274,7 @@ public class PlanController implements PlanControllerDocs {
     public ResponseEntity<List<PlanDto.Scraps>> getPlanScrapList(@RequestParam(defaultValue = "1") int page,
                                                                  @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(planScrapService.getPlanScrapList(page, size, "test@test.com"));
+                .body(planScrapService.getPlanScrapList(page, size));
     }
 
 

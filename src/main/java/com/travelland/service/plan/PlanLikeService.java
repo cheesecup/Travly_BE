@@ -6,10 +6,12 @@ import com.travelland.domain.plan.PlanLike;
 import com.travelland.dto.plan.PlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
+import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.PlanLikeRepository;
 import com.travelland.repository.plan.PlanRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,8 +27,11 @@ public class PlanLikeService {
 
     // Plan 좋아요 등록
     @Transactional
-    public void registerPlanLike(Long planId, String email) {
-        Member member = getMember(email);
+    public void registerPlanLike(Long planId) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Member member = userDetails.getMember();
+//        Member member = getMember("test@test.com");
+
         Plan plan = getPlan(planId);
 
         planLikeRepository.findByMemberAndPlan(member, plan)
@@ -42,10 +47,14 @@ public class PlanLikeService {
 
     // Plan 좋아요 취소
     @Transactional
-    public void cancelPlanLike(Long planId, String email) {
+    public void cancelPlanLike(Long planId) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Member member = userDetails.getMember();
+//        Member member = getMember("test@test.com");
+
         Plan plan = getPlan(planId);
 
-        planLikeRepository.findByMemberAndPlan(getMember(email), plan)
+        planLikeRepository.findByMemberAndPlan(member, plan)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_LIKE_NOT_FOUND))
                 .cancelLike();
 
@@ -54,9 +63,13 @@ public class PlanLikeService {
 
     // Plan 좋아요 목록조회
     @Transactional(readOnly = true)
-    public List<PlanDto.Likes> getPlanLikeList(int page, int size, String email) {
+    public List<PlanDto.Likes> getPlanLikeList(int page, int size) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Member member = userDetails.getMember();
+//        Member member = getMember("test@test.com");
+
         return planLikeRepository
-                .getLikeListByMember(getMember(email), size, page)
+                .getLikeListByMember(member, size, page)
                 .stream().map(PlanDto.Likes::new).toList();
     }
     
@@ -65,11 +78,6 @@ public class PlanLikeService {
 //    public void deletePlanLike(Plan plan) {
 //        planLikeRepository.deleteAllByPlan(plan);
 //    }
-
-    private Member getMember(String email) {
-        return memberRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-    }
 
     private Plan getPlan(Long planId) {
         return planRepository.findById(planId)
