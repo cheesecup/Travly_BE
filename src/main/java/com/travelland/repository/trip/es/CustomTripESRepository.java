@@ -6,7 +6,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 
 import java.util.List;
 
-public interface CustomTripRepository {
+public interface CustomTripESRepository {
     SearchHits<TripSearchDoc> searchByTitle(String title, Pageable pageable);
 
     SearchHits<TripSearchDoc> searchByHashtag(String hashtag, Pageable pageable);
