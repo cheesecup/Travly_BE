@@ -74,7 +74,7 @@ public interface TripControllerDocs {
                                        @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                                        @RequestParam(required = false, defaultValue = "false") boolean isAsc);
 
-    @Operation(summary = "인기 해쉬태그 TOP 5", description = "일일 검색량 상위 5개를 보여주는 API")
+    @Operation(summary = "인기 해쉬태그 TOP 5", description = "일일 해시태그 검색량 상위 5개를 보여주는 API")
     ResponseEntity getRecentTop5Keywords() throws IOException;
 
     @Operation(summary = "여행정보 댓글 등록", description = "선택한 여행정보 게시글에 댓글을 등록하는 API")
@@ -89,12 +89,15 @@ public interface TripControllerDocs {
 
     @Operation(summary = "여행정보 댓글 수정", description = "로그인한 사용자가 작성한 여행정보 댓글을 수정하는 API")
     ResponseEntity updateTripComment(@PathVariable Long tripId,
-                                                        @PathVariable Long commentId,
-                                                        @RequestBody TripCommentDto.Update requestDto,
-                                                        @AuthenticationPrincipal UserDetailsImpl userDetails);
+                                     @PathVariable Long commentId,
+                                     @RequestBody TripCommentDto.Update requestDto,
+                                     @AuthenticationPrincipal UserDetailsImpl userDetails);
 
     @Operation(summary = "여행정보 댓글 삭제", description = "로그인한 사용자가 작성한 여행정보 댓글을 삭제하는 API")
     ResponseEntity deleteTripComment(@PathVariable Long tripId,
-                                                            @PathVariable Long commentId,
-                                                            @AuthenticationPrincipal UserDetailsImpl userDetails);
+                                     @PathVariable Long commentId,
+                                     @AuthenticationPrincipal UserDetailsImpl userDetails);
+
+    @Operation(summary = "여행정보 조회수 TOP 10 목록 조회", description = "조회수 상위 10개 게시글 목록을 조회하는 API")
+    ResponseEntity<List<TripDto.GetList>> getTripListTop10();
 }

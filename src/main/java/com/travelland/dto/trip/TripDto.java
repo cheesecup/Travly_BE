@@ -118,6 +118,7 @@ public class TripDto {
             this.tripEndDate = trip.getTripEndDate();
             this.hashtagList = trip.getHashtag();
             this.thumbnailUrl = trip.getThumbnailUrl();
+            this.isScrap = false;
         }
     }
 

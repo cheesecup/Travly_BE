@@ -1,5 +1,6 @@
 package com.travelland.service.trip;
 
+import com.amazonaws.util.CollectionUtils;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.domain.trip.TripHashtag;
@@ -12,11 +13,15 @@ import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,24 +63,24 @@ public class TripService {
 
         List<String> hashtagList = tripHashtagRepository.findAllByTrip(trip).stream().map(TripHashtag::getTitle).toList();
         List<String> imageUrlList = tripImageService.getTripImageUrl(trip);
-        
-        // 로그인한 회원 스크랩/좋아요 여부 확인
+
         boolean isLike = false;
         boolean isScrap = false;
-        if (!email.isEmpty()) {
+        if (!email.isEmpty()) { //로그인한 경우
+            //스크랩/좋아요 여부 확인
             isLike = tripLikeService.statusTripLike(tripId, email);
             isScrap = tripScrapService.statusTripScrap(tripId, email);
+
+            //조회수 증가
+            Long result = redisTemplate.opsForSet().add("viewCount:tripId:" + tripId, email); //redis 조회수 증가
+
+            if (result != null && result == 1L) {
+                Long view = redisTemplate.opsForSet().size("viewCount:tripId:" + tripId); //redis 조회수 Get
+                redisTemplate.opsForZSet().add("tripViewRank", tripId.toString(), view);
+            }
         }
 
-        // 조회수 증가
 //        trip.increaseViewCount(); //MySQL
-        Long result = redisTemplate.opsForSet().add("viewCount:tripId:" + tripId, email); //redis 조회수 증가
-
-        if (result != null && result == 1L) {
-            Long view = redisTemplate.opsForSet().size("viewCount:tripId:" + tripId); //redis 조회수 Get
-            redisTemplate.opsForZSet().add("tripViewRank", tripId.toString(), view);
-        }
-
 //        tripSearchService.increaseViewCount(tripId);
 
         return new TripDto.Get(trip, hashtagList, imageUrlList, isLike, isScrap);
