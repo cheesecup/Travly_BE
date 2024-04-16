@@ -10,7 +10,6 @@ import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripLikeRepository;
 import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

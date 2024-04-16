@@ -5,7 +5,7 @@ import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
-import com.travelland.repository.trip.TripSearchESRepository;
+import com.travelland.repository.trip.TripSearchRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class TripSearchService {
-    private final TripSearchESRepository tripSearchRepository;
+    private final TripSearchRepository tripSearchRepository;
     private final RestHighLevelClient client;
 
     private final StringRedisTemplate redisTemplate;
@@ -108,6 +108,12 @@ public class TripSearchService {
                 .resultAddress(addr)
                 .nearPlaces(tripSearchRepository.searchByAddress(addr))
                 .build();
+    }
+
+    //여행정복 목록 조회
+    public List<TripDto.GetList> getTripList(int page, int size, String sortBy, boolean isAsc){
+        return tripSearchRepository.findAll(PageRequest.of(page-1, size,
+                Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy))).map(TripDto.GetList::new).getContent();
     }
 
     public void putSearchLog(String query,String memberId){
@@ -176,12 +182,6 @@ public class TripSearchService {
 
     public void deleteTrip(Long tripId) {
         tripSearchRepository.deleteByTripId(tripId);
-    }
-    
-    //여행정복 목록 조회
-    public List<TripDto.GetList> getTripList(int page, int size, String sortBy, boolean isAsc){
-        return tripSearchRepository.findAll(PageRequest.of(page-1, size,
-                Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy))).map(TripDto.GetList::new).getContent();
     }
     
     //내가 작성한 여행정보 게시글 목록 조회

@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 @RequiredArgsConstructor
 @Component
-public class CustomTripESRepositoryImpl implements CustomTripESRepository {
+public class CustomTripRepositoryImpl implements CustomTripRepository {
     private final ElasticsearchOperations elasticsearchOperations;
 
     @Override

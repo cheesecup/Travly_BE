@@ -10,17 +10,13 @@ import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripRepository;
 import com.travelland.repository.trip.TripScrapRepository;
-import com.travelland.repository.trip.TripSearchESRepository;
+import com.travelland.repository.trip.TripSearchRepository;
 import lombok.RequiredArgsConstructor;
-import net.datafaker.providers.base.Bool;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.Option;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +25,7 @@ public class TripScrapService {
     private final TripScrapRepository tripScrapRepository;
     private final MemberRepository memberRepository;
     private final TripRepository tripRepository;
-    private final TripSearchESRepository tripSearchESRepository;
+    private final TripSearchRepository tripSearchESRepository;
     private final StringRedisTemplate redisTemplate;
 
     private static final String TRIP_SCRAPS_TRIP_ID = "tripScraps:tripId:";
