@@ -4,7 +4,7 @@ import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.dto.trip.TripDto;
-import com.travelland.repository.trip.TripSearchRepository;
+import com.travelland.repository.trip.TripSearchESRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.ActionListener;
@@ -37,13 +37,13 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class TripSearchService {
-    private final TripSearchRepository tripSearchRepository;
+    private final TripSearchESRepository tripSearchRepository;
     private final RestHighLevelClient client;
 
     private static final String TOTAL_ELEMENTS = "trip:totalElements";
 
-    public void createTripDocument(Trip trip, List<String> hashtag, Member member, String thumbnail){
-        tripSearchRepository.save(new TripSearchDoc(trip, hashtag, member, thumbnail));
+    public void createTripDocument(Trip trip, List<String> hashtag, Member member, String thumbnailUrl, String profileUrl){
+        tripSearchRepository.save(new TripSearchDoc(trip, hashtag, member, thumbnailUrl, profileUrl));
     }
 
     public TripDto.SearchResult searchTripByTitle(String title, int page, int size, String sortBy, boolean isAsc){
@@ -99,7 +99,7 @@ public class TripSearchService {
 
     public List<TripDto.GetList> getTripList(int page, int size, String sortBy, boolean isAsc){
         return tripSearchRepository.findAll(PageRequest.of(page-1, size,
-                Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy))).map(trip -> new TripDto.GetList(trip, trip.getThumbnailUrl())).getContent();
+                Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy))).map(TripDto.GetList::new).getContent();
     }
 
     public void putSearchLog(String query,String memberId){
@@ -172,7 +172,7 @@ public class TripSearchService {
 
     public List<TripDto.GetList> getMyTripList(int page, int size, String email) {
         return tripSearchRepository.findByEmail(PageRequest.of(page-1, size,
-                Sort.by(Sort.Direction.DESC, "createdAt")), email).map(trip -> new TripDto.GetList(trip, trip.getThumbnailUrl())).getContent();
+                Sort.by(Sort.Direction.DESC, "createdAt")), email).map(TripDto.GetList::new).getContent();
     }
 
     public void increaseViewCount(Long tripId) {

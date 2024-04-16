@@ -15,7 +15,7 @@ import static com.travelland.domain.trip.QTripHashtag.tripHashtag;
 
 @Repository
 @RequiredArgsConstructor
-public class CustomTripRepositoryV2Impl implements CustomTripRepositoryV2 {
+public class CustomTripRepositoryImpl implements CustomTripRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 
