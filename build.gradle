@@ -58,6 +58,9 @@ dependencies {
 
     //DataFaker
     implementation 'net.datafaker:datafaker:2.1.0'
+
+    // OAuth2
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 }
 
 tasks.named('test') {

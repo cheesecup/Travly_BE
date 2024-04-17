@@ -1,10 +1,12 @@
 package com.travelland.global.config;
 
-import com.travelland.global.security.JwtUtil;
 import com.travelland.global.security.JwtAuthorizationFilter;
+import com.travelland.global.security.JwtUtil;
+import com.travelland.global.security.OAuth2MemberSuccessHandler;
 import com.travelland.global.security.UserDetailsServiceImpl;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.member.RefreshTokenRepository;
+import com.travelland.service.member.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +37,7 @@ public class WebSecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final MemberRepository memberRepository;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -69,7 +72,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // CSRF 설정
-        http.csrf((csrf) -> csrf.disable());
+        http.csrf(AbstractHttpConfigurer::disable);
 
         // 시큐리티 CORS 빈 설정
         http.cors((cors) -> cors.configurationSource(corsConfigurationSource()));
@@ -90,6 +93,12 @@ public class WebSecurityConfig {
         );
 
         http.formLogin(AbstractHttpConfigurer::disable);
+        http.httpBasic(AbstractHttpConfigurer::disable);
+        http.logout(AbstractHttpConfigurer::disable);
+
+        http.oauth2Login(oauth2 -> oauth2
+                .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuth2UserService))
+                .successHandler(new OAuth2MemberSuccessHandler(jwtUtil, memberRepository, refreshTokenRepository)));
 
         // 필터 관리
         http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);

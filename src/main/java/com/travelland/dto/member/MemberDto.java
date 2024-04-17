@@ -10,30 +10,6 @@ import java.time.LocalDate;
 public class MemberDto {
 
     @Getter
-    public static class KakaoInfo {
-        private Long id;
-        private String nickname;
-        private String email;
-        private String name;
-        private String birth;
-        private String gender;
-        private String profileImage;
-        private String thumbnailProfileImage;
-
-        @Builder
-        public KakaoInfo(Long id, String nickname, String email, String name, String birth, String gender, String profileImage, String thumbnailProfileImage) {
-            this.id = id;
-            this.nickname = nickname;
-            this.email = email;
-            this.name = name;
-            this.birth = birth;
-            this.gender = gender;
-            this.profileImage = profileImage;
-            this.thumbnailProfileImage = thumbnailProfileImage;
-        }
-    }
-
-    @Getter
     @AllArgsConstructor
     public static class Response {
         private boolean isSuccess;
@@ -54,22 +30,12 @@ public class MemberDto {
     public static class MemberInfo {
         private String nickname;
         private String email;
-        private String name;
-        private String birth;
-        private String gender;
         private String profileImage;
-        private String thumbnailProfileImage;
-//        private String code;
 
         public MemberInfo(Member member) {
             this.nickname = member.getNickname();
             this.email = member.getEmail();
-            this.name = member.getName();
-            this.birth = member.getBirth().toString();
-            this.gender = member.getGender().toString();
             this.profileImage = member.getProfileImage();
-            this.thumbnailProfileImage = member.getThumbnailProfileImage();
-//            this.code = code;
         }
     }
 }
