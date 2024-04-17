@@ -35,9 +35,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        //String tokenValue = jwtUtil.getJwtFromCookie(request);
         String tokenValue = jwtUtil.getJwtFromHeader(request);
-        //log.info("Header = " + tokenValue);
 
         if (!StringUtils.hasText(tokenValue)) {
             filterChain.doFilter(request, response);
@@ -62,7 +60,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             tokenValue = jwtUtil.createToken(member.getEmail(), member.getRole());
             refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, tokenValue));
 
-            jwtUtil.addJwtToCookie(tokenValue, response);
+            jwtUtil.addJwtToHeader(response, tokenValue);
         }
 
         Claims claims = jwtUtil.getUserInfoFromToken(tokenValue);

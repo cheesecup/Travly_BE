@@ -94,10 +94,8 @@ public class JwtUtil {
     // header 에서 JWT 가져오기
     public String getJwtFromHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-            return bearerToken.substring(7);
-        }
-        return null;
+        log.info("Header: " + bearerToken);
+        return bearerToken;
     }
 
     // Set JWT cookie
@@ -109,6 +107,11 @@ public class JwtUtil {
         cookie.setHttpOnly(true);
         cookie.setMaxAge(60 * 60 * 2); // 2시간
         response.addCookie(cookie);
+    }
+
+    public void addJwtToHeader(HttpServletResponse response, String accessToken) {
+        response.setHeader(JwtUtil.AUTHORIZATION_HEADER, accessToken);
+        log.info("발급된 Access Token : {}", accessToken);
     }
 
     // 쿠키 삭제
