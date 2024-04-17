@@ -80,14 +80,23 @@ public class JwtUtil {
     // cookie 에서 JWT 가져오기
     public String getJwtFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
+        log.info("Get Cookies");
         if (cookies != null) {
+            log.info("cookie is not null");
             for (Cookie cookie : cookies) {
-                if (AUTHORIZATION_HEADER.equals(cookie.getName())) {
+                log.info("cookie name: " + cookie.getName());
+                if (AUTHORIZATION_HEADER.equalsIgnoreCase(cookie.getName())) {
+                    log.info("cookie: " + cookie.getValue());
                     return URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8);
                 }
             }
         }
         return null;
+    }
+
+    // header 에서 JWT 가져오기
+    public String getJwtFromHeader(HttpServletRequest request) {
+        return request.getHeader(AUTHORIZATION_HEADER);
     }
 
     // Set JWT cookie
@@ -99,6 +108,10 @@ public class JwtUtil {
         cookie.setHttpOnly(true);
         cookie.setMaxAge(60 * 60 * 2); // 2시간
         response.addCookie(cookie);
+    }
+
+    public void addJwtToHeader(String token, HttpServletResponse response) {
+        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
     }
 
     // 쿠키 삭제

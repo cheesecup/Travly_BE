@@ -52,7 +52,7 @@ public class KakaoService {
         String refreshToken = jwtUtil.createRefreshToken();
 
         refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, createToken));
-        jwtUtil.addJwtToCookie(createToken, response);
+        jwtUtil.addJwtToHeader(createToken, response);
 
         return new MemberDto.MemberInfo(member);
     }
@@ -74,7 +74,7 @@ public class KakaoService {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("grant_type", "authorization_code");
         body.add("client_id", "aa4b6a242e99488886c885baee1cd1ab");
-        body.add("redirect_uri", "https://spparta.store/users/login/kakao");
+        body.add("redirect_uri", "https://www.travly.site/login/oauth");
         body.add("code", code);
 
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity
@@ -139,7 +139,7 @@ public class KakaoService {
                 .get("profile")
                 .get("thumbnail_image_url").asText();
 
-        log.info("카카오 사용자 정보: id=" + id + ", nickname=" + nickname + ", email=" + email + ", name=" + name + ", birthday=" + birth + ", gender=" + gender);
+        log.info("카카오 사용자 정보: email=" + email);
         return MemberDto.KakaoInfo.builder()
                 .id(id)
                 .nickname(nickname)
