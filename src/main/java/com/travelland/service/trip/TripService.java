@@ -48,7 +48,7 @@ public class TripService {
 
         redisTemplate.opsForValue().increment(TRIP_TOTAL_ELEMENTS);
 
-        tripSearchService.createTripDocument(trip, requestDto.getHashTag(), member, thumbnailUrl, member.getThumbnailProfileImage()); //ES 저장
+        tripSearchService.createTripDocument(trip, requestDto.getHashTag(), member, thumbnailUrl, member.getProfileImage()); //ES 저장
 
         return new TripDto.Id(trip.getId());
     }
