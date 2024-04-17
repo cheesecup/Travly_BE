@@ -35,7 +35,6 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
     }
 
     private void redirect(HttpServletRequest request, HttpServletResponse response, String email) throws IOException {
-        log.info("Token 생성 시작");
         Member member = memberRepository.findByEmail(email).orElseThrow();
         String accessToken = jwtUtil.createToken(email, member.getRole());
         String refreshToken = jwtUtil.createRefreshToken();
@@ -54,6 +53,7 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
                 .newInstance()
                 .scheme("https")
                 .host("www.travly.site")
+                .path("/login/oauth")
                 .queryParams(queryParams)
                 .build()
                 .toUri();

@@ -1,6 +1,6 @@
 package com.travelland.swagger;
 
-import com.travelland.controller.valid.PlanValidationSequence;
+import com.travelland.valid.plan.PlanValidationSequence;
 import com.travelland.dto.plan.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

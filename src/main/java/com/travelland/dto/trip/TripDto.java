@@ -1,10 +1,8 @@
 package com.travelland.dto.trip;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.domain.trip.TripLike;
-import com.travelland.domain.trip.TripScrap;
 import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.valid.trip.TripValidationGroups;
 import jakarta.validation.constraints.Min;
@@ -12,7 +10,6 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import org.springdoc.ui.SpringDocUIException;
 
 import java.time.LocalDate;
 import java.time.Period;

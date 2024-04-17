@@ -1,11 +1,10 @@
 package com.travelland.dto.plan;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.travelland.controller.valid.PlanValidationGroups;
+import com.travelland.valid.plan.PlanValidationGroups;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanLike;
 import com.travelland.domain.plan.PlanScrap;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;

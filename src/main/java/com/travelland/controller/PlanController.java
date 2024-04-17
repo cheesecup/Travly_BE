@@ -1,11 +1,7 @@
 package com.travelland.controller;
 
-import com.travelland.controller.valid.PlanValidationSequence;
-import com.travelland.domain.member.Member;
-import com.travelland.domain.plan.PlanVote;
-import com.travelland.dto.member.MemberDto;
+import com.travelland.valid.plan.PlanValidationSequence;
 import com.travelland.dto.plan.*;
-import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.swagger.PlanControllerDocs;
 import com.travelland.service.plan.PlanLikeService;
 import com.travelland.service.plan.PlanScrapService;
@@ -14,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
