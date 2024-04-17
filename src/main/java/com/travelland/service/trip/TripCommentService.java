@@ -42,7 +42,7 @@ public class TripCommentService {
                 .map(tripComment -> new TripCommentDto.GetList(
                         tripComment.getContent(),
                         tripComment.getMember().getNickname(),
-                        tripComment.getMember().getThumbnailProfileImage())
+                        tripComment.getMember().getProfileImage())
                 ).toList();
     }
     
