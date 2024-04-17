@@ -66,7 +66,7 @@ public class OAuthAttributes {
                 .name(name)
                 .nickname(nickname)
                 .email(email)
-                .gender(Gender.valueOf(gender))
+                .gender(Gender.valueOf(gender.toUpperCase()))
                 .role(Role.USER)
                 .birth(LocalDate.of(Integer.parseInt(birthyear), Integer.parseInt(birthday.substring(0,2)), Integer.parseInt(birthday.substring(2,4))))
                 .profileImage(profileImageUrl)
