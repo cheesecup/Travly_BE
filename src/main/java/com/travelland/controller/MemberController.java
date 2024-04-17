@@ -28,20 +28,8 @@ public class MemberController implements MemberControllerDocs {
     private final MemberService memberService;
 
     @GetMapping("/login/kakao")
-    public void kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
-        MemberDto.MemberInfo memberInfo = kakaoService.kakaoLogin(code, response);
-
-        response.setContentType("application/json");
-        response.setCharacterEncoding("utf-8");
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String result = objectMapper.writeValueAsString(memberInfo);
-        try {
-            response.getWriter().write(result);
-            response.sendRedirect("https://www.travly.site");
-        } catch (IOException e) {
-            throw new CustomException(ErrorCode.SERVER_ERROR);
-        }
+    public ResponseEntity<MemberDto.MemberInfo> kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
+        return ResponseEntity.status(HttpStatus.OK).body(kakaoService.kakaoLogin(code, response));
     }
 
     @GetMapping("/logout")
