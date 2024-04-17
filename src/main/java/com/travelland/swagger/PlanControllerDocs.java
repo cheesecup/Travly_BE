@@ -1,14 +1,11 @@
 package com.travelland.swagger;
 
-import com.travelland.dto.plan.DayPlanDto;
-import com.travelland.dto.plan.PlanCommentDto;
-import com.travelland.dto.plan.PlanDto;
-import com.travelland.dto.plan.UnitPlanDto;
-import com.travelland.global.security.UserDetailsImpl;
+import com.travelland.controller.valid.PlanValidationSequence;
+import com.travelland.dto.plan.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,17 +13,17 @@ import java.util.List;
 @Tag(name = "여행 플랜 API", description = "여행 전 플랜 관련 API")
 public interface PlanControllerDocs {
 
-    @Operation(summary = "Plan 작성", description = "시간은 yyyy-MM-dd 포맷")
-    ResponseEntity createPlan(@RequestBody PlanDto.Create request);
+//    @Operation(summary = "Plan 작성", description = "시간은 yyyy-MM-dd 포맷")
+//    ResponseEntity createPlan(@RequestBody PlanDto.Create request);
 
     @Operation(summary = "Plan 한방 작성", description = "Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재\n Plan/DayPlan의 시간은 yyyy-MM-dd 포맷, UnitPlan은 HH:mm 포맷")
     ResponseEntity createPlanAllInOne(@RequestBody PlanDto.CreateAllInOne request);
 
-    @Operation(summary = "Plan 상세/단일 조회", description = "상세조회, planId로 조회")
-    ResponseEntity readPlan(@PathVariable Long planId);
-
-    @Operation(summary = "(마이페이지용) Plan 유저별 상세/단일 조회", description = "상세조회, planId로 조회")
-    ResponseEntity readPlanForMember(@PathVariable Long planId);
+//    @Operation(summary = "Plan 상세/단일 조회", description = "상세조회, planId로 조회")
+//    ResponseEntity readPlan(@PathVariable Long planId);
+//
+//    @Operation(summary = "(마이페이지용) Plan 유저별 상세/단일 조회", description = "상세조회, planId로 조회")
+//    ResponseEntity readPlanForMember(@PathVariable Long planId);
 
     @Operation(summary = "Plan 한방 상세/단일 조회", description = "Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재")
     ResponseEntity readPlanAllInOne(@PathVariable Long planId);
@@ -40,41 +37,20 @@ public interface PlanControllerDocs {
     @Operation(summary = "(마이페이지용) Plan 유저별 전체목록 조회", description = "예시: /plans?page=1&size=20&sortBy=createdAt&isAsc=false, page는 1부터")
     ResponseEntity readPlanListForMember(@RequestParam int page, @RequestParam int size, @RequestParam String sortBy, @RequestParam boolean isAsc);
 
-    @Operation(summary = "Plan 전체목록 조회", description = " ")
-    ResponseEntity readPlanListRedis(@RequestParam Long lastId, @RequestParam int size, @RequestParam String sortBy, @RequestParam boolean isAsc);
-
-    @Operation(summary = "Plan 수정", description = " ")
-    ResponseEntity updatePlan(@PathVariable Long planId, @RequestBody PlanDto.Update request);
+//    @Operation(summary = "Plan 전체목록 조회", description = " ")
+//    ResponseEntity readPlanListRedis(@RequestParam Long lastId, @RequestParam int size, @RequestParam String sortBy, @RequestParam boolean isAsc);
+//
+//    @Operation(summary = "Plan 수정", description = " ")
+//    ResponseEntity updatePlan(@PathVariable Long planId, @RequestBody PlanDto.Update request);
 
     @Operation(summary = "Plan 한방 수정", description = "Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재")
     ResponseEntity updatePlanAllInOne(@PathVariable Long planId, @RequestBody PlanDto.UpdateAllInOne request);
 
-    @Operation(summary = "Plan 한방 삭제 (구 API 주소)", description = "API 주소만 예전주소일뿐 동작은 똑같이 가능")
-    ResponseEntity deletePlan(@PathVariable Long planId);
-
     @Operation(summary = "Plan 한방 삭제", description = " ")
     ResponseEntity deletePlanAllInOne(@PathVariable Long planId);
 
-
-
-
-
-
-
-
-
-
-    @Operation(summary = "DayPlan 작성", description = " ")
-    ResponseEntity createDayPlan(@PathVariable Long planId, @RequestBody DayPlanDto.Create request);
-
-    @Operation(summary = "DayPlan 조회", description = "planId로 조회")
-    ResponseEntity readDayPlan(@PathVariable Long planId);
-
-    @Operation(summary = "DayPlan 수정", description = " ")
-    ResponseEntity updateDayPlan(@PathVariable Long dayPlanId, @RequestBody DayPlanDto.Update request);
-
-    @Operation(summary = "DayPlan 삭제", description = " ")
-    ResponseEntity deleteDayPlan(@PathVariable Long dayPlanId);
+//    @Operation(summary = "Plan 한방 삭제 (구 API 주소)", description = "API 주소만 예전주소일뿐 동작은 똑같이 가능")
+//    ResponseEntity deletePlan(@PathVariable Long planId);
 
 
 
@@ -85,19 +61,17 @@ public interface PlanControllerDocs {
 
 
 
-    @Operation(summary = "UnitPlan 작성", description = " ")
-    ResponseEntity createUnitPlan(@PathVariable Long dayPlanId, @RequestBody UnitPlanDto.Create request);
-
-    @Operation(summary = "UnitPlan 조회", description = "dayPlanId로 조회")
-    ResponseEntity readUnitPlan(@PathVariable Long dayPlanId);
-
-    @Operation(summary = "UnitPlan 수정", description = " ")
-    ResponseEntity updateUnitPlan(@PathVariable Long unitPlanId, @RequestBody UnitPlanDto.Update request);
-
-    @Operation(summary = "UnitPlan 삭제", description = " ")
-    ResponseEntity deleteUnitPlan(@PathVariable Long unitPlanId);
-
-
+//    @Operation(summary = "DayPlan 작성", description = " ")
+//    ResponseEntity createDayPlan(@PathVariable Long planId, @RequestBody DayPlanDto.Create request);
+//
+//    @Operation(summary = "DayPlan 조회", description = "planId로 조회")
+//    ResponseEntity readDayPlan(@PathVariable Long planId);
+//
+//    @Operation(summary = "DayPlan 수정", description = " ")
+//    ResponseEntity updateDayPlan(@PathVariable Long dayPlanId, @RequestBody DayPlanDto.Update request);
+//
+//    @Operation(summary = "DayPlan 삭제", description = " ")
+//    ResponseEntity deleteDayPlan(@PathVariable Long dayPlanId);
 
 
 
@@ -106,17 +80,88 @@ public interface PlanControllerDocs {
 
 
 
-    @Operation(summary = "Plan 댓글 등록", description = " ")
-    ResponseEntity createPlanComment(@PathVariable Long planId, @RequestBody PlanCommentDto.Create request);
 
-    @Operation(summary = "Plan 댓글 조회", description = " ")
-    ResponseEntity readPlanCommentList(@PathVariable Long planId, @RequestParam int page, @RequestParam int size, @RequestParam String sortBy, @RequestParam boolean isAsc);
 
-    @Operation(summary = "Plan 댓글 수정", description = " ")
-    ResponseEntity updatePlanComment(@PathVariable Long planId, @PathVariable Long commentId, @RequestBody PlanCommentDto.Update request);
+//    @Operation(summary = "UnitPlan 작성", description = " ")
+//    ResponseEntity createUnitPlan(@PathVariable Long dayPlanId, @RequestBody UnitPlanDto.Create request);
+//
+//    @Operation(summary = "UnitPlan 조회", description = "dayPlanId로 조회")
+//    ResponseEntity readUnitPlan(@PathVariable Long dayPlanId);
+//
+//    @Operation(summary = "UnitPlan 수정", description = " ")
+//    ResponseEntity updateUnitPlan(@PathVariable Long unitPlanId, @RequestBody UnitPlanDto.Update request);
+//
+//    @Operation(summary = "UnitPlan 삭제", description = " ")
+//    ResponseEntity deleteUnitPlan(@PathVariable Long unitPlanId);
 
-    @Operation(summary = "Plan 댓글 삭제", description = " ")
-    ResponseEntity deletePlanComment(@PathVariable Long planId, @PathVariable Long commentId);
+
+
+
+
+
+
+
+
+
+    @Operation(summary = "PlanVote 생성", description = "PlanVote는 투표장 VotePaper는 투표용지")
+    ResponseEntity createPlanVote(@Validated(PlanValidationSequence.class) @RequestBody PlanVoteDto.Create request);
+
+    @Operation(summary = "PlanVote 상세/단일 조회", description = "PlanVote는 투표장 VotePaper는 투표용지")
+    ResponseEntity readPlanVote(@PathVariable Long planVoteId);
+
+    @Operation(summary = "PlanVote 전체/목록 조회", description = "주의: id기준정렬은 planVoteId(x) id(o), 예시: /votes?page=1&size=20&sortBy=id&isAsc=false, page는 1부터")
+    ResponseEntity readPlanVoteList(@RequestParam int page, @RequestParam int size, @RequestParam String sortBy, @RequestParam boolean isAsc);
+
+    @Operation(summary = "PlanVote 수정", description = "PlanVote는 투표장 VotePaper는 투표용지")
+    ResponseEntity updatePlanVote(@PathVariable Long voteId, @Validated(PlanValidationSequence.class) @RequestBody PlanVoteDto.Update request);
+
+    @Operation(summary = "PlanVote 삭제", description = "PlanVote는 투표장 VotePaper는 투표용지")
+    ResponseEntity deletePlanVote(@PathVariable Long voteId);
+
+
+
+
+
+
+
+
+
+
+    @Operation(summary = "VotePaper 생성", description = "isVotedA가 true면 A에 투표, false면 B에 투표, content는 혹시나 나중의 투표 추가기능: 예를들어 투표사유를 적는다던가, MBTI를 적는다던가")
+    ResponseEntity createVotePaper(@Validated(PlanValidationSequence.class) @RequestBody VotePaperDto.Create request);
+
+    @Operation(summary = "VotePaper 상세단일 조회", description = " ")
+    ResponseEntity readVotePaper(@PathVariable Long votePaperId);
+
+    @Operation(summary = "VotePaper 유저별 전체목록 조회", description = "주의: id기준정렬은 votePaperId(x) id(o), 예시: /votePapers?page=1&size=20&sortBy=id&isAsc=false, page는 1부터")
+    ResponseEntity readVotePaperList(@RequestParam int page, @RequestParam int size, @RequestParam String sortBy, @RequestParam boolean isAsc);
+
+    @Operation(summary = "VotePaper 수정", description = " ")
+    ResponseEntity updateVotePaper(@PathVariable Long votePaperId, @Validated(PlanValidationSequence.class) @RequestBody VotePaperDto.Update request);
+
+    @Operation(summary = "VotePaper 삭제", description = " ")
+    ResponseEntity deleteVotePaper(@PathVariable Long votePaperId);
+
+
+
+
+
+
+
+
+
+
+//    @Operation(summary = "Plan 댓글 등록", description = " ")
+//    ResponseEntity createPlanComment(@PathVariable Long planId, @RequestBody PlanCommentDto.Create request);
+//
+//    @Operation(summary = "Plan 댓글 조회", description = "예시: /plans/{planId}/comments?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터")
+//    ResponseEntity readPlanCommentList(@PathVariable Long planId, @RequestParam int page, @RequestParam int size, @RequestParam String sortBy, @RequestParam boolean isAsc);
+//
+//    @Operation(summary = "Plan 댓글 수정", description = " ")
+//    ResponseEntity updatePlanComment(@PathVariable Long planId, @PathVariable Long commentId, @RequestBody PlanCommentDto.Update request);
+//
+//    @Operation(summary = "Plan 댓글 삭제", description = " ")
+//    ResponseEntity deletePlanComment(@PathVariable Long planId, @PathVariable Long commentId);
 
 
 

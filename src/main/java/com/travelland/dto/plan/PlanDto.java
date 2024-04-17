@@ -234,6 +234,7 @@ public class PlanDto {
             this.tripEndDate = planLike.getPlan().getTripEndDate();
         }
     }
+
     @Getter
     @AllArgsConstructor
     public static class Scraps {

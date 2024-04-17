@@ -6,4 +6,5 @@ public class PlanValidationGroups {
     public interface CostRangeGroup {}
     public interface AddressBlankGroup {}
     public interface TimeBlankGroup {}
+    public interface VoteBlankGroup {}
 }
