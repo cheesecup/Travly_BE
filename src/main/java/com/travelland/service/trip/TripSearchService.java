@@ -1,5 +1,6 @@
 package com.travelland.service.trip;
 
+import com.amazonaws.util.CollectionUtils;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.domain.trip.TripHashtag;
@@ -10,13 +11,17 @@ import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.job.DataSet;
 import com.travelland.repository.trip.TripRepository;
+import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.repository.trip.TripSearchRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j(topic = "ES")
 @Service
@@ -34,9 +43,20 @@ public class TripSearchService {
     private final TripSearchRepository tripSearchRepository;
     private final ElasticsearchLogService elasticsearchLogService;
     private final TripRepository tripRepository;
+    private final RestHighLevelClient client;
 
-    public void createTripDocument(Trip trip, List<String> hashtag, Member member, String thumbnail){
-        tripSearchRepository.save(new TripSearchDoc(trip, hashtag, member, thumbnail));
+    private final StringRedisTemplate redisTemplate;
+    private ZSetOperations<String, String> zSetOperations;
+
+    @PostConstruct
+    public void init() {
+        zSetOperations = redisTemplate.opsForZSet();
+    }
+
+    private static final String TOTAL_ELEMENTS = "trip:totalElements";
+
+    public void createTripDocument(Trip trip, List<String> hashtag, Member member, String thumbnailUrl, String profileUrl){
+        tripSearchRepository.save(new TripSearchDoc(trip, hashtag, member, thumbnailUrl, profileUrl));
     }
 
     public TripDto.SearchResult searchTripByTitle(String title, int page, int size, String sortBy, boolean isAsc){
@@ -92,11 +112,14 @@ public class TripSearchService {
                 .build();
     }
 
+    //여행정복 목록 조회
     public List<TripDto.GetList> getTripList(int page, int size, String sortBy, boolean isAsc){
         return  tripSearchRepository.findAllByIsPublic(
                 PageRequest.of(page-1, size,
                 Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy)), true)
                 .map(trip -> new TripDto.GetList(trip, trip.getThumbnailUrl())).getContent();
+        return tripSearchRepository.findAll(PageRequest.of(page-1, size,
+                Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy))).map(TripDto.GetList::new).getContent();
     }
 
 

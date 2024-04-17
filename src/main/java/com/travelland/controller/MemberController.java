@@ -1,12 +1,7 @@
 package com.travelland.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelland.dto.member.MemberDto;
-import com.travelland.global.exception.CustomException;
-import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.security.UserDetailsImpl;
-import com.travelland.service.member.KakaoService;
 import com.travelland.service.member.MemberService;
 import com.travelland.swagger.MemberControllerDocs;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,32 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class MemberController implements MemberControllerDocs {
 
-    private final KakaoService kakaoService;
     private final MemberService memberService;
-
-    @GetMapping("/login/kakao")
-    public void kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
-        MemberDto.MemberInfo memberInfo = kakaoService.kakaoLogin(code, response);
-
-        response.setContentType("application/json");
-        response.setCharacterEncoding("utf-8");
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        String result = objectMapper.writeValueAsString(memberInfo);
-        try {
-            response.getWriter().write(result);
-            response.sendRedirect("https://www.travly.site");
-        } catch (IOException e) {
-            throw new CustomException(ErrorCode.SERVER_ERROR);
-        }
-    }
 
     @GetMapping("/logout")
     public ResponseEntity<MemberDto.Response> logout(HttpServletRequest request, HttpServletResponse response) {

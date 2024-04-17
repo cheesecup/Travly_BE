@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "회원 API", description = "회원 관련 API 명세서입니다.")
 public interface MemberControllerDocs {
-    @Operation(summary = "카카오 로그인", description = "카카오 로그인 API")
-    void kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException;
 
     @Operation(summary = "로그아웃", description = "로그아웃 API")
     ResponseEntity logout(HttpServletRequest request, HttpServletResponse response);

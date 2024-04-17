@@ -35,7 +35,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        String tokenValue = jwtUtil.getJwtFromCookie(request);
+        String tokenValue = jwtUtil.getJwtFromHeader(request);
 
         if (!StringUtils.hasText(tokenValue)) {
             filterChain.doFilter(request, response);
@@ -44,11 +44,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         // access token 유효하지 않으면 refresh token 유효성 검사
         if (!jwtUtil.validateToken(tokenValue)) {
+            log.info(tokenValue + "is not validate");
             RefreshToken tokenInfo = refreshTokenRepository.findByAccessToken(tokenValue)
                     .orElseThrow(() -> new CustomException(ErrorCode.INVALID_AUTH_TOKEN));
 
             String refreshToken = tokenInfo.getRefreshToken();
             if (!jwtUtil.validateToken(refreshToken)) {
+                log.info("refresh token is not validate");
                 refreshTokenRepository.delete(tokenInfo);
                 return;
             }
@@ -60,9 +62,10 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
             tokenValue = jwtUtil.createToken(member.getEmail(), member.getRole());
             refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, tokenValue));
 
-            jwtUtil.addJwtToCookie(tokenValue, response);
+            jwtUtil.addJwtToHeader(response, tokenValue);
         }
 
+        log.info("Set Authentication");
         Claims claims = jwtUtil.getUserInfoFromToken(tokenValue);
 
         try {

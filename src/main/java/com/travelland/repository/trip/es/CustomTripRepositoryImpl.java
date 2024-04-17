@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
-public class CustomTripRepositoryImpl implements CustomTripRepository{
+public class CustomTripRepositoryImpl implements CustomTripRepository {
     private final ElasticsearchOperations elasticsearchOperations;
 
     @Override
