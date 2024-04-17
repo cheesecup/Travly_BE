@@ -45,10 +45,8 @@ public class Member {
 
     private String profileImage;
 
-    private String thumbnailProfileImage;
-
     @Builder
-    public Member(Long socialId, String email, String password, String name, String nickname, Gender gender, LocalDate birth, Role role, String profileImage, String thumbnailProfileImage) {
+    public Member(Long socialId, String email, String password, String name, String nickname, Gender gender, LocalDate birth, Role role, String profileImage) {
         this.socialId = socialId;
         this.email = email;
         this.password = password;
@@ -58,15 +56,14 @@ public class Member {
         this.birth = birth;
         this.role = role;
         this.profileImage = profileImage;
-        this.thumbnailProfileImage = thumbnailProfileImage;
     }
 
     public void changeNickname(String nickname) {
         this.nickname = nickname;
     }
 
-    public void changeProfileImage(String profileImage, String thumbnailProfileImage) {
+    public Member changeProfileImage(String profileImage) {
         this.profileImage = profileImage;
-        this.thumbnailProfileImage = thumbnailProfileImage;
+        return this;
     }
 }
