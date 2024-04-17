@@ -2,6 +2,7 @@ package com.travelland.repository.trip.querydsl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.member.Member;
+import com.travelland.domain.trip.QTrip;
 import com.travelland.domain.trip.Trip;
 import com.travelland.domain.trip.TripScrap;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class CustomTripScrapRepositoryImpl implements CustomTripScrapRepository 
     @Override
     public List<TripScrap> getScrapListByMember(Member member, int size, int page) {
         return jpaQueryFactory.selectFrom(tripScrap)
+                .join(tripScrap.trip)
                 .where(tripScrap.member.eq(member), tripScrap.isDeleted.eq(false), tripScrap.trip.isDeleted.eq(false))
                 .orderBy(tripScrap.trip.createdAt.desc())
                 .limit(size)
