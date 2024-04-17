@@ -1,4 +1,4 @@
-package com.travelland.controller.valid;
+package com.travelland.valid.plan;
 
 import jakarta.validation.GroupSequence;
 

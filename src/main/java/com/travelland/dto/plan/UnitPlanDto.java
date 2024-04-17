@@ -1,9 +1,7 @@
 package com.travelland.dto.plan;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.travelland.controller.valid.PlanValidationGroups;
+import com.travelland.valid.plan.PlanValidationGroups;
 import com.travelland.domain.plan.UnitPlan;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -11,9 +9,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
-import java.sql.Time;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 public class UnitPlanDto {
 
