@@ -38,6 +38,8 @@ public enum ErrorCode {
     DAY_PLAN_NOT_FOUND(NOT_FOUND, "해당 일일 플랜을 찾을 수 없습니다."),
     UNIT_PLAN_NOT_FOUND(NOT_FOUND, "해당 단위 플랜을 찾을 수 없습니다."),
     PLAN_COMMENT_NOT_FOUND(NOT_FOUND, "해당 댓글을 찾을 수 없습니다."),
+    PLAN_VOTE_NOT_FOUND(NOT_FOUND, "해당 투표장을 찾을 수 없습니다."),
+    VOTE_PAPER_NOT_FOUND(NOT_FOUND, "해당 투표지를 찾을 수 없습니다."),
     USER_NOT_FOUND(NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
 
     // 409 CONFLICT: 중복된 리소스 (요청이 현재 서버 상태와 충돌될 때)

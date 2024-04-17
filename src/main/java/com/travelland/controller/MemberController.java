@@ -38,4 +38,9 @@ public class MemberController implements MemberControllerDocs {
     public ResponseEntity<MemberDto.DuplicateCheck> checkNickname(@PathVariable String nickname) {
         return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.DuplicateCheck(memberService.checkNickname(nickname)));
     }
+
+    @GetMapping("/memberInfo")
+    public ResponseEntity<MemberDto.MemberInfo> getMemberInfo() {
+        return ResponseEntity.status(HttpStatus.OK).body(memberService.getMemberInfo());
+    }
 }
