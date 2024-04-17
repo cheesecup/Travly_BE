@@ -15,7 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
+import static com.travelland.domain.member.QMember.member;
 import static com.travelland.domain.trip.QTrip.trip;
 import static com.travelland.domain.trip.QTripHashtag.tripHashtag;
 
@@ -97,6 +99,14 @@ public class CustomTripRepositoryV2Impl implements CustomTripRepositoryV2 {
 //                .set(trip.viewCount, cases.otherwise(trip.viewCount))
 //                .where(trip.id.in(dataSets.stream().map(DataSet::getId).toList()))
 //                .execute();
+    }
+
+    @Override
+    public Optional<Trip> getTripById(Long tripId) {
+        return Optional.ofNullable(jpaQueryFactory.selectFrom(trip)
+                .leftJoin(trip.member, member).fetchJoin()
+                .where(trip.id.eq(tripId))
+                .fetchOne());
     }
 
     private OrderSpecifier createOrderSpecifier(String sortBy, boolean isAsc) {

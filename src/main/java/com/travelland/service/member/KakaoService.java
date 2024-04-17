@@ -54,7 +54,7 @@ public class KakaoService {
         refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, createToken));
         jwtUtil.addJwtToCookie(createToken, response);
 
-        return new MemberDto.MemberInfo(member);
+        return new MemberDto.MemberInfo(member,createToken);
     }
 
     private String getToken(String code) throws JsonProcessingException {

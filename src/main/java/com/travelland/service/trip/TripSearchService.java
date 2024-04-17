@@ -2,9 +2,12 @@ package com.travelland.service.trip;
 
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
+import com.travelland.domain.trip.TripHashtag;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.global.elasticsearch.ElasticsearchLogService;
+import com.travelland.global.exception.CustomException;
+import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.job.DataSet;
 import com.travelland.repository.trip.TripRepository;
 import com.travelland.repository.trip.TripSearchRepository;
@@ -15,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.LocalDateTime;

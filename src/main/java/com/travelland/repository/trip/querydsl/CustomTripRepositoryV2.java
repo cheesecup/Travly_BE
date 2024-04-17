@@ -5,6 +5,7 @@ import com.travelland.domain.trip.Trip;
 import com.travelland.global.job.DataSet;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CustomTripRepositoryV2 {
 
@@ -15,4 +16,6 @@ public interface CustomTripRepositoryV2 {
     List<Trip> searchTripByHashtag(String hashtag, int page, int size, String sort, boolean ASC);
 
     void updateBulkViewCount(List<DataSet> dataSets);
+
+    Optional<Trip> getTripById(Long tripId);
 }

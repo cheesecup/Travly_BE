@@ -2,6 +2,7 @@ package com.travelland.domain.member;
 
 import com.travelland.global.support.BeanUtils;
 import com.travelland.repository.member.MemberHistoryRepository;
+import jakarta.persistence.PostUpdate;
 import jakarta.persistence.PreRemove;
 
 public class MemberEntityListener {
