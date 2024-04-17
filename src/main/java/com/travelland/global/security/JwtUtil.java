@@ -82,7 +82,8 @@ public class JwtUtil {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (AUTHORIZATION_HEADER.equals(cookie.getName())) {
+                log.info("cookie name: " + cookie.getName());
+                if (AUTHORIZATION_HEADER.equalsIgnoreCase(cookie.getName())) {
                     log.info("cookie: " + cookie.getValue());
                     return URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8);
                 }
@@ -110,7 +111,7 @@ public class JwtUtil {
     }
 
     public void addJwtToHeader(HttpServletResponse response, String accessToken) {
-        response.setHeader(JwtUtil.AUTHORIZATION_HEADER, accessToken);
+        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, accessToken);
         log.info("발급된 Access Token : {}", accessToken);
     }
 

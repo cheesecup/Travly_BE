@@ -25,7 +25,6 @@ public class UnitPlanDto {
         //쓰기싫을수도 //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
         @Size(max = 300)
         private String content;
-        //FE에없음 //@Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
         private int budget;
         //쓰기싫을수도 //@NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)
         @Size(max = 30)
@@ -46,7 +45,6 @@ public class UnitPlanDto {
         //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
         @Size(max = 300)
         private String content;
-        //@Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
         private int budget;
         //@NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)
         @Size(max = 30)
@@ -126,7 +124,6 @@ public class UnitPlanDto {
         //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
         @Size(max = 300)
         private String content;
-        //@Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
         private int budget;
         //@NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)
         @Size(max = 30)
@@ -148,7 +145,6 @@ public class UnitPlanDto {
         //@NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
         @Size(max = 300)
         private String content;
-        //@Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = PlanValidationGroups.CostRangeGroup.class)
         private int budget;
         //@NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)
         @Size(max = 30)
