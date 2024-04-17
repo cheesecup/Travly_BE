@@ -14,7 +14,5 @@ public interface TripScrapRepository extends JpaRepository<TripScrap, Long>, Cus
 
     Optional<TripScrap> findByMemberAndTrip(Member member, Trip trip);
 
-    List<TripScrap> getScrapListByMember(Member member, int size, int page);
-
     boolean existsByMemberAndTripAndIsDeleted(Member member,Trip trip, boolean isDeleted);
 }

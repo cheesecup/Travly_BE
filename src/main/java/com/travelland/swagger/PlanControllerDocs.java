@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Tag(name = "여행 플랜 API", description = "여행 전 플랜 관련 API")
-public interface PlanControllerDocs {
+public interface PlanControllerDocs {//
 
     @Operation(summary = "Plan 작성", description = "시간은 yyyy-MM-dd 포맷")
     ResponseEntity createPlan(@RequestBody PlanDto.Create request);
