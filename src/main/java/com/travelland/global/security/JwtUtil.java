@@ -80,9 +80,7 @@ public class JwtUtil {
     // cookie 에서 JWT 가져오기
     public String getJwtFromCookie(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-        log.info("Get Cookies");
         if (cookies != null) {
-            log.info("cookie is not null");
             for (Cookie cookie : cookies) {
                 log.info("cookie name: " + cookie.getName());
                 if (AUTHORIZATION_HEADER.equalsIgnoreCase(cookie.getName())) {
@@ -96,7 +94,9 @@ public class JwtUtil {
 
     // header 에서 JWT 가져오기
     public String getJwtFromHeader(HttpServletRequest request) {
-        return request.getHeader(AUTHORIZATION_HEADER);
+        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+        log.info("Header: " + bearerToken);
+        return bearerToken;
     }
 
     // Set JWT cookie
@@ -110,8 +110,9 @@ public class JwtUtil {
         response.addCookie(cookie);
     }
 
-    public void addJwtToHeader(String token, HttpServletResponse response) {
-        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
+    public void addJwtToHeader(HttpServletResponse response, String accessToken) {
+        response.addHeader(JwtUtil.AUTHORIZATION_HEADER, accessToken);
+        log.info("발급된 Access Token : {}", accessToken);
     }
 
     // 쿠키 삭제

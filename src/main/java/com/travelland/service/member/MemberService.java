@@ -39,7 +39,7 @@ public class MemberService {
 
     @Transactional
     public boolean logout(HttpServletRequest request, HttpServletResponse response) {
-        String token = jwtUtil.getJwtFromCookie(request);
+        String token = jwtUtil.getJwtFromHeader(request);
         if (token == null) return false;
 
         RefreshToken tokenInfo = refreshTokenRepository.findByAccessToken(token)
@@ -48,8 +48,6 @@ public class MemberService {
         refreshTokenRepository.delete(tokenInfo);
 
         SecurityContextHolder.clearContext();
-
-        jwtUtil.deleteCookie(response);
 
         return true;
     }
