@@ -1,15 +1,19 @@
 package com.travelland.domain.plan;
 
+import com.travelland.constant.PlanVoteDuration;
 import com.travelland.dto.plan.PlanVoteDto;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PlanVote {
@@ -28,14 +32,30 @@ public class PlanVote {
 
     private Boolean isDeleted = false;
 
+    private Boolean isClosed = false;
+
+    @Column(length = 10)
+    @Enumerated(EnumType.STRING)
+    private PlanVoteDuration planVoteDuration;
+
+    @CreatedDate
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdAt; // 투표 가능기간 설정용
+
+    @LastModifiedDate
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime modifiedAt;
+
     public PlanVote(PlanVoteDto.Create request) {
         this.planAId = request.getPlanAId();
         this.planBId = request.getPlanBId();
+        this.planVoteDuration = request.getPlanVoteDuration();
     }
 
     public PlanVote update(PlanVoteDto.Update request) {
         this.planAId = request.getPlanAId();
         this.planBId = request.getPlanBId();
+        this.planVoteDuration = request.getPlanVoteDuration();
 
         return this;
     }
@@ -43,12 +63,39 @@ public class PlanVote {
     public void increaseAVoteCount() {
         this.planACount++;
     }
-
     public void increaseBVoteCount() {
         this.planBCount++;
+    }
+    public void decreaseAVoteCount() {
+        this.planACount--;
+    }
+    public void decreaseBVoteCount() {
+        this.planBCount--;
+    }
+    public void changeAtoBVoteCount() {
+        this.planACount--;
+        this.planBCount++;
+    }
+    public void changeBtoAVoteCount() {
+        this.planBCount--;
+        this.planACount++;
     }
 
     public void delete() {
         this.isDeleted = true;
+    }
+    public void close() {
+        this.isClosed = true;
+    }
+
+    public boolean isTimeOut() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime closingTime = createdAt.plus(planVoteDuration.getNumberDuration());
+
+        if (now.isAfter(closingTime)) {
+            isClosed = true;
+        }
+
+        return isClosed;
     }
 }
