@@ -23,12 +23,15 @@ public class Plan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 100)
     private String title;
 
-    private String content;
+//    @Column(length = 1000)
+//    private String content;
 
     private int budget;
 
+    @Column(length = 30)
     private String area;
 
     private Boolean isPublic;
@@ -59,7 +62,7 @@ public class Plan {
 
     public Plan(PlanDto.Create request, Member member) {
         this.title = request.getTitle();
-        this.content = request.getContent();
+//        this.content = request.getContent();
         this.budget = request.getBudget();
         this.area = request.getArea();
         this.isPublic = request.getIsPublic();
@@ -73,7 +76,7 @@ public class Plan {
 
     public Plan(PlanDto.CreateAllInOne request, Member member) {
         this.title = request.getTitle();
-        this.content = request.getContent();
+//        this.content = request.getContent();
         this.budget = request.getBudget();
         this.area = request.getArea();
         this.isPublic = request.getIsPublic();
@@ -87,7 +90,7 @@ public class Plan {
 
     public Plan update(PlanDto.Update request) {
         this.title = request.getTitle();
-        this.content = request.getContent();
+//        this.content = request.getContent();
         this.budget = request.getBudget();
         this.area = request.getArea();
         this.isPublic = request.getIsPublic();
@@ -100,7 +103,7 @@ public class Plan {
 
     public Plan update(PlanDto.UpdateAllInOne request) {
         this.title = request.getTitle();
-        this.content = request.getContent();
+//        this.content = request.getContent();
         this.budget = request.getBudget();
         this.area = request.getArea();
         this.isPublic = request.getIsPublic();

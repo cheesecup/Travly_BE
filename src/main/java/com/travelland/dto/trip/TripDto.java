@@ -1,13 +1,18 @@
 package com.travelland.dto.trip;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.travelland.esdoc.TripSearchDoc;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.domain.trip.TripLike;
 import com.travelland.domain.trip.TripScrap;
+import com.travelland.esdoc.TripSearchDoc;
+import com.travelland.valid.trip.TripValidationGroups;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.springdoc.ui.SpringDocUIException;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -18,7 +23,11 @@ public class TripDto {
     @Getter
     @AllArgsConstructor
     public static class Create {
+
+        @NotBlank(message = "제목을 입력해주세요.", groups = TripValidationGroups.TitleBlankGroup.class)
         private String title;
+
+        @NotBlank(message = "내용을 입력해주세요,", groups = TripValidationGroups.ContentBlankGroup.class)
         private String content;
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
@@ -26,26 +35,27 @@ public class TripDto {
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripEndDate;
 
+        @Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = TripValidationGroups.CostRangeGroup.class)
         private Integer cost;
         private List<String> hashTag;
-        private String address; //서울 동작구
+
+        @NotBlank(message = "도로명 주소를 입력해 주세요.", groups = TripValidationGroups.AddressBlankGroup.class)
+        private String address;
         private Boolean isPublic;
     }
 
     @Getter
     @AllArgsConstructor
     public static class Update {
+
+        @NotBlank(message = "제목을 입력해주세요.", groups = TripValidationGroups.TitleBlankGroup.class)
         private String title;
+
+        @NotBlank(message = "내용을 입력해주세요,", groups = TripValidationGroups.ContentBlankGroup.class)
         private String content;
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-        private LocalDate tripStartDate;
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
-        private LocalDate tripEndDate;
-
-        private Integer cost;
         private List<String> hashTag;
-        private String area;
+
         private Boolean isPublic;
     }
 
@@ -58,38 +68,30 @@ public class TripDto {
     @Getter
     @AllArgsConstructor
     public static class Get {
-        //Trip 엔티티 값
+
         private Long tripId;
         private String title;
         private String content;
         private int cost;
-        private String address;
+        private String area;
         private LocalDate tripStartDate;
         private LocalDate tripEndDate;
-        private int viewCount;
-        private int likeCount;
-        private String nickname;
-        private LocalDate createdAt;
 
-        private List<String> hashTag;
+        private List<String> hashtagList;
         private List<String> imageUrlList;
 
         private Boolean isLike;
         private Boolean isScrap;
 
-        public Get(Trip trip, List<String> hashTag, List<String> imageUrlList, boolean isLike, boolean isScrap) {
+        public Get(Trip trip, List<String> hashtagList, List<String> imageUrlList, boolean isLike, boolean isScrap) {
             this.tripId = trip.getId();
             this.title = trip.getTitle();
             this.content = trip.getContent();
             this.cost = trip.getCost();
-            this.address = trip.getAddress();
+            this.area = trip.getArea();
             this.tripStartDate = trip.getTripStartDate();
             this.tripEndDate = trip.getTripEndDate();
-            this.viewCount = trip.getViewCount();
-            this.likeCount = trip.getLikeCount();
-            this.nickname = trip.getMember().getNickname();
-            this.createdAt = trip.getCreatedAt().toLocalDate();
-            this.hashTag = hashTag;
+            this.hashtagList = hashtagList;
             this.imageUrlList = imageUrlList;
             this.isLike = isLike;
             this.isScrap = isScrap;
@@ -100,26 +102,23 @@ public class TripDto {
     @AllArgsConstructor
     public static class GetList {
         private Long tripId;
+        private String area;
         private String title;
-        private String nickname;
+        private LocalDate tripStartDate;
+        private LocalDate tripEndDate;
         private String thumbnailUrl;
-        private String tripPeriod;
-        private int viewCount;
-        private LocalDate createdAt;
+        private List<String> hashtagList;
+        private Boolean isScrap;
 
-        public GetList(TripSearchDoc trip, String thumbnailUrl) {
+        public GetList(TripSearchDoc trip) {
             this.tripId = trip.getTripId();
+            this.area = trip.getArea();
             this.title = trip.getTitle();
-            this.nickname = trip.getNickname();
-            this.thumbnailUrl = thumbnailUrl;
-            this.tripPeriod = betweenPeriod(trip.getTripStartDate(), trip.getTripEndDate());
-            this.viewCount = trip.getViewCount();
-            this.createdAt = trip.getCreatedAt().toLocalDate();
-        }
-
-        private String betweenPeriod(LocalDate startDate, LocalDate endDate) {
-            int days = Period.between(startDate, endDate).getDays();
-            return (days == 0) ?  "하루" : days + "박 " + (days + 1) + "일";
+            this.tripStartDate = trip.getTripStartDate();
+            this.tripEndDate = trip.getTripEndDate();
+            this.hashtagList = trip.getHashtag();
+            this.thumbnailUrl = trip.getThumbnailUrl();
+            this.isScrap = false;
         }
     }
 
@@ -154,16 +153,23 @@ public class TripDto {
     @Getter
     @AllArgsConstructor
     public static class Scraps {
+
         private Long tripId;
         private String title;
-        private String nickname;
-        private String tripPeriod;
+        private String area;
+        private LocalDate tripStartDate;
+        private LocalDate tripEndDate;
+        private List<String> hashtagList;
+        private String thumbnailUrl;
 
-        public Scraps(TripScrap tripScrap) {
-            this.tripId = tripScrap.getTrip().getId();
-            this.title = tripScrap.getTrip().getTitle();
-            this.nickname = tripScrap.getMember().getNickname();
-            this.tripPeriod = Period.between(tripScrap.getTrip().getTripStartDate(), tripScrap.getTrip().getTripEndDate()).getDays() + "일";
+        public Scraps(TripSearchDoc trip) {
+            this.tripId = trip.getTripId();
+            this.title = trip.getTitle();
+            this.area = trip.getArea();
+            this.tripStartDate = trip.getTripStartDate();
+            this.tripEndDate = trip.getTripEndDate();
+            this.hashtagList = trip.getHashtag();
+            this.thumbnailUrl = trip.getThumbnailUrl();
         }
     }
 

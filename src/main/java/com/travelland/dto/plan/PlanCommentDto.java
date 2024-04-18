@@ -1,6 +1,9 @@
 package com.travelland.dto.plan;
 
+import com.travelland.controller.valid.PlanValidationGroups;
 import com.travelland.domain.plan.PlanComment;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -9,6 +12,8 @@ public class PlanCommentDto {
 
     @Getter
     public static class Create {
+        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+        @Size(max = 100)
         private String content;
     }
 
@@ -39,6 +44,8 @@ public class PlanCommentDto {
 
     @Getter
     public static class Update {
+        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+        @Size(max = 100)
         private String content;
     }
 

@@ -18,19 +18,25 @@ public class UnitPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 100)
     private String title;
 
+    @Column(length = 300)
     private String content;
 
     private int budget;
 
+    @Column(length = 30)
     private String address;
+
+    @Column(length = 30)
+    private String placeName;
 
     private BigDecimal x;
 
     private BigDecimal y;
 
-    private LocalDateTime time;
+    private String time;
 
     @ManyToOne
     @JoinColumn(name = "day_plan_id")
@@ -43,8 +49,10 @@ public class UnitPlan {
         this.content = request.getContent();
         this.budget = request.getBudget();
         this.address = request.getAddress();
+        this.placeName = request.getPlaceName();
         this.x = request.getX();
         this.y = request.getY();
+        this.time = request.getTime();
         this.dayPlan = dayPlan;
     }
 
@@ -53,8 +61,10 @@ public class UnitPlan {
         this.content = request.getContent();
         this.budget = request.getBudget();
         this.address = request.getAddress();
+        this.placeName = request.getPlaceName();
         this.x = request.getX();
         this.y = request.getY();
+        this.time = request.getTime();
         this.dayPlan = dayPlan;
     }
 
@@ -63,6 +73,7 @@ public class UnitPlan {
         this.content = request.getContent();
         this.budget = request.getBudget();
         this.address = request.getAddress();
+        this.placeName = request.getPlaceName();
         this.x = request.getX();
         this.y = request.getY();
         this.time = request.getTime();
@@ -75,6 +86,7 @@ public class UnitPlan {
         this.content = request.getContent();
         this.budget = request.getBudget();
         this.address = request.getAddress();
+        this.placeName = request.getPlaceName();
         this.x = request.getX();
         this.y = request.getY();
         this.time = request.getTime();

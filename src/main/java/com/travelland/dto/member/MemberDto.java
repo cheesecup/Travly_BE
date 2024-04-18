@@ -55,19 +55,21 @@ public class MemberDto {
         private String nickname;
         private String email;
         private String name;
-        private LocalDate birth;
+        private String birth;
         private String gender;
         private String profileImage;
         private String thumbnailProfileImage;
+//        private String code;
 
         public MemberInfo(Member member) {
             this.nickname = member.getNickname();
             this.email = member.getEmail();
             this.name = member.getName();
-            this.birth = member.getBirth();
+            this.birth = member.getBirth().toString();
             this.gender = member.getGender().toString();
             this.profileImage = member.getProfileImage();
             this.thumbnailProfileImage = member.getThumbnailProfileImage();
+//            this.code = code;
         }
     }
 }

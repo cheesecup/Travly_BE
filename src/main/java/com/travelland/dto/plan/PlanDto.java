@@ -1,9 +1,13 @@
 package com.travelland.dto.plan;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.travelland.controller.valid.PlanValidationGroups;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanLike;
 import com.travelland.domain.plan.PlanScrap;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,23 +22,35 @@ public class PlanDto {
     @Getter
     @AllArgsConstructor
     public static class Create {
+        @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
+        @Size(max = 100)
         private String title;
-        private String content;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 1000)
+//        private String content;
         private int budget;
+        @NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)
+        @Size(max = 30)
         private String area;
-        private Boolean isPublic = false;
+        private Boolean isPublic;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripStartDate;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripEndDate;
-        private Boolean isVotable = false;
+        private Boolean isVotable;
     }
 
     @Getter
     public static class CreateAllInOne {
+        @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
+        @Size(max = 100)
         private String title;
-        private String content;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 1000)
+//        private String content;
         private int budget;
+        @NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)
+        @Size(max = 30)
         private String area;
         private Boolean isPublic;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
@@ -57,7 +73,7 @@ public class PlanDto {
     public static class Get {
         private final Long planId;
         private final String title;
-        private final String content;
+//        private final String content;
         private final int budget;
         private final String area;
         private final Boolean isPublic;
@@ -72,7 +88,7 @@ public class PlanDto {
         public Get(Plan plan) {
             this.planId = plan.getId();
             this.title = plan.getTitle();
-            this.content = plan.getContent();
+//            this.content = plan.getContent();
             this.budget = plan.getBudget();
             this.area = plan.getArea();
             this.isPublic = plan.getIsPublic();
@@ -113,7 +129,7 @@ public class PlanDto {
     public static class GetAllInOne {
         private final Long planId;
         private final String title;
-        private final String content;
+//        private final String content;
         private final int budget;
         private final String area;
         private final Boolean isPublic;
@@ -131,7 +147,7 @@ public class PlanDto {
         public GetAllInOne(Get plan, String profileUrl, List<DayPlanDto.GetAllInOne> dayPlans) {
             this.planId = plan.getPlanId();
             this.title = plan.getTitle();
-            this.content = plan.getContent();
+//            this.content = plan.getContent();
             this.budget = plan.getBudget();
             this.area = plan.getArea();
             this.isPublic = plan.getIsPublic();
@@ -150,9 +166,15 @@ public class PlanDto {
     @Getter
     @AllArgsConstructor
     public static class Update {
+        @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
+        @Size(max = 100)
         private String title;
-        private String content;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 1000)
+//        private String content;
         private int budget;
+        @NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)
+        @Size(max = 30)
         private String area;
         private Boolean isPublic;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
@@ -164,9 +186,15 @@ public class PlanDto {
 
     @Getter
     public static class UpdateAllInOne {
+        @NotBlank(message = "제목을 입력해주세요.", groups = PlanValidationGroups.TitleBlankGroup.class)
+        @Size(max = 100)
         private String title;
-        private String content;
+//        @NotBlank(message = "내용을 입력해주세요,", groups = PlanValidationGroups.ContentBlankGroup.class)
+//        @Size(max = 1000)
+//        private String content;
         private int budget;
+        @NotBlank(message = "주소를 입력해 주세요.", groups = PlanValidationGroups.AddressBlankGroup.class)
+        @Size(max = 30)
         private String area;
         private Boolean isPublic;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
