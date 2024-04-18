@@ -17,5 +17,5 @@ public interface PlanRepository extends JpaRepository<Plan, Long>, CustomPlanRep
 
     Page<Plan> findAllByIsDeletedAndIsPublic(Pageable pageable, boolean isDeleted, boolean isPublic);
 
-    Page<Plan> findAllByMemberIdAndIsDeleted(Pageable pageable, boolean isDeleted, Long memberId);
+    Page<Plan> findAllByMemberIdAndIsDeleted(Pageable pageable, Long memberId, boolean isDeleted);
 }

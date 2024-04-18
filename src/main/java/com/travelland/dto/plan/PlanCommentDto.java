@@ -1,6 +1,6 @@
 package com.travelland.dto.plan;
 
-import com.travelland.controller.valid.PlanValidationGroups;
+import com.travelland.valid.plan.PlanValidationGroups;
 import com.travelland.domain.plan.PlanComment;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

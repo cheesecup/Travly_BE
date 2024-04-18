@@ -7,8 +7,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,4 +29,7 @@ public interface MemberControllerDocs {
 
     @Operation(summary = "닉네임 중복체크", description = "닉네임 중복체크 API")
     ResponseEntity checkNickname(@PathVariable String nickname);
+
+    @Operation(summary = "회원정보", description = "닉네임 / 이메일 / 프로필이미지 API")
+    ResponseEntity getMemberInfo();
 }

@@ -55,7 +55,7 @@ public class OAuthAttributes {
                 .gender(String.valueOf(kakaoAccount.get("gender")))
                 .birthyear(String.valueOf(kakaoAccount.get("birthyear")))
                 .birthday(String.valueOf(kakaoAccount.get("birthday")))
-                .profileImageUrl(String.valueOf(kakaoProfile.get("profile_image_url")))
+                .profileImageUrl(String.valueOf(kakaoProfile.get("thumbnail_image_url")))
                 .nameAttributesKey(userNameAttributeName)
                 .attributes(attributes)
                 .build();
