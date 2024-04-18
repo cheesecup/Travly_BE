@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -33,6 +35,23 @@ public class DayPlan {
     private Plan plan;
 
     private Boolean isDeleted = false;
+
+//    @OneToMany(mappedBy = "dayPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<UnitPlan> unitPlans = new ArrayList<>();
+//
+//    public void addUnitPlan(UnitPlan unitPlan) {
+//        unitPlans.add(unitPlan);
+//        unitPlan.setDayPlan(this);
+//    }
+//
+//    public void removeUnitPlan(UnitPlan unitPlan) {
+//        unitPlans.remove(unitPlan);
+//        unitPlan.setDayPlan(null);
+//    }
+//
+//    public void setPlan(Plan plan) {
+//        this.plan = plan;
+//    }
 
     public DayPlan(DayPlanDto.Create request, Plan plan) {
 //        this.title = request.getTitle();

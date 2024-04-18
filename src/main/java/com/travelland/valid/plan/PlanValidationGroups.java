@@ -1,4 +1,4 @@
-package com.travelland.controller.valid;
+package com.travelland.valid.plan;
 
 public class PlanValidationGroups {
     public interface TitleBlankGroup {}
@@ -6,4 +6,5 @@ public class PlanValidationGroups {
     public interface CostRangeGroup {}
     public interface AddressBlankGroup {}
     public interface TimeBlankGroup {}
+    public interface VoteBlankGroup {}
 }

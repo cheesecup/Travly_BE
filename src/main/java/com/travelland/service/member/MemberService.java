@@ -6,6 +6,7 @@ import com.travelland.dto.member.MemberDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.security.JwtUtil;
+import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.member.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +40,7 @@ public class MemberService {
 
     @Transactional
     public boolean logout(HttpServletRequest request, HttpServletResponse response) {
-        String token = jwtUtil.getJwtFromCookie(request);
+        String token = jwtUtil.getJwtFromHeader(request);
         if (token == null) return false;
 
         RefreshToken tokenInfo = refreshTokenRepository.findByAccessToken(token)
@@ -48,8 +49,6 @@ public class MemberService {
         refreshTokenRepository.delete(tokenInfo);
 
         SecurityContextHolder.clearContext();
-
-        jwtUtil.deleteCookie(response);
 
         return true;
     }
@@ -64,5 +63,13 @@ public class MemberService {
         logout(request, response);
 
         return true;
+    }
+
+    @Transactional
+    public MemberDto.MemberInfo getMemberInfo() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Member member = userDetails.getMember();
+
+        return new MemberDto.MemberInfo(member);
     }
 }
