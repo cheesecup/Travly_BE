@@ -12,6 +12,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -40,9 +42,9 @@ public class Plan {
 
     private LocalDate tripEndDate;
 
-    private int viewCount;
+    private int viewCount = 0;
 
-    private int likeCount;
+    private int likeCount = 0;
 
     private Boolean isVotable;
 
@@ -60,6 +62,19 @@ public class Plan {
 
     private Boolean isDeleted = false;
 
+//    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<DayPlan> dayPlans = new ArrayList<>();
+//
+//    public void addDayPlan(DayPlan dayPlan) {
+//        dayPlans.add(dayPlan);
+//        dayPlan.setPlan(this);
+//    }
+//
+//    public void removeDayPlan(DayPlan dayPlan) {
+//        dayPlans.remove(dayPlan);
+//        dayPlan.setPlan(null);
+//    }
+
     public Plan(PlanDto.Create request, Member member) {
         this.title = request.getTitle();
 //        this.content = request.getContent();
@@ -68,8 +83,6 @@ public class Plan {
         this.isPublic = request.getIsPublic();
         this.tripStartDate = request.getTripStartDate();
         this.tripEndDate = request.getTripEndDate();
-        this.viewCount = 0;
-        this.likeCount = 0;
         this.isVotable = request.getIsVotable();
         this.member = member;
     }
@@ -82,8 +95,6 @@ public class Plan {
         this.isPublic = request.getIsPublic();
         this.tripStartDate = request.getTripStartDate();
         this.tripEndDate = request.getTripEndDate();
-        this.viewCount = 0;
-        this.likeCount = 0;
         this.isVotable = request.getIsVotable();
         this.member = member;
     }
