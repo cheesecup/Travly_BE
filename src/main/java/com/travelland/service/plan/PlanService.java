@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -100,6 +101,7 @@ public class PlanService {
 
         List<DayPlanDto.GetAllInOne> ones = new ArrayList<>();
 
+        // DayPlan에 UnitPlan 담는중
         for (DayPlanDto.Get dayPlan : dayPlanDtos) {
             List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanIdAndIsDeleted(dayPlan.getDayPlanId(), false);
             if (unitPlanList == null)
@@ -136,10 +138,15 @@ public class PlanService {
                     .build());
         }
 
+        List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAIdOrPlanBId(planId, planId);
+        List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
+
+        // Plan에 DayPlan과 PlanVote 담는중
         return PlanDto.GetAllInOne.builder()
-                .plan(new PlanDto.Get(plan))
-                .profileUrl(plan.getMember().getProfileImage())
-                .dayPlans(ones).build();
+                .plan(plan)
+                .dayPlans(ones)
+                .planVotes(planVoteDtos)
+                .build();
     }
 
     // Plan 유저별 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
@@ -155,6 +162,7 @@ public class PlanService {
 
         List<DayPlanDto.GetAllInOne> ones = new ArrayList<>();
 
+        // DayPlan에 UnitPlan 담는중
         for (DayPlanDto.Get dayPlan : dayPlanDtos) {
             List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanIdAndIsDeleted(dayPlan.getDayPlanId(), false);
             if (unitPlanList == null)
@@ -191,10 +199,15 @@ public class PlanService {
                     .build());
         }
 
+        List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAIdOrPlanBId(planId, planId);
+        List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
+
+        // Plan에 DayPlan과 PlanVote 담는중
         return PlanDto.GetAllInOne.builder()
-                .plan(new PlanDto.Get(plan))
-                .profileUrl(plan.getMember().getProfileImage())
-                .dayPlans(ones).build();
+                .plan(plan)
+                .dayPlans(ones)
+                .planVotes(planVoteDtos)
+                .build();
     }
 
     // Plan 전체목록 조회
@@ -414,7 +427,11 @@ public class PlanService {
 
     // PlanVote 생성
     public PlanVoteDto.Id createPlanVote(PlanVoteDto.Create request) {
-        PlanVote planVote = new PlanVote(request);
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+        Member member = getMember("test@test.com");
+
+        PlanVote planVote = new PlanVote(request, member);
         PlanVote savedPlanVote = planVoteRepository.save(planVote);
 
         return new PlanVoteDto.Id(savedPlanVote);
@@ -423,7 +440,7 @@ public class PlanService {
     // PlanVote 상세단일 조회
     public PlanVoteDto.Get readPlanVote(Long planVoteId) {
         PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(planVoteId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-        planVote.isTimeOut();
+        planVote.checkTimeOut(); // 투표기간이 종료됐는지 체크
         return new PlanVoteDto.Get(planVote);
     }
 
@@ -433,16 +450,31 @@ public class PlanService {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page-1, size, sort);
 
+        // 투표기간이 종료됐는지 체크
+        List<PlanVote> notCloseds = planVoteRepository.findAllByIsDeletedAndIsClosed(false, false);
+        for (PlanVote notClosed : notCloseds) {
+            notClosed.checkTimeOut();
+        }
+
         Page<PlanVote> planVotes = planVoteRepository.findAllByIsDeleted(pageable, false);
         return planVotes.map(PlanVoteDto.Get::new);
     }
 
     // PlanVote 수정
     public PlanVoteDto.Id updatePlanVote(Long planVoteId, PlanVoteDto.Update request) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+
+        // 투표기간이 종료됐는지 체크
         PlanVote planVote = planVoteRepository.findByIdAndIsDeletedAndIsClosed(planVoteId, false, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-        if (planVote.isTimeOut()) {
+        if (planVote.checkTimeOut()) {
             throw new CustomException(ErrorCode.PLAN_VOTE_IS_CLOSED);
         }
+
+        // 수정권한 체크
+//        if (member.getId() != planVote.getMemberId()) {
+//            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
+//        }
 
         PlanVote updatedPlanVote = planVote.update(request);
         return new PlanVoteDto.Id(updatedPlanVote);
@@ -450,15 +482,31 @@ public class PlanService {
 
     // PlanVote 종료
     public PlanVoteDto.Close closePlanVote(Long planVoteId) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+
         PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(planVoteId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
 
+        // 종료권한 체크
+//        if (member.getId() != planVote.getMemberId()) {
+//            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
+//        }
+
         planVote.close();
-        return new PlanVoteDto.Close(planVote.getIsDeleted());
+        return new PlanVoteDto.Close(planVote.getIsClosed());
     }
 
     // PlanVote 삭제
     public PlanVoteDto.Delete deletePlanVote(Long planVoteId) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+
         PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(planVoteId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
+
+        // 삭제권한 체크
+//        if (member.getId() != planVote.getMemberId()) {
+//            throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
+//        }
 
         planVote.delete();
         return new PlanVoteDto.Delete(planVote.getIsDeleted());
@@ -479,19 +527,26 @@ public class PlanService {
 //        Member member = userDetails.getMember();
         Member member = getMember("test@test.com");
 
+        // 투표기간이 종료됐는지 체크
+        PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(request.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
+        if (planVote.checkTimeOut()) {
+            throw new CustomException(ErrorCode.PLAN_VOTE_IS_CLOSED);
+        }
+
+        // 이미 투표한적이 있는지 불러옴, 투표한적이 없으면 Null, 있다면 createdAt 기준 가장최근 투표용지를 불러옴
+        Optional<VotePaper> recentVotePaper = votePaperRepository.findFirstByMemberIdAndPlanVoteIdOrderByCreatedAtDesc(member.getId(), request.getPlanVoteId());
+        recentVotePaper.ifPresent(VotePaper::checkReVoteAble);
+
         VotePaper votePaper = new VotePaper(request, member.getId());
-        VotePaper savedVotePaper = votePaperRepository.save(votePaper);
 
         // 생성된 투표내용에 따라 투표 Count 증가 반영
-        PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(votePaper.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-        if (planVote.getIsClosed() == true) { // 닫힌 투표장인 경우 투표반영 중지
-            throw new CustomException(ErrorCode.PLAN_VOTE_IS_CLOSED);
-        } else if (votePaper.getIsVotedA() == true) {
+        if (request.getIsVotedA() == true) {
             planVote.increaseAVoteCount();
-        } else if (votePaper.getIsVotedA() == false) {
+        } else if (request.getIsVotedA() == false) {
             planVote.increaseBVoteCount();
         }
 
+        VotePaper savedVotePaper = votePaperRepository.save(votePaper);
         return new VotePaperDto.Id(savedVotePaper);
     }
 
@@ -520,21 +575,25 @@ public class PlanService {
 //        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        Member member = userDetails.getMember();
 
+        // 투표기간이 종료됐는지 체크
+        PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(request.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
+        if (planVote.checkTimeOut()) {
+            throw new CustomException(ErrorCode.PLAN_VOTE_IS_CLOSED);
+        }
+
         VotePaper votePaper = votePaperRepository.findByIdAndIsDeleted(votePaperId, false).orElseThrow(() -> new CustomException(ErrorCode.VOTE_PAPER_NOT_FOUND));
 
+        // 수정권한 체크
 //        if (member.getId() != votePaper.getMemberId()) {
 //            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
 //        }
 
         // 수정된 투표내용에 따라 투표 Count 증/감 반영
-        if (votePaper.getIsVotedA() != request.getIsVotedA()) {
-            PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(votePaper.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-            if (planVote.getIsClosed() == true) { // 닫힌 투표장인 경우 투표반영 중지
-                throw new CustomException(ErrorCode.PLAN_VOTE_IS_CLOSED);
-            } else if (votePaper.getIsVotedA() == true) {
-                planVote.changeAtoBVoteCount();
-            } else if (votePaper.getIsVotedA() == false) {
+        if (request.getIsVotedA() != votePaper.getIsVotedA()) {
+            if (request.getIsVotedA() == true) {
                 planVote.changeBtoAVoteCount();
+            } else if (request.getIsVotedA() == false) {
+                planVote.changeAtoBVoteCount();
             }
         }
 
@@ -548,17 +607,16 @@ public class PlanService {
 //        Member member = userDetails.getMember();
 
         VotePaper votePaper = votePaperRepository.findByIdAndIsDeleted(votePaperId, false).orElseThrow(() -> new CustomException(ErrorCode.VOTE_PAPER_NOT_FOUND));
+        PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(votePaper.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
 
+        // 삭제권한 체크
 //        if (member.getId() != votePaper.getMemberId()) {
 //            throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
 //        }
 
         // 삭제된 투표내용에 따라 투표 Count 감소 반영
         if (votePaper.getIsDeleted() == false) { // 이미 삭제된 경우 재반영 않도록 조치
-            PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(votePaper.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-            if (planVote.getIsClosed() == true) { // 닫힌 투표장인 경우 투표반영 중지
-                throw new CustomException(ErrorCode.PLAN_VOTE_IS_CLOSED);
-            } else if (votePaper.getIsVotedA() == true) {
+            if (votePaper.getIsVotedA() == true) {
                 planVote.decreaseAVoteCount();
             } else if (votePaper.getIsVotedA() == false) {
                 planVote.decreaseBVoteCount();

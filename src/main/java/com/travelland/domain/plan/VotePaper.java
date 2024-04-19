@@ -1,7 +1,8 @@
 package com.travelland.domain.plan;
 
-import com.travelland.dto.plan.PlanVoteDto;
 import com.travelland.dto.plan.VotePaperDto;
+import com.travelland.global.exception.CustomException;
+import com.travelland.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -58,5 +59,20 @@ public class VotePaper {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    // 재투표 가능한 시각인지 검사
+    public static final int RE_VOTE_ABLE_TIME = 10;
+    public boolean checkReVoteAble() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime reVoteAbleTime = createdAt.plusSeconds(RE_VOTE_ABLE_TIME);
+
+        if(now.isAfter(reVoteAbleTime)) {
+            return true;
+        }
+        else {
+//            throw new RuntimeException("재투표는 " + term +"초 후에 가능합니다.");
+            throw new CustomException(ErrorCode.RE_VOTE_NOT_ENOUGH_TIME);
+        }
     }
 }

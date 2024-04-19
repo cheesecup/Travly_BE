@@ -1,6 +1,7 @@
 package com.travelland.domain.plan;
 
 import com.travelland.constant.PlanVoteDuration;
+import com.travelland.domain.member.Member;
 import com.travelland.dto.plan.PlanVoteDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -21,6 +22,13 @@ public class PlanVote {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private Long memberId;
+
+    @Column(length = 15)
+    private String nickname;
+
+    private String profileImage;
 
     private Long planAId; // 객체형 연관관계를 맺기엔 planId만 필요하고 planId가 바뀔일도 없음
 
@@ -49,7 +57,10 @@ public class PlanVote {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime modifiedAt;
 
-    public PlanVote(PlanVoteDto.Create request) {
+    public PlanVote(PlanVoteDto.Create request, Member member) {
+        this.memberId = member.getId();
+        this.nickname = member.getNickname();
+        this.profileImage = member.getProfileImage();
         this.planAId = request.getPlanAId();
         this.planBId = request.getPlanBId();
         this.title = request.getTitle();
@@ -93,10 +104,16 @@ public class PlanVote {
         this.isClosed = true;
     }
 
-    public boolean isTimeOut() {
+    // 종료예정시각을 경과했는지 검사
+    public boolean checkTimeOut() {
+        // 이미 종료되어 있는 경우, 바로 종료상태(true) 반환
+        if (isClosed == true) {
+            return true;
+        }
+
+        // 아직 종료되지 않은 경우, 시간을 계산해서 종료해야하는지 체크
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime closingTime = createdAt.plus(planVoteDuration.getNumberDuration());
-
         if (now.isAfter(closingTime)) {
             isClosed = true;
         }

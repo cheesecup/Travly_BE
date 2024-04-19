@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,5 +15,9 @@ public interface PlanVoteRepository extends JpaRepository<PlanVote, Long> {
 
     Optional<PlanVote> findByIdAndIsDeletedAndIsClosed(Long planVoteId, boolean isDeleted, boolean isClosed);
 
+    List<PlanVote> findAllByIsDeletedAndIsClosed(boolean isDeleted, boolean isClosed);
+
     Page<PlanVote> findAllByIsDeleted(Pageable pageable, boolean isDeleted);
+
+    List<PlanVote> findAllByPlanAIdOrPlanBId(Long planAId, Long planBId);
 }
