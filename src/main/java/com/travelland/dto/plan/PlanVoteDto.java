@@ -15,6 +15,7 @@ public class PlanVoteDto {
         private Long planAId;
         //@NotBlank(message = "대상 플랜B를 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private Long planBId;
+        private String title;
         //@NotBlank(message = "투표기간을 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private PlanVoteDuration planVoteDuration;
     }
@@ -35,6 +36,7 @@ public class PlanVoteDto {
         private final int planACount;
         private final int planBCount;
         private final Boolean isClosed;
+        private final String title;
         private final PlanVoteDuration planVoteDuration;
         private final LocalDateTime createdAt;
         private final LocalDateTime modifiedAt;
@@ -46,6 +48,7 @@ public class PlanVoteDto {
             this.planACount = planVote.getPlanACount();
             this.planBCount = planVote.getPlanBCount();
             this.isClosed = planVote.getIsClosed();
+            this.title = planVote.getTitle();
             this.planVoteDuration = planVote.getPlanVoteDuration();
             this.createdAt = planVote.getCreatedAt();
             this.modifiedAt = planVote.getModifiedAt();
@@ -58,6 +61,7 @@ public class PlanVoteDto {
         private Long planAId;
         //@NotBlank(message = "대상 플랜B를 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private Long planBId;
+        private String title;
         //@NotBlank(message = "투표기간을 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private PlanVoteDuration planVoteDuration;
     }

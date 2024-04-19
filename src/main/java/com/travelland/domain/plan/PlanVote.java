@@ -34,6 +34,9 @@ public class PlanVote {
 
     private Boolean isClosed = false;
 
+    @Column(length = 30)
+    private String title;
+
     @Column(length = 10)
     @Enumerated(EnumType.STRING)
     private PlanVoteDuration planVoteDuration;
@@ -49,12 +52,14 @@ public class PlanVote {
     public PlanVote(PlanVoteDto.Create request) {
         this.planAId = request.getPlanAId();
         this.planBId = request.getPlanBId();
+        this.title = request.getTitle();
         this.planVoteDuration = request.getPlanVoteDuration();
     }
 
     public PlanVote update(PlanVoteDto.Update request) {
         this.planAId = request.getPlanAId();
         this.planBId = request.getPlanBId();
+        this.title = request.getTitle();
         this.planVoteDuration = request.getPlanVoteDuration();
 
         return this;
