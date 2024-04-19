@@ -1,4 +1,4 @@
-package com.travelland.controller.valid;
+package com.travelland.valid.plan;
 
 import jakarta.validation.GroupSequence;
 
@@ -7,7 +7,8 @@ import jakarta.validation.GroupSequence;
         PlanValidationGroups.ContentBlankGroup.class,
         PlanValidationGroups.CostRangeGroup.class,
         PlanValidationGroups.AddressBlankGroup.class,
-        PlanValidationGroups.TimeBlankGroup.class
+        PlanValidationGroups.TimeBlankGroup.class,
+        PlanValidationGroups.VoteBlankGroup.class
 })
 
 public interface PlanValidationSequence {

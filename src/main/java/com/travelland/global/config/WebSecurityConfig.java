@@ -8,6 +8,7 @@ import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.member.RefreshTokenRepository;
 import com.travelland.service.member.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizationFailureHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -31,6 +33,7 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Slf4j(topic = "config")
 public class WebSecurityConfig {
 
     private final JwtUtil jwtUtil;
@@ -59,7 +62,7 @@ public class WebSecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         // 배포시 허용할 출처 추가하기
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080", "http://localhost:80", "http://localhost:3000", "https://localhost:443", "https://spparta.store", "https://www.travly.site", "http://www.travly.site"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8080", "http://localhost:80", "http://localhost:3000", "https://localhost:443", "https://spparta.store", "https://www.travly.site", "http://www.travly.site", "https://kauth.kakao.com", "https://kapi.kakao.com"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowCredentials(true);
         configuration.addExposedHeader("Authorization");
@@ -96,9 +99,14 @@ public class WebSecurityConfig {
         http.httpBasic(AbstractHttpConfigurer::disable);
         http.logout(AbstractHttpConfigurer::disable);
 
-        http.oauth2Login(oauth2 -> oauth2
+        http.oauth2Login(oauth2 ->
+            oauth2
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuth2UserService))
-                .successHandler(new OAuth2MemberSuccessHandler(jwtUtil, memberRepository, refreshTokenRepository)));
+                .successHandler(new OAuth2MemberSuccessHandler(jwtUtil, memberRepository, refreshTokenRepository))
+                    .failureHandler((request, response, exception) ->
+                        log.error("OAuth2 authentication failed: " + exception.getMessage())
+        )
+        );
 
         // 필터 관리
         http.addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class);

@@ -25,6 +25,7 @@ public enum ErrorCode {
     POST_UPDATE_NOT_PERMISSION(FORBIDDEN, "해당 게시물을 수정할 권한이 없습니다."),
     POST_DELETE_NOT_PERMISSION(FORBIDDEN, "해당 게시물을 삭제할 권한이 없습니다."),
     POST_COMMENT_DELETE_NOT_PERMISSION(FORBIDDEN, "해당 댓글을 삭제할 권한이 없습니다."),
+    PLAN_VOTE_IS_CLOSED(FORBIDDEN, "해당 투표장은 기간만료로 닫혀 투표 권한이 없습니다."),
 
     // 404 NOT_FOUND: 잘못된 리소스 접근
     REFRESH_TOKEN_NOT_FOUND(NOT_FOUND, "로그아웃 된 사용자입니다"),
@@ -38,6 +39,8 @@ public enum ErrorCode {
     DAY_PLAN_NOT_FOUND(NOT_FOUND, "해당 일일 플랜을 찾을 수 없습니다."),
     UNIT_PLAN_NOT_FOUND(NOT_FOUND, "해당 단위 플랜을 찾을 수 없습니다."),
     PLAN_COMMENT_NOT_FOUND(NOT_FOUND, "해당 댓글을 찾을 수 없습니다."),
+    PLAN_VOTE_NOT_FOUND(NOT_FOUND, "해당 투표장을 찾을 수 없습니다."),
+    VOTE_PAPER_NOT_FOUND(NOT_FOUND, "해당 투표지를 찾을 수 없습니다."),
     USER_NOT_FOUND(NOT_FOUND, "해당 사용자를 찾을 수 없습니다."),
 
     // 409 CONFLICT: 중복된 리소스 (요청이 현재 서버 상태와 충돌될 때)
