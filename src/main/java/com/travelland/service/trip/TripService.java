@@ -55,7 +55,13 @@ public class TripService {
 
     @Transactional
     public TripDto.Get getTrip(Long tripId, String email) {
-        Trip trip = tripRepository.findByIdAndIsDeletedAndIsPublic(tripId, false, true).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+//        Trip trip = tripRepository.findByIdAndIsDeleted(tripId, false).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+        Trip trip = tripRepository.getTripWithMember(tripId, false);
+
+        if (!trip.isPublic() && !trip.getMember().getEmail().equals(email)) { //비공개 글인 경우
+            throw new CustomException(ErrorCode.POST_ACCESS_NOT_PERMISSION);
+        }
 
         List<String> hashtagList = tripHashtagRepository.findAllByTrip(trip).stream().map(TripHashtag::getTitle).toList();
         List<String> imageUrlList = tripImageService.getTripImageUrl(trip);
