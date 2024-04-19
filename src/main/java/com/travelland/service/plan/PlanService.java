@@ -11,6 +11,8 @@ import com.travelland.dto.plan.PlanDto;
 import com.travelland.dto.plan.UnitPlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
+import com.travelland.global.job.DataIntSet;
+import com.travelland.global.job.DataStrSet;
 import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.DayPlanRepository;
@@ -22,11 +24,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import static com.travelland.constant.Constants.PLAN_TOTAL_COUNT;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,9 +44,10 @@ public class PlanService {
     private final DayPlanRepository dayPlanRepository;
     private final UnitPlanRepository unitPlanRepository;
     private final PlanCommentRepository planCommentRepository;
+    private final PlanLikeService planLikeService;
+    private final PlanScrapService planScrapService;
+    private final RedisTemplate<String,String> redisTemplate;
 
-    private final StringRedisTemplate redisTemplate;
-    private static final String PLAN_TOTAL_COUNT = "plan_total_count";
 
     // Plan 작성
     public PlanDto.Id createPlan(PlanDto.Create request) {
@@ -305,6 +309,20 @@ public class PlanService {
         return new PlanDto.Delete(plan.getIsDeleted());
     }
 
+    @Transactional
+    public void updateViewCount(DataIntSet dataIntSet){
+        Plan plan = getPlan(dataIntSet.getId());
+        plan.updateViewCount(dataIntSet.getValue());
+        planRepository.save(plan);
+    }
+
+    public void syncPlanLike(List<DataStrSet> datas){
+        datas.forEach(data -> planLikeService.savePlanLike(data.getId(), data.getValue()));
+    }
+
+    public void syncPlanScrap(List<DataStrSet> datas){
+        datas.forEach(data -> planScrapService.savePlanScrap(data.getId(), data.getValue()));
+    }
 
 
 

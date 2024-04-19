@@ -2,13 +2,10 @@ package com.travelland.repository.trip.querydsl;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.CaseBuilder;
-import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
-import com.travelland.global.job.DataSet;
+import com.travelland.global.job.DataIntSet;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,26 +62,8 @@ public class CustomTripRepositoryV2Impl implements CustomTripRepositoryV2 {
                 .fetch();
     }
 
-//    @Override
-//    public void updateBulkViewCount(List<DataSet> dataSets) {
-//        log.info("update strat");
-//        if (dataSets.isEmpty())
-//            return;
-//
-//        CaseBuilder.Cases<Integer, NumberExpression<Integer>> cases = new CaseBuilder()
-//                .when(trip.id.eq(dataSets.get(0).getId())).then(dataSets.get(0).getValue());
-//
-//        for (int i = 1 ; i < dataSets.size() ; i++)
-//            cases = cases.when(trip.id.eq(dataSets.get(i).getId())).then(dataSets.get(i).getValue());
-//
-//        new JPAUpdateClause(entityManager, trip)
-//                .set(trip.viewCount, cases.otherwise(trip.viewCount))
-//                .where(trip.id.in(dataSets.stream().map(DataSet::getId).toList()))
-//                .execute();
-//    }
-
     @Override
-    public void updateBulkViewCount(List<DataSet> dataSets) {
+    public void updateBulkViewCount(List<DataIntSet> dataIntSets) {
         log.info("update strat");
 //        if (dataSets.isEmpty())
 //            return;
@@ -99,6 +78,11 @@ public class CustomTripRepositoryV2Impl implements CustomTripRepositoryV2 {
 //                .set(trip.viewCount, cases.otherwise(trip.viewCount))
 //                .where(trip.id.in(dataSets.stream().map(DataSet::getId).toList()))
 //                .execute();
+    }
+
+    @Override
+    public void updateViewCount(Long tripId, int count) {
+
     }
 
     @Override

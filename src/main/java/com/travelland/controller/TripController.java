@@ -15,7 +15,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -153,7 +152,7 @@ public class TripController implements TripControllerDocs {
 
     //여행정보 해쉬태그 검색량 상위 TOP5
     @GetMapping("/trips/rank/hashtag")
-    public ResponseEntity<List<TripDto.Rank>> getRecentTop5Keywords() throws IOException {
+    public ResponseEntity<List<TripDto.Rank>> getRecentTopKeywords(){
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRecentlyTopSearch());
     }
 
@@ -201,7 +200,7 @@ public class TripController implements TripControllerDocs {
     //여행정보 조회수 TOP 10 목록 조회
     @GetMapping("/trips/rank")
     public ResponseEntity<List<TripDto.GetList>> getTripListTop10() {
-        return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getTripListTop10());
+        return ResponseEntity.status(HttpStatus.OK).body(tripService.getRankByViewCount(10L));
     }
 
     //지역 카테고리별 목록 조회

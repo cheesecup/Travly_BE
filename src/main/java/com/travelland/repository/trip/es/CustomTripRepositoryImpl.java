@@ -1,7 +1,8 @@
 package com.travelland.repository.trip.es;
 
+import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
-import com.travelland.global.job.DataSet;
+import com.travelland.global.job.DataIntSet;
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.Operator;
@@ -12,13 +13,12 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
-import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
 
 @RequiredArgsConstructor
 @Component
@@ -55,7 +55,7 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
     public List<String> searchByAddress(String address) {
 
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
-        searchQueryBuilder.withPageable(PageRequest.of(0, 7)); // 7개의 결과를 반환하도록 설정
+        searchQueryBuilder.withPageable(PageRequest.of(0, 7));
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         Arrays.stream(address.split("\\s+"))
                 .map(part -> QueryBuilders.matchQuery("address", part).operator(Operator.AND)
@@ -90,7 +90,7 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
     }
 
     @Override
-    public List<DataSet> readViewCount(Pageable pageable) {
+    public List<DataIntSet> readViewCount(Pageable pageable) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
         searchQueryBuilder.withPageable(pageable);
         searchQueryBuilder.withFields("trip_id", "view_count");
@@ -98,7 +98,18 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class)
                 .stream()
                 .map(SearchHit::getContent)
-                .map(data -> new DataSet(data.getTripId(), data.getViewCount()))
+                .map(data -> new DataIntSet(data.getTripId(), data.getViewCount()))
+                .toList();
+    }
+
+    @Override
+    public List<TripDto.GetList> findRankList(List<Long> keys) {
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
+        searchQueryBuilder.withQuery(termsQuery("trip_id", keys));
+
+        return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class)
+                .stream()
+                .map(hit -> new TripDto.GetList(hit.getContent()))
                 .toList();
     }
 }

@@ -1,7 +1,8 @@
 package com.travelland.repository.trip.es;
 
+import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
-import com.travelland.global.job.DataSet;
+import com.travelland.global.job.DataIntSet;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.SearchHits;
 
@@ -18,6 +19,8 @@ public interface CustomTripRepository {
 
     SearchHits<TripSearchDoc> findAllList(Pageable pageable);
 
-    List<DataSet> readViewCount(Pageable pageable);
+    List<DataIntSet> readViewCount(Pageable pageable);
+
+    List<TripDto.GetList> findRankList(List<Long> keys);
 
 }

@@ -10,9 +10,13 @@ import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripLikeRepository;
 import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import static com.travelland.constant.Constants.TRIP_LIKES_TRIP_ID;
+import static com.travelland.constant.Constants.TRIP_LIKES_EMAIL;
+
 
 import java.util.*;
 
@@ -23,24 +27,24 @@ public class TripLikeService {
     private final TripLikeRepository tripLikeRepository;
     private final MemberRepository memberRepository;
     private final TripRepository tripRepository;
-    private final StringRedisTemplate redisTemplate;
-
-    private static final String TRIP_LIKES_TRIP_ID = "tripLikes:tripId:";
-    private static final String TRIP_LIKES_EMAIL = "tripLikes:email:";
+    private final RedisTemplate<String, String> redisTemplate;
 
     //여행정보 좋아요 등록
     @Transactional
     public void registerTripLike(Long tripId, String email) {
+        redisTemplate.opsForSet().add(TRIP_LIKES_TRIP_ID + tripId, email);
+        redisTemplate.opsForSet().add(TRIP_LIKES_EMAIL + email, tripId.toString());
+    }
+
+    @Transactional
+    public void saveTripLike(Long tripId, String email) {
         Member member = getMember(email);
         Trip trip = getTrip(tripId);
-
         tripLikeRepository.findByMemberAndTrip(member, trip)
                 .ifPresentOrElse(
                         TripLike::registerLike, // 좋아요를 한번이라도 등록한적이 있을경우
                         () -> tripLikeRepository.save(new TripLike(member, trip)) // 최초로 좋아요를 등록하는 경우
                 );
-        redisTemplate.opsForSet().add(TRIP_LIKES_TRIP_ID + tripId, email);
-        redisTemplate.opsForSet().add(TRIP_LIKES_EMAIL + email, tripId.toString());
     }
 
     //여행정보 좋아요 취소

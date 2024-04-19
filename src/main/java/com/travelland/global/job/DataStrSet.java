@@ -1,18 +1,17 @@
+
 package com.travelland.global.job;
 
-import lombok.ToString;
-
-public class DataSet {
+public class DataStrSet {
     private Long id;
-    private Integer value;
-    public DataSet (Long id, Integer value){
+    private String value;
+    public DataStrSet(Long id, String value){
         this.id = id;
         this.value = value;
     }
     public Long getId(){
         return this.id;
     }
-    public Integer getValue(){
+    public String getValue(){
         return this.value;
     }
 

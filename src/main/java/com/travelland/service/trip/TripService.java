@@ -6,16 +6,23 @@ import com.travelland.domain.trip.TripHashtag;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
+import com.travelland.global.job.DataIntSet;
+import com.travelland.global.job.DataStrSet;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripHashtagRepository;
 import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
+import static com.travelland.constant.Constants.TRIP_TOTAL_ELEMENTS;
+import static com.travelland.constant.Constants.TRIP_VIEW_COUNT;
+import static com.travelland.constant.Constants.VIEW_RANK;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -24,15 +31,13 @@ public class TripService {
     private final TripRepository tripRepository;
     private final MemberRepository memberRepository;
     private final TripHashtagRepository tripHashtagRepository;
-    private final StringRedisTemplate redisTemplate;
+    private final RedisTemplate<String,String> redisTemplate;
     private final TripImageService tripImageService;
     private final TripLikeService tripLikeService;
     private final TripScrapService tripScrapService;
     private final TripSearchService tripSearchService;
 
-    private static final String TRIP_TOTAL_ELEMENTS = "trip:totalElements";
-    private static final String VIEW_COUNT = "viewCount:tripId:";
-    private static final String VIEW_RANK = "tripViewRank";
+
 
     @Transactional
     public TripDto.Id createTrip(TripDto.Create requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, String email) {
@@ -68,10 +73,10 @@ public class TripService {
             isScrap = tripScrapService.statusTripScrap(tripId, email);
 
             //조회수 증가
-            Long result = redisTemplate.opsForSet().add(VIEW_COUNT + tripId, email); //redis 조회수 증가
+            Long result = redisTemplate.opsForSet().add(TRIP_VIEW_COUNT + tripId, email); //redis 조회수 증가
 
             if (result != null && result == 1L) {
-                Long view = redisTemplate.opsForSet().size(VIEW_COUNT + tripId); //redis 조회수 Get
+                Long view = redisTemplate.opsForSet().size(TRIP_VIEW_COUNT + tripId); //redis 조회수 Get
                 redisTemplate.opsForZSet().add(VIEW_RANK, tripId.toString(), view);
             }
         }
@@ -126,6 +131,31 @@ public class TripService {
         trip.delete();
 
         redisTemplate.opsForValue().decrement(TRIP_TOTAL_ELEMENTS);
+    }
+    public List<TripDto.GetList> getRankByViewCount(long size){
+        Set<String> ranks = redisTemplate.opsForZSet()
+                .reverseRange(VIEW_RANK,0L,size-1L);
+
+        if (ranks == null)
+            return new ArrayList<>();
+
+        return tripSearchService.getRankByViewCount(ranks.stream()
+                .map(Long::parseLong)
+                .toList());
+    }
+    @Transactional
+    public void updateViewCount(DataIntSet dataIntSet){
+        Trip trip = getTrip(dataIntSet.getId());
+        trip.updateViewCount(dataIntSet.getValue());
+        tripRepository.save(trip);
+    }
+
+    public void syncTripLike(List<DataStrSet> datas){
+        datas.forEach(data -> tripLikeService.saveTripLike(data.getId(), data.getValue()));
+    }
+
+    public void syncTripScrap(List<DataStrSet> datas){
+        datas.forEach(data -> tripScrapService.saveTripScrap(data.getId(), data.getValue()));
     }
 
     private Member getMember(String email) {

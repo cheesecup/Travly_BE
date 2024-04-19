@@ -2,7 +2,7 @@ package com.travelland.repository.trip.querydsl;
 
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
-import com.travelland.global.job.DataSet;
+import com.travelland.global.job.DataIntSet;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,8 +14,9 @@ public interface CustomTripRepositoryV2 {
 
     List<Trip> searchTripByHashtag(String hashtag, int page, int size, String sort, boolean ASC);
 
-    void updateBulkViewCount(List<DataSet> dataSets);
+    void updateBulkViewCount(List<DataIntSet> dataIntSets);
 
+    void updateViewCount(Long tripId, int count);
     Optional<Trip> getTripById(Long tripId);
 
 }

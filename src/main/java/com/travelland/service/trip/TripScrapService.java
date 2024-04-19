@@ -12,9 +12,12 @@ import com.travelland.repository.trip.TripRepository;
 import com.travelland.repository.trip.TripScrapRepository;
 import com.travelland.repository.trip.TripSearchRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import static com.travelland.constant.Constants.TRIP_SCRAPS_TRIP_ID;
+import static com.travelland.constant.Constants.TRIP_SCRAPS_EMAIL;
 
 import java.util.List;
 
@@ -26,14 +29,18 @@ public class TripScrapService {
     private final MemberRepository memberRepository;
     private final TripRepository tripRepository;
     private final TripSearchRepository tripSearchESRepository;
-    private final StringRedisTemplate redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
-    private static final String TRIP_SCRAPS_TRIP_ID = "tripScraps:tripId:";
-    private static final String TRIP_SCRAPS_EMAIL = "tripScraps:email:";
 
     //여행정보 스크랩 등록
     @Transactional
     public void registerTripScrap(Long tripId, String email) {
+        redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, email);
+        redisTemplate.opsForSet().add(TRIP_SCRAPS_EMAIL + email, tripId.toString());
+    }
+
+    @Transactional
+    public void saveTripScrap(Long tripId, String email) {
         Member member = getMember(email);
         Trip trip = getTrip(tripId);
 
@@ -42,9 +49,6 @@ public class TripScrapService {
                         TripScrap::registerScrap, // 스크랩을 한번이라도 등록한적이 있을경우
                         () -> tripScrapRepository.save(new TripScrap(member, trip)) // 최초로 스크랩을 등록하는 경우
                 );
-
-        redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, email);
-        redisTemplate.opsForSet().add(TRIP_SCRAPS_EMAIL + email, tripId.toString());
     }
 
     //여행정보 스크랩 취소

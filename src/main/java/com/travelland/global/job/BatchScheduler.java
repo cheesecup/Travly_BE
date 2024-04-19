@@ -24,11 +24,11 @@ public class BatchScheduler {
     private final JobRegistry jobRegistry;
 
     //@Scheduled(cron = "0 0 4 * * *") //매일 04:00
-//    @Scheduled(cron = "0/10 * * * * *") // 3초마다 실행
+    @Scheduled(cron = "0/10 * * * * *") // 10초마다 실행
     public void runJob() {
         log.info("start Job");
         try {
-            jobLauncher.run(jobRegistry.getJob("dbSync"),
+            jobLauncher.run(jobRegistry.getJob("jdbcFlowJob"),
                     new JobParametersBuilder()
                             .addString("time", LocalDateTime.now().toString())
                             .toJobParameters()

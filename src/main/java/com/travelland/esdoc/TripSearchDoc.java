@@ -83,7 +83,7 @@ public class TripSearchDoc {
         this.hashtag = hashtag;
         this.tripStartDate = trip.getTripStartDate();
         this.tripEndDate = trip.getTripEndDate();
-        this.content = makeShortContent(trip.getContent(),100);
+        this.content = makeShortContent(trip.getContent(),150);
         this.createdAt = LocalDateTime.now();
         this.address = trip.getAddress();
         this.nickname = member.getNickname();

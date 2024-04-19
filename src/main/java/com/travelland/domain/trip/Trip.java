@@ -82,6 +82,9 @@ public class Trip {
         this.content = requestDto.getContent();
         this.isPublic = requestDto.getIsPublic();
     }
+    public void updateViewCount(int viewCount) {
+        this.viewCount = viewCount;
+    }
 
     public void delete() {
         this.isDeleted = true;

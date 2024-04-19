@@ -13,6 +13,9 @@ class TripSearchServiceTest {
     @Autowired
     private TripSearchService tripSearchService;
 
+    @Autowired
+    private TripService tripService;
+
     @Test
     void getTripList() {
         System.out.println("tripSearchService = " + tripSearchService.getTripList(1,20,"createdAt",true));
@@ -22,7 +25,11 @@ class TripSearchServiceTest {
         System.out.println("tripSearchService = " + tripSearchService.searchTripByHashtag("여행",1,20,"createdAt",true).getTotalCount());
     }
     @Test
-    void getRank() throws IOException {
+    void getRank(){
         System.out.println("tripSearchService = " + tripSearchService.getRecentlyTopSearch().get(0).getStatus());
+    }
+    @Test
+    void getRankByViewCount(){
+        System.out.println("tripSearchService = " + tripService.getRankByViewCount(10L));
     }
 }

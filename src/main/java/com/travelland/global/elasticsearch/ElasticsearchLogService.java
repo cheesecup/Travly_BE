@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -31,18 +30,15 @@ import java.util.concurrent.TimeUnit;
 public class ElasticsearchLogService {
     private final RestHighLevelClient client;
     public void indexDocument(String indexName, Map<String,Object> doc) {
-        IndexRequest request = new IndexRequest(indexName)
-                .source(doc);
+        IndexRequest request = new IndexRequest(indexName).source(doc);
         try {
             client.indexAsync(request, RequestOptions.DEFAULT, new ActionListener<IndexResponse>() {
                 @Override
                 public void onResponse(IndexResponse response) {
-                    log.debug("logging success");
                     log.debug(response.toString());
                 }
                 @Override
                 public void onFailure(Exception e) {
-                    log.debug("logging failed");
                     log.error(e.getMessage());
                 }
             });
@@ -51,25 +47,21 @@ public class ElasticsearchLogService {
         }
     }
 
-    public void putSearchLog(String query, String memberId) {
+    public void putSearchLog(String query) {
         String indexName = "query-log";
         Map<String,Object> doc = new HashMap<>();
         doc.put("query", query);
-        doc.put("memberId", memberId);
-
-        Date date = new Date(System.currentTimeMillis());
+        doc.put("username", "username");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        String stamp = sdf.format(date);
-        doc.put("@timestamp", stamp);
-
+        doc.put("@timestamp", sdf.format(new Date(System.currentTimeMillis())));
         indexDocument(indexName, doc);
     }
 
-    public List<Map<String, Object>> getRankInRange(String field, LocalDateTime startTime, LocalDateTime endTime) throws IOException {
+    public List<Map<String, Object>> getRankInRange(String field, LocalDateTime startTime, LocalDateTime endTime){
         SearchRequest searchRequest = new SearchRequest("query-log");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.size(0); // 인기검색어 1~10위
+        searchSourceBuilder.size(0);
         searchSourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
 
         searchSourceBuilder.query(QueryBuilders.rangeQuery("@timestamp")
@@ -79,17 +71,23 @@ public class ElasticsearchLogService {
         TermsAggregationBuilder aggregation = AggregationBuilders.terms("by_query").field("query."+field);
         searchSourceBuilder.aggregation(aggregation);
         searchRequest.source(searchSourceBuilder);
+        try {
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+            Terms byQuery = searchResponse.getAggregations().get("by_query");
 
-        SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        Terms byQuery = searchResponse.getAggregations().get("by_query");
+            return byQuery.getBuckets().stream().map(this::keywordEntryMapper).toList();
 
-        return byQuery.getBuckets().stream()
-                .map(entry -> {
-                    Map<String, Object> keywordEntry = new HashMap<>();
-                    keywordEntry.put("key", entry.getKeyAsString());
-                    keywordEntry.put("count", entry.getDocCount());
-                    return keywordEntry;
-                }).toList();
+        }catch (IOException e){
+            log.error(e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
+    private Map<String, Object> keywordEntryMapper(Terms.Bucket entry){
+        Map<String, Object> keywordEntry = new HashMap<>();
+        keywordEntry.put("key", entry.getKeyAsString());
+        keywordEntry.put("count", entry.getDocCount());
+        return keywordEntry;
     }
 }
 

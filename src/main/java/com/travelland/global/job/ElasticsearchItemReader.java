@@ -7,7 +7,7 @@ import org.springframework.batch.item.ItemReader;
 
 import java.util.List;
 @Slf4j(topic = "ES Item Reader : ")
-public class ElasticsearchItemReader implements ItemReader<List<DataSet>> {
+public class ElasticsearchItemReader implements ItemReader<List<DataIntSet>> {
 
     private final TripSearchService tripSearchService;
     private final int pageSize;
@@ -22,7 +22,7 @@ public class ElasticsearchItemReader implements ItemReader<List<DataSet>> {
     }
 
     @Override
-    public List<DataSet> read() {
+    public List<DataIntSet> read() {
         log.info("currentPage: " + currentPage);
         log.info("totalPage: " + totalPage);
 
@@ -32,11 +32,10 @@ public class ElasticsearchItemReader implements ItemReader<List<DataSet>> {
         if(currentPage > totalPage)
             return null;
 
-        List<DataSet> result = tripSearchService.readTripViewCount(currentPage++, pageSize);
+        List<DataIntSet> result = tripSearchService.readTripViewCount(currentPage++, pageSize);
         if(result.isEmpty())
             return null;
 
-        log.info(result.toString());
         return result;
     }
 }

@@ -200,19 +200,23 @@ public class TripDto {
         private final String id;
         private final Long tripId;
         private final String title;
-        private final String address;
+        private final String area;
         private final String content;
-        private final String nickname;
-        private final String profileUrl;
+        private final String address;
+        private final LocalDate tripStartDate;
+        private final LocalDate tripEndDate;
+        private final List<String> hashtagList;
 
         public Search(TripSearchDoc tripSearchDoc) {
             this.id = tripSearchDoc.getId();
             this.tripId = tripSearchDoc.getTripId();
-            this.address = tripSearchDoc.getAddress();
+            this.area = tripSearchDoc.getArea();
             this.title = tripSearchDoc.getTitle();
             this.content = tripSearchDoc.getContent();
-            this.nickname = tripSearchDoc.getNickname();
-            this.profileUrl = tripSearchDoc.getProfileUrl();
+            this.address = getAddress();
+            this.tripStartDate = tripSearchDoc.getTripStartDate();
+            this.tripEndDate = tripSearchDoc.getTripEndDate();
+            this.hashtagList = tripSearchDoc.getHashtag();
         }
     }
 

@@ -118,8 +118,8 @@ public class Plan {
         this.isDeleted = true;
     }
 
-    public void increaseViewCount() {
-        this.viewCount++;
+    public void updateViewCount(int viewCount) {
+        this.viewCount = viewCount;
     }
 
     public void increaseLikeCount() {

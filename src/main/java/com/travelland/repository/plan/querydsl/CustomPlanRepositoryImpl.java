@@ -36,6 +36,21 @@ public class CustomPlanRepositoryImpl implements CustomPlanRepository {
                 .limit(size)
                 .fetch();
     }
+    @Override
+    public List<PlanDto.GetList> getPlanListByIds(List<Long> ids) {
+        return jpaQueryFactory
+                .select(Projections.constructor(
+                        PlanDto.GetList.class,
+                        plan.id,
+                        plan.title,
+                        plan.viewCount,
+                        plan.createdAt
+                ))
+                .from(plan)
+                .where(plan.id.in(ids))
+                .fetch();
+    }
+
     private BooleanExpression ltPlanId(Long planId) {
         if (planId == null)
             return null;

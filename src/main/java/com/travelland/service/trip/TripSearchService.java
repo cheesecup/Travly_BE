@@ -1,40 +1,28 @@
 package com.travelland.service.trip;
 
-import com.amazonaws.util.CollectionUtils;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
-import com.travelland.domain.trip.TripHashtag;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.global.elasticsearch.ElasticsearchLogService;
-import com.travelland.global.exception.CustomException;
-import com.travelland.global.exception.ErrorCode;
-import com.travelland.global.job.DataSet;
+import com.travelland.global.job.DataIntSet;
+import com.travelland.global.job.DataStrSet;
+import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripRepository;
-import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.repository.trip.TripSearchRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.IntStream;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+
+import static com.travelland.constant.Constants.SEARCH_RANK_FIELD;
 
 @Slf4j(topic = "ES")
 @Service
@@ -42,18 +30,6 @@ import java.util.stream.Collectors;
 public class TripSearchService {
     private final TripSearchRepository tripSearchRepository;
     private final ElasticsearchLogService elasticsearchLogService;
-    private final TripRepository tripRepository;
-    private final RestHighLevelClient client;
-
-    private final StringRedisTemplate redisTemplate;
-    private ZSetOperations<String, String> zSetOperations;
-
-    @PostConstruct
-    public void init() {
-        zSetOperations = redisTemplate.opsForZSet();
-    }
-
-    private static final String TOTAL_ELEMENTS = "trip:totalElements";
 
     public void createTripDocument(Trip trip, List<String> hashtag, Member member, String thumbnailUrl, String profileUrl){
         tripSearchRepository.save(new TripSearchDoc(trip, hashtag, member, thumbnailUrl, profileUrl));
@@ -64,6 +40,7 @@ public class TripSearchService {
         SearchHits<TripSearchDoc> result = tripSearchRepository.searchByTitle(title,
                 PageRequest.of(page-1, size,
                         Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy)));
+
         if(result.getTotalHits() == 0)
             return TripDto.SearchResult.builder().build();
 
@@ -94,7 +71,7 @@ public class TripSearchService {
         if (result.getTotalHits() == 0)
             return TripDto.SearchResult.builder().build();
 
-        elasticsearchLogService.putSearchLog(hashtag,"java@java.com");
+        elasticsearchLogService.putSearchLog(hashtag);
 
         List<TripDto.Search> searches = result.get()
                 .map(SearchHit::getContent).map(TripDto.Search::new).toList();
@@ -112,38 +89,24 @@ public class TripSearchService {
                 .build();
     }
 
-    //여행정복 목록 조회
     public List<TripDto.GetList> getTripList(int page, int size, String sortBy, boolean isAsc){
         return  tripSearchRepository.findAllByIsPublic(
                 PageRequest.of(page-1, size,
                 Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy)), true)
-                .map(trip -> new TripDto.GetList(trip, trip.getThumbnailUrl())).getContent();
-        return tripSearchRepository.findAll(PageRequest.of(page-1, size,
-                Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy))).map(TripDto.GetList::new).getContent();
+                .map(TripDto.GetList::new).getContent();
     }
 
+    public List<TripDto.GetList> getRankByViewCount(List<Long> keys){
+        return tripSearchRepository.findRankList(keys);
+    }
 
-    public List<TripDto.Rank> getRecentlyTopSearch() throws IOException {
+    public List<TripDto.Rank> getRecentlyTopSearch() {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime pastTime = now.minusDays(1);
-        //LocalDateTime.now().minusWeeks(1)
-
-        List<Map<String, Object>> pastKeywords = elasticsearchLogService
-                .getRankInRange("keyword", pastTime.minusDays(1), pastTime);
-
         return elasticsearchLogService.
-                getRankInRange("keyword", pastTime, now)
+                getRankInRange(SEARCH_RANK_FIELD, now.minusWeeks(1), now)
                 .stream()
-                .map(recentKeyword -> {
-                    String key = (String) recentKeyword.get("key");
-                    long count = (long) recentKeyword.get("count");
-                    return TripDto.Rank.builder()
-                            .key(key)
-                            .count(count)
-                            .status(determineStatus(key, count, pastKeywords))
-                            .value(determineValue(key, pastKeywords))
-                            .build();
-                }).toList();
+                .map(this::rankMapper)
+                .toList();
     }
 
     public void deleteTrip(Long tripId) {
@@ -153,52 +116,21 @@ public class TripSearchService {
     public List<TripDto.GetList> getMyTripList(int page, int size, String email) {
         return tripSearchRepository.findByEmail(PageRequest.of(page-1, size,
                 Sort.by(Sort.Direction.DESC, "createdAt")), email)
-                .map(trip -> new TripDto.GetList(trip, trip.getThumbnailUrl()))
+                .map(TripDto.GetList::new)
                 .getContent();
     }
 
-    public void increaseViewCount(Long tripId) {
-        TripSearchDoc tripSearchDoc = tripSearchRepository.findByTripId(tripId);
-        tripSearchDoc.increaseViewCount();
-        tripSearchRepository.save(tripSearchDoc);
-    }
-
-    public List<DataSet> readTripViewCount(int page, int size){
+    public List<DataIntSet> readTripViewCount(int page, int size){
         return  tripSearchRepository.readViewCount(PageRequest.of(page, size));
     }
     public Long readTotalCount(){
         return tripSearchRepository.count();
     }
 
-    public void syncViewCount(List<DataSet> dataSets){
-        tripRepository.updateBulkViewCount(dataSets);
+    private TripDto.Rank rankMapper(Map<String, Object> recentKeyword){
+        return TripDto.Rank.builder()
+                .key((String) recentKeyword.get("key"))
+                .count((long) recentKeyword.get("count"))
+                .build();
     }
-
-
-    private String determineStatus(String key, long count, List<Map<String, Object>> pastKeywords) {
-
-        Optional<Map<String, Object>> matchingKeyword = pastKeywords.stream()
-                .filter(keyword -> key.equals(keyword.get("key")))
-                .findFirst();
-
-        if (matchingKeyword.isEmpty())
-            return "new";
-
-        long pastCount = (long) matchingKeyword.get().get("count");
-
-        if (count > pastCount)
-            return "up";
-
-        if(count < pastCount)
-            return "down";
-
-        return "-";
-    }
-
-    private int determineValue(String key, List<Map<String, Object>> pastKeywords) {
-        return IntStream.range(0, pastKeywords.size())
-                .filter(i -> key.equals(pastKeywords.get(i).get("key")))
-                .findFirst().orElse(0);
-    }
-
 }
