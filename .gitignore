@@ -1,6 +1,7 @@
 application-dev.yml
 application.yml
 env.properties
+/log/**
 
 HELP.md
 .gradle
