@@ -38,6 +38,9 @@ public class TripDto {
 
         @NotBlank(message = "도로명 주소를 입력해 주세요.", groups = TripValidationGroups.AddressBlankGroup.class)
         private String address;
+        
+        private String placeName; //여행 장소
+
         private Boolean isPublic;
     }
 
