@@ -10,6 +10,8 @@ import java.util.Optional;
 
 @Repository
 public interface VotePaperRepository extends JpaRepository<VotePaper, Long> {
+    Optional<VotePaper> findFirstByMemberIdAndPlanVoteIdOrderByCreatedAtDesc(Long memberId, Long planVoteId);
+
     Optional<VotePaper> findByIdAndIsDeleted(Long votePaperId, boolean isDeleted);
 
     Page<VotePaper> findAllByIsDeletedAndMemberId(Pageable pageable, boolean isDeleted, Long memberId);
