@@ -140,19 +140,48 @@ public class TripController implements TripControllerDocs {
     }
 
     //여행정보 해쉬태그 검색
-    @GetMapping("/trips/hashtag")
+    @GetMapping("/trips/search")
+    public ResponseEntity<TripDto.SearchResult> searchTrip(@RequestParam String text,
+                                                                  @RequestParam(defaultValue = "1") int page,
+                                                                  @RequestParam(defaultValue = "9") int size,
+                                                                  @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                                                  @RequestParam(required = false, defaultValue = "false") Boolean isAsc) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(tripSearchService.searchTrip(text, page, size, sortBy, isAsc));
+    }
+
+    //여행정보 해쉬태그 검색
+    @GetMapping("/trips/search/title")
+    public ResponseEntity<TripDto.SearchResult> searchTripByTitle(@RequestParam String title,
+                                                                    @RequestParam(defaultValue = "1") int page,
+                                                                    @RequestParam(defaultValue = "9") int size,
+                                                                    @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                                                    @RequestParam(required = false, defaultValue = "false") Boolean isAsc) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(tripSearchService.searchTripByTitle(title, page, size, sortBy, isAsc));
+    }
+    @GetMapping("/trips/search/hashtag")
     public ResponseEntity<TripDto.SearchResult> searchTripByHashtag(@RequestParam String hashtag,
                                                                     @RequestParam(defaultValue = "1") int page,
                                                                     @RequestParam(defaultValue = "9") int size,
                                                                     @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
-                                                                    @RequestParam(required = false, defaultValue = "false") boolean isAsc) {
+                                                                    @RequestParam(required = false, defaultValue = "false") Boolean isAsc) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(tripSearchService.searchTripByHashtag(hashtag, page, size, sortBy, isAsc));
+                .body(tripSearchService.searchTripByField("hashtag", hashtag, page, size, sortBy, isAsc));
+    }
+    @GetMapping("/trips/search/area")
+    public ResponseEntity<TripDto.SearchResult> searchTripByArea(@RequestParam String area,
+                                                                    @RequestParam(defaultValue = "1") int page,
+                                                                    @RequestParam(defaultValue = "9") int size,
+                                                                    @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                                                    @RequestParam(required = false, defaultValue = "false") Boolean isAsc) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(tripSearchService.searchTripByField("area", area, page, size, sortBy, isAsc));
     }
 
     //여행정보 해쉬태그 검색량 상위 TOP5
     @GetMapping("/trips/rank/hashtag")
-    public ResponseEntity<List<TripDto.Rank>> getRecentTopKeywords(){
+    public ResponseEntity<List<String>> getRecentTopHashtag(){
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRecentlyTopSearch());
     }
 

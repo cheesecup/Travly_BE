@@ -10,12 +10,13 @@ import org.springframework.batch.core.launch.NoSuchJobException;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.repository.JobRestartException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
-@Slf4j(topic = "Schedular Start : ")
+@Slf4j(topic = "Scheduler Start : ")
 @Component
 @RequiredArgsConstructor
 public class BatchScheduler {
@@ -23,20 +24,21 @@ public class BatchScheduler {
     private final JobLauncher jobLauncher;
     private final JobRegistry jobRegistry;
 
-    //@Scheduled(cron = "0 0 4 * * *") //매일 04:00
-    @Scheduled(cron = "0/10 * * * * *") // 10초마다 실행
+    @Value("${batchsync.isUpdate}")
+    private boolean isUpdate;
+
+    @Scheduled(cron = "0 0 3 * * *") // 매일 3시마다 실행
     public void runJob() {
+        if (!isUpdate) return;
+
         log.info("start Job");
         try {
-            jobLauncher.run(jobRegistry.getJob("jdbcFlowJob"),
-                    new JobParametersBuilder()
+            jobLauncher.run(jobRegistry.getJob("dbSync"), new JobParametersBuilder()
                             .addString("time", LocalDateTime.now().toString())
-                            .toJobParameters()
-            );
+                            .toJobParameters());
         } catch (NoSuchJobException | JobInstanceAlreadyCompleteException | JobExecutionAlreadyRunningException |
-                 JobParametersInvalidException | JobRestartException e) {
-            throw new RuntimeException(e);
+                     JobParametersInvalidException | JobRestartException e) {
+                throw new RuntimeException(e);
         }
     }
 }
-

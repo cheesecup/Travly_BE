@@ -12,11 +12,11 @@ import com.travelland.repository.plan.PlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-import static com.travelland.constant.Constants.PLAN_LIKES_EMAIL;
 import static com.travelland.constant.Constants.PLAN_LIKES_PLAN_ID;
 
 @Service
@@ -28,36 +28,43 @@ public class PlanLikeService {
     private final MemberRepository memberRepository;
     private final RedisTemplate<String,String> redisTemplate;
 
+    @Transactional
     public void registerPlanLike(Long planId, String email) {
-        redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID + planId, email);
-        redisTemplate.opsForList().rightPush(PLAN_LIKES_EMAIL + email, planId.toString());
-    }
-
-    public void cancelPlanLike(Long planId, String email) {
-        redisTemplate.opsForSet().remove(PLAN_LIKES_PLAN_ID + planId, email);
-        redisTemplate.opsForList().remove(PLAN_LIKES_EMAIL + email,0, planId);
-    }
-
-    public void savePlanLike(Long planId, String email) {
         Member member = getMember(email);
         Plan plan = getPlan(planId);
-
         planLikeRepository.findByMemberAndPlan(member, plan)
                 .ifPresentOrElse(
                         PlanLike::registerLike, // 좋아요를 한번이라도 등록한적이 있을경우
                         () -> planLikeRepository.save(new PlanLike(member, plan)) // 최초로 좋아요를 등록하는 경우
                 );
+        redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID + planId, email);
     }
 
+    @Transactional
+    public void cancelPlanLike(Long planId, String email) {
+        getPlanLike(planId,email).cancelLike();
+        redisTemplate.opsForSet().remove(PLAN_LIKES_PLAN_ID + planId, email);
+    }
 
+    @Transactional(readOnly = true)
     public List<PlanDto.GetList> getPlanLikeList(int page, int size, String email) {
-        List<String> planIds = redisTemplate.opsForList()
-                .range(PLAN_LIKES_EMAIL + email, (long) (page - 1) * size, (long) page * size - 1);
+        return  planLikeRepository.getLikeListByMember(getMember(email),size,page);
+    }
 
-        if(planIds == null)
-            return new ArrayList<>();
+    public boolean statusPlanLike(Long planId, String email) {
+        if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(PLAN_LIKES_PLAN_ID + planId, email)))
+            return true;
+        Optional<PlanLike> planLike = planLikeRepository.findByMemberAndPlan(getMember(email), getPlan(planId));
+        if(planLike.isPresent()){
+            redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID+planId,email);
+            return true;
+        }
+        return false;
+    }
 
-        return planRepository.getPlanListByIds(planIds.stream().map(Long::parseLong).toList());
+    private PlanLike getPlanLike(Long planId, String email) {
+        return planLikeRepository.findByMemberAndPlan(getMember(email), getPlan(planId))
+                .orElseThrow(()-> new CustomException(ErrorCode.POST_LIKE_NOT_FOUND));
     }
 
     private Member getMember(String email) {

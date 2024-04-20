@@ -15,5 +15,4 @@ public interface PlanScrapRepository extends JpaRepository<PlanScrap, Long>, Cus
 
     Optional<PlanScrap> findByMemberAndPlan(Member member, Plan plan);
 
-    List<PlanScrap> getScrapListByMember(Member member, int size, int page);
 }

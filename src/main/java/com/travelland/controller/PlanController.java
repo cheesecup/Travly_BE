@@ -1,18 +1,14 @@
 package com.travelland.controller;
 
-import com.travelland.controller.valid.PlanValidationSequence;
-import com.travelland.dto.plan.DayPlanDto;
-import com.travelland.dto.plan.PlanCommentDto;
 import com.travelland.dto.plan.PlanDto;
-import com.travelland.dto.plan.UnitPlanDto;
+import com.travelland.dto.plan.PlanVoteDto;
+import com.travelland.dto.plan.VotePaperDto;
 import com.travelland.global.security.UserDetailsImpl;
-import com.travelland.valid.plan.PlanValidationSequence;
-import com.travelland.dto.plan.*;
-import com.travelland.swagger.PlanControllerDocs;
 import com.travelland.service.plan.PlanLikeService;
 import com.travelland.service.plan.PlanScrapService;
 import com.travelland.service.plan.PlanService;
 import com.travelland.swagger.PlanControllerDocs;
+import com.travelland.valid.plan.PlanValidationSequence;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;

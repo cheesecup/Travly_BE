@@ -6,23 +6,20 @@ import com.travelland.domain.trip.TripHashtag;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.global.job.DataIntSet;
-import com.travelland.global.job.DataStrSet;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripHashtagRepository;
 import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import static com.travelland.constant.Constants.TRIP_TOTAL_ELEMENTS;
-import static com.travelland.constant.Constants.TRIP_VIEW_COUNT;
-import static com.travelland.constant.Constants.VIEW_RANK;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import static com.travelland.constant.Constants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +50,7 @@ public class TripService {
 
         redisTemplate.opsForValue().increment(TRIP_TOTAL_ELEMENTS);
 
-        tripSearchService.createTripDocument(trip, requestDto.getHashTag(), member, thumbnailUrl, member.getProfileImage()); //ES 저장
+        tripSearchService.createTripDocument(trip, requestDto.getHashTag(), email, thumbnailUrl); //ES 저장
 
         return new TripDto.Id(trip.getId());
     }
@@ -67,22 +64,22 @@ public class TripService {
 
         boolean isLike = false;
         boolean isScrap = false;
-        if (!email.isEmpty()) { //로그인한 경우
-            //스크랩/좋아요 여부 확인
-            isLike = tripLikeService.statusTripLike(tripId, email);
-            isScrap = tripScrapService.statusTripScrap(tripId, email);
 
-            //조회수 증가
-            Long result = redisTemplate.opsForSet().add(TRIP_VIEW_COUNT + tripId, email); //redis 조회수 증가
+        if(email.isEmpty())
+            return new TripDto.Get(trip, hashtagList, imageUrlList, isLike, isScrap);
 
-            if (result != null && result == 1L) {
-                Long view = redisTemplate.opsForSet().size(TRIP_VIEW_COUNT + tripId); //redis 조회수 Get
-                redisTemplate.opsForZSet().add(VIEW_RANK, tripId.toString(), view);
-            }
+        //로그인한 경우
+        //스크랩/좋아요 여부 확인
+        isLike = tripLikeService.statusTripLike(tripId, email);
+        isScrap = tripScrapService.statusTripScrap(tripId, email);
+
+        //조회수 증가
+        Long result = redisTemplate.opsForSet().add(TRIP_VIEW_COUNT + tripId, email); //redis 조회수 증가
+
+        if (result != null && result == 1L) {
+            Long view = redisTemplate.opsForSet().size(TRIP_VIEW_COUNT + tripId); //redis 조회수 Get
+            redisTemplate.opsForZSet().add(VIEW_RANK, tripId.toString(), view);
         }
-
-//        trip.increaseViewCount(); //MySQL
-//        tripSearchService.increaseViewCount(tripId);
 
         return new TripDto.Get(trip, hashtagList, imageUrlList, isLike, isScrap);
     }
@@ -132,6 +129,7 @@ public class TripService {
 
         redisTemplate.opsForValue().decrement(TRIP_TOTAL_ELEMENTS);
     }
+
     public List<TripDto.GetList> getRankByViewCount(long size){
         Set<String> ranks = redisTemplate.opsForZSet()
                 .reverseRange(VIEW_RANK,0L,size-1L);
@@ -142,20 +140,6 @@ public class TripService {
         return tripSearchService.getRankByViewCount(ranks.stream()
                 .map(Long::parseLong)
                 .toList());
-    }
-    @Transactional
-    public void updateViewCount(DataIntSet dataIntSet){
-        Trip trip = getTrip(dataIntSet.getId());
-        trip.updateViewCount(dataIntSet.getValue());
-        tripRepository.save(trip);
-    }
-
-    public void syncTripLike(List<DataStrSet> datas){
-        datas.forEach(data -> tripLikeService.saveTripLike(data.getId(), data.getValue()));
-    }
-
-    public void syncTripScrap(List<DataStrSet> datas){
-        datas.forEach(data -> tripScrapService.saveTripScrap(data.getId(), data.getValue()));
     }
 
     private Member getMember(String email) {

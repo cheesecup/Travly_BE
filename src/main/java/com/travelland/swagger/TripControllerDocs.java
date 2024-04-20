@@ -9,13 +9,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @Tag(name = "여행 정보 API", description = "여행정보 관련 API 명세서입니다.")
@@ -67,15 +63,33 @@ public interface TripControllerDocs {
     @Operation(summary = "내가 작성한 여행정보 목록 조회", description = "로그인한 회원이 작성한 여행정보 게시글 목록을 페이지별로 조회하는 API")
     ResponseEntity getMyTripList(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size, @AuthenticationPrincipal UserDetailsImpl userDetails);
 
+    @Operation(summary = "여행정보 통합 검색", description = "입력한 텍스트가 포함된 여행정보 게시글 목록을 페이지별로 조회하는 API")
+    ResponseEntity searchTrip(@RequestParam String text,
+                                                           @RequestParam(defaultValue = "1") int page,
+                                                           @RequestParam(defaultValue = "9") int size,
+                                                           @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                                           @RequestParam(required = false, defaultValue = "false") Boolean isAsc);
+    @Operation(summary = "여행정보 제목 검색", description = "입력한 제목이 포함된 여행정보 게시글 목록을 페이지별로 조회하는 API")
+    ResponseEntity searchTripByTitle(@RequestParam String title,
+                                       @RequestParam(defaultValue = "1") int page,
+                                       @RequestParam(defaultValue = "20") int size,
+                                       @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                       @RequestParam(required = false, defaultValue = "false") Boolean isAsc);
     @Operation(summary = "여행정보 해쉬태그 검색", description = "입력한 해쉬태그가 포함된 여행정보 게시글 목록을 페이지별로 조회하는 API")
     ResponseEntity searchTripByHashtag(@RequestParam String hashtag,
                                        @RequestParam(defaultValue = "1") int page,
                                        @RequestParam(defaultValue = "20") int size,
                                        @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
-                                       @RequestParam(required = false, defaultValue = "false") boolean isAsc);
+                                       @RequestParam(required = false, defaultValue = "false") Boolean isAsc);
+    @Operation(summary = "여행정보 지역 검색", description = "입력한 지역이 포함된 여행정보 게시글 목록을 페이지별로 조회하는 API")
+    ResponseEntity searchTripByArea(@RequestParam String area,
+                                       @RequestParam(defaultValue = "1") int page,
+                                       @RequestParam(defaultValue = "20") int size,
+                                       @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                       @RequestParam(required = false, defaultValue = "false") Boolean isAsc);
 
     @Operation(summary = "인기 해쉬태그 TOP 5", description = "일일 해시태그 검색량 상위 5개를 보여주는 API")
-    ResponseEntity getRecentTopKeywords();
+    ResponseEntity getRecentTopHashtag();
 
     @Operation(summary = "여행정보 댓글 등록", description = "선택한 여행정보 게시글에 댓글을 등록하는 API")
     ResponseEntity createTripComment(@PathVariable Long tripId,
@@ -99,5 +113,5 @@ public interface TripControllerDocs {
                                      @AuthenticationPrincipal UserDetailsImpl userDetails);
 
     @Operation(summary = "여행정보 조회수 TOP 10 목록 조회", description = "조회수 상위 10개 게시글 목록을 조회하는 API")
-    ResponseEntity<List<TripDto.GetList>> getTripListTop10();
+    ResponseEntity getTripListTop10();
 }

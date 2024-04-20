@@ -1,11 +1,13 @@
 package com.travelland.swagger;
 
+import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.valid.plan.PlanValidationSequence;
 import com.travelland.dto.plan.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 

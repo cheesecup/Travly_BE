@@ -47,11 +47,11 @@ public class ElasticsearchLogService {
         }
     }
 
-    public void putSearchLog(String query) {
+    public void putSearchLog(String field, String query) {
         String indexName = "query-log";
         Map<String,Object> doc = new HashMap<>();
+        doc.put("field", field);
         doc.put("query", query);
-        doc.put("username", "username");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         doc.put("@timestamp", sdf.format(new Date(System.currentTimeMillis())));

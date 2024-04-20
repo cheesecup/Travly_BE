@@ -13,13 +13,13 @@ import com.travelland.repository.trip.TripScrapRepository;
 import com.travelland.repository.trip.TripSearchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import static com.travelland.constant.Constants.TRIP_SCRAPS_TRIP_ID;
-import static com.travelland.constant.Constants.TRIP_SCRAPS_EMAIL;
 
 import java.util.List;
+import java.util.Optional;
+
+import static com.travelland.constant.Constants.TRIP_SCRAPS_TRIP_ID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,24 +31,19 @@ public class TripScrapService {
     private final TripSearchRepository tripSearchESRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
-
     //여행정보 스크랩 등록
     @Transactional
     public void registerTripScrap(Long tripId, String email) {
-        redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, email);
-        redisTemplate.opsForSet().add(TRIP_SCRAPS_EMAIL + email, tripId.toString());
-    }
-
-    @Transactional
-    public void saveTripScrap(Long tripId, String email) {
         Member member = getMember(email);
         Trip trip = getTrip(tripId);
 
         tripScrapRepository.findByMemberAndTrip(member, trip)
                 .ifPresentOrElse(
-                        TripScrap::registerScrap, // 스크랩을 한번이라도 등록한적이 있을경우
-                        () -> tripScrapRepository.save(new TripScrap(member, trip)) // 최초로 스크랩을 등록하는 경우
+                        TripScrap::registerScrap,
+                        () -> tripScrapRepository.save(new TripScrap(member, trip))
                 );
+
+        redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, email);
     }
 
     //여행정보 스크랩 취소
@@ -62,7 +57,6 @@ public class TripScrapService {
         tripScrap.cancelScrap();
 
         redisTemplate.opsForSet().remove(TRIP_SCRAPS_TRIP_ID + tripId, email);
-        redisTemplate.opsForSet().remove(TRIP_SCRAPS_EMAIL + email, tripId.toString());
     }
     
     //스크랩한 여행정보 목록 조회
@@ -82,7 +76,15 @@ public class TripScrapService {
     
     //게시글 스크랩 여부 확인
     public boolean statusTripScrap(Long tripId, String email) {
-        return Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(TRIP_SCRAPS_TRIP_ID + tripId, email));
+        if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(TRIP_SCRAPS_TRIP_ID + tripId, email)))
+            return true;
+
+        Optional<TripScrap> tripScrap = tripScrapRepository.findByMemberAndTrip(getMember(email),getTrip(tripId));
+        if(tripScrap.isPresent()) {
+            redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, email);
+            return true;
+        }
+        return false;
     }
 
     private Member getMember(String email) {

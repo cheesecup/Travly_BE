@@ -199,7 +199,7 @@ public class TripDto {
         private final String title;
         private final String area;
         private final String content;
-        private final String address;
+        private final String placeName;
         private final LocalDate tripStartDate;
         private final LocalDate tripEndDate;
         private final List<String> hashtagList;
@@ -210,7 +210,7 @@ public class TripDto {
             this.area = tripSearchDoc.getArea();
             this.title = tripSearchDoc.getTitle();
             this.content = tripSearchDoc.getContent();
-            this.address = getAddress();
+            this.placeName = tripSearchDoc.getPlaceName();
             this.tripStartDate = tripSearchDoc.getTripStartDate();
             this.tripEndDate = tripSearchDoc.getTripEndDate();
             this.hashtagList = tripSearchDoc.getHashtag();
@@ -222,7 +222,7 @@ public class TripDto {
     public static class SearchResult {
         private final List<Search> searches;
         private final long totalCount;
-        private final String resultAddress;
+        private final String resultKeyword;
         private final List<String> nearPlaces;
     }
 

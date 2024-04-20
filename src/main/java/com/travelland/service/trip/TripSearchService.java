@@ -1,14 +1,9 @@
 package com.travelland.service.trip;
 
-import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.global.elasticsearch.ElasticsearchLogService;
-import com.travelland.global.job.DataIntSet;
-import com.travelland.global.job.DataStrSet;
-import com.travelland.repository.member.MemberRepository;
-import com.travelland.repository.trip.TripRepository;
 import com.travelland.repository.trip.TripSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import static com.travelland.constant.Constants.SEARCH_RANK_FIELD;
 
@@ -31,62 +25,29 @@ public class TripSearchService {
     private final TripSearchRepository tripSearchRepository;
     private final ElasticsearchLogService elasticsearchLogService;
 
-    public void createTripDocument(Trip trip, List<String> hashtag, Member member, String thumbnailUrl, String profileUrl){
-        tripSearchRepository.save(new TripSearchDoc(trip, hashtag, member, thumbnailUrl, profileUrl));
+    public void createTripDocument(Trip trip, List<String> hashtag, String email, String thumbnailUrl){
+        tripSearchRepository.save(new TripSearchDoc(trip, hashtag, email, thumbnailUrl));
+    }
+
+    public TripDto.SearchResult searchTrip(String text, int page, int size, String sortBy, boolean isAsc) {
+        SearchHits<TripSearchDoc> result = tripSearchRepository.searchByText(text,
+                PageRequest.of(page - 1, size,
+                        Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy)));
+        return searchMapper("text", text, result);
     }
 
     public TripDto.SearchResult searchTripByTitle(String title, int page, int size, String sortBy, boolean isAsc){
-
         SearchHits<TripSearchDoc> result = tripSearchRepository.searchByTitle(title,
                 PageRequest.of(page-1, size,
                         Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy)));
-
-        if(result.getTotalHits() == 0)
-            return TripDto.SearchResult.builder().build();
-
-        List<TripDto.Search> searches = result.get()
-                .map(SearchHit::getContent).map(TripDto.Search::new).toList();
-
-        String[] strs = searches.get(0).getAddress().split(" ");
-        String addr = strs[0] + " " + strs[1];
-
-        return TripDto.SearchResult.builder()
-                .searches(searches)
-                .totalCount(result.getTotalHits())
-                .resultAddress(addr)
-                .nearPlaces(tripSearchRepository.searchByAddress(addr))
-                .build();
+        return  searchMapper("title",title,result);
     }
 
-    public List<String> searchTripByAddress(String address){
-        return tripSearchRepository.searchByAddress(address);
-    }
-
-    public TripDto.SearchResult searchTripByHashtag(String hashtag, int page, int size, String sortBy, boolean isAsc) {
-
-        SearchHits<TripSearchDoc> result = tripSearchRepository.searchByHashtag(hashtag,
+    public TripDto.SearchResult searchTripByField(String field, String value, int page, int size, String sortBy, boolean isAsc) {
+        SearchHits<TripSearchDoc> result = tripSearchRepository.searchByField(field, value,true,
                 PageRequest.of(page-1, size,
                         Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy)));
-
-        if (result.getTotalHits() == 0)
-            return TripDto.SearchResult.builder().build();
-
-        elasticsearchLogService.putSearchLog(hashtag);
-
-        List<TripDto.Search> searches = result.get()
-                .map(SearchHit::getContent).map(TripDto.Search::new).toList();
-        String[] strs = searches.get(0).getAddress().split(" ");
-        String addr = strs[0];
-
-        if (strs.length >= 2)
-            addr += " " + strs[1];
-
-        return TripDto.SearchResult.builder()
-                .searches(searches)
-                .totalCount(result.getTotalHits())
-                .resultAddress(addr)
-                .nearPlaces(tripSearchRepository.searchByAddress(addr))
-                .build();
+        return searchMapper(field, value, result);
     }
 
     public List<TripDto.GetList> getTripList(int page, int size, String sortBy, boolean isAsc){
@@ -100,12 +61,12 @@ public class TripSearchService {
         return tripSearchRepository.findRankList(keys);
     }
 
-    public List<TripDto.Rank> getRecentlyTopSearch() {
+    public List<String> getRecentlyTopSearch() {
         LocalDateTime now = LocalDateTime.now();
         return elasticsearchLogService.
                 getRankInRange(SEARCH_RANK_FIELD, now.minusWeeks(1), now)
                 .stream()
-                .map(this::rankMapper)
+                .map(recentKeyword -> recentKeyword.get("key").toString())
                 .toList();
     }
 
@@ -120,17 +81,30 @@ public class TripSearchService {
                 .getContent();
     }
 
-    public List<DataIntSet> readTripViewCount(int page, int size){
-        return  tripSearchRepository.readViewCount(PageRequest.of(page, size));
-    }
-    public Long readTotalCount(){
-        return tripSearchRepository.count();
+    private TripDto.SearchResult searchMapper(String field, String keyword, SearchHits<TripSearchDoc> result){
+        if (result.getTotalHits() == 0)
+            return TripDto.SearchResult.builder().build();
+
+        if(field.equals("hashtag") || field.equals("area"))
+            elasticsearchLogService.putSearchLog(field, keyword);
+
+        List<TripDto.Search> searches = result.get()
+                .map(SearchHit::getContent).map(TripDto.Search::new).toList();
+
+        return TripDto.SearchResult.builder()
+                .searches(searches)
+                .totalCount(result.getTotalHits())
+                .resultKeyword(keyword)
+                .nearPlaces(getNearPlaceNames(searches.get(0).getArea()))
+                .build();
     }
 
-    private TripDto.Rank rankMapper(Map<String, Object> recentKeyword){
-        return TripDto.Rank.builder()
-                .key((String) recentKeyword.get("key"))
-                .count((long) recentKeyword.get("count"))
-                .build();
+    private List<String> getNearPlaceNames(String area){
+        return tripSearchRepository.searchByField("area", area, true,
+                        PageRequest.of(0, 7))
+                .stream()
+                .map(SearchHit::getContent)
+                .map(TripSearchDoc::getPlaceName)
+                .toList();
     }
 }

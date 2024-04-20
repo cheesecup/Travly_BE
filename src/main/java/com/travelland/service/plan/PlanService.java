@@ -5,8 +5,6 @@ import com.travelland.domain.plan.*;
 import com.travelland.dto.plan.*;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.global.job.DataIntSet;
-import com.travelland.global.job.DataStrSet;
 import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.*;
@@ -16,13 +14,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import static com.travelland.constant.Constants.PLAN_TOTAL_COUNT;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.travelland.constant.Constants.PLAN_TOTAL_COUNT;
+import static com.travelland.constant.Constants.PLAN_VIEW_COUNT;
 
 
 @Service
@@ -37,8 +37,6 @@ public class PlanService {
     private final PlanVoteRepository planVoteRepository;
     private final VotePaperRepository votePaperRepository;
     private final PlanCommentRepository planCommentRepository;
-    private final PlanLikeService planLikeService;
-    private final PlanScrapService planScrapService;
     private final RedisTemplate<String,String> redisTemplate;
 
 
@@ -81,17 +79,14 @@ public class PlanService {
     // Plan 상세단일 조회
     public PlanDto.Get readPlan(Long planId) {
         Plan plan = planRepository.findByIdAndIsDeletedAndIsPublic(planId, false, true).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        plan.increaseViewCount(); // 조회수 증가
+//        plan.increaseViewCount(); // 조회수 증가
         return new PlanDto.Get(plan);
     }
 
     // Plan 유저별 단일상세 조회
     public PlanDto.Get readPlanForMember(Long planId) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = userDetails.getMember();
-
         Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        plan.increaseViewCount(); // 조회수 증가
+//        plan.increaseViewCount(); // 조회수 증가
         return new PlanDto.Get(plan);
     }
 
@@ -139,6 +134,11 @@ public class PlanService {
                     .path(pathString)
                     .build());
         }
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long result = redisTemplate.opsForSet()
+                .add(PLAN_VIEW_COUNT+planId,userDetails.getMember().getEmail());
+        if(result != null && result == 1L)
+            plan.increaseViewCount();
 
         return PlanDto.GetAllInOne.builder()
                 .plan(new PlanDto.Get(plan))
@@ -306,27 +306,6 @@ public class PlanService {
         plan.delete();
         return new PlanDto.Delete(plan.getIsDeleted());
     }
-
-    @Transactional
-    public void updateViewCount(DataIntSet dataIntSet){
-        Plan plan = getPlan(dataIntSet.getId());
-        plan.updateViewCount(dataIntSet.getValue());
-        planRepository.save(plan);
-    }
-
-    public void syncPlanLike(List<DataStrSet> datas){
-        datas.forEach(data -> planLikeService.savePlanLike(data.getId(), data.getValue()));
-    }
-
-    public void syncPlanScrap(List<DataStrSet> datas){
-        datas.forEach(data -> planScrapService.savePlanScrap(data.getId(), data.getValue()));
-    }
-
-
-
-
-
-
 
 
 

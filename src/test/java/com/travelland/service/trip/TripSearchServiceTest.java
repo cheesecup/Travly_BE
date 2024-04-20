@@ -3,10 +3,6 @@ package com.travelland.service.trip;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 
 class TripSearchServiceTest {
@@ -22,11 +18,7 @@ class TripSearchServiceTest {
     }
     @Test
     void getTripByKeyword(){
-        System.out.println("tripSearchService = " + tripSearchService.searchTripByHashtag("여행",1,20,"createdAt",true).getTotalCount());
-    }
-    @Test
-    void getRank(){
-        System.out.println("tripSearchService = " + tripSearchService.getRecentlyTopSearch().get(0).getStatus());
+        System.out.println("tripSearchService = " + tripSearchService.searchTripByField("hashtag", "여행",1,20,"createdAt",true).getTotalCount());
     }
     @Test
     void getRankByViewCount(){
