@@ -31,6 +31,9 @@ public class PlanVoteDto {
     @Getter
     public static class Get {
         private final Long planVoteId;
+        private final Long memberId;
+        private final String nickname;
+        private final String profileImage;
         private final Long planAId;
         private final Long planBId;
         private final int planACount;
@@ -43,6 +46,42 @@ public class PlanVoteDto {
 
         public Get(PlanVote planVote) {
             this.planVoteId = planVote.getId();
+            this.memberId = planVote.getMemberId();
+            this.nickname = planVote.getNickname();
+            this.profileImage = planVote.getProfileImage();
+            this.planAId = planVote.getPlanAId();
+            this.planBId = planVote.getPlanBId();
+            this.planACount = planVote.getPlanACount();
+            this.planBCount = planVote.getPlanBCount();
+            this.isClosed = planVote.getIsClosed();
+            this.title = planVote.getTitle();
+            this.planVoteDuration = planVote.getPlanVoteDuration();
+            this.createdAt = planVote.getCreatedAt();
+            this.modifiedAt = planVote.getModifiedAt();
+        }
+    }
+
+    @Getter
+    public static class GetAllInOne {
+        private final Long planVoteId;
+        private final Long memberId;
+        private final String nickname;
+        private final String profileImage;
+        private final Long planAId;
+        private final Long planBId;
+        private final int planACount;
+        private final int planBCount;
+        private final Boolean isClosed;
+        private final String title;
+        private final PlanVoteDuration planVoteDuration;
+        private final LocalDateTime createdAt;
+        private final LocalDateTime modifiedAt;
+
+        public GetAllInOne(PlanVote planVote) {
+            this.planVoteId = planVote.getId();
+            this.memberId = planVote.getMemberId();
+            this.nickname = planVote.getNickname();
+            this.profileImage = planVote.getProfileImage();
             this.planAId = planVote.getPlanAId();
             this.planBId = planVote.getPlanBId();
             this.planACount = planVote.getPlanACount();
