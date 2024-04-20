@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface DayPlanRepository extends JpaRepository<DayPlan, Long> {
     List<DayPlan> findAllByPlanIdAndIsDeleted(Long planId, boolean isDeleted);
+
+    Optional<DayPlan> findByIdAndIsDeleted(Long dayPlanId, boolean isDeleted);
 }
