@@ -62,19 +62,19 @@ public class PlanController implements PlanControllerDocs {
 
     // Plan 전체목록 조회
     @GetMapping("/plans") // 예시: /plans?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터
-    public ResponseEntity<Page<PlanDto.Get>> readPlanList(@RequestParam int page,
-                                                          @RequestParam int size,
-                                                          @RequestParam String sortBy,
-                                                          @RequestParam boolean isAsc) {
+    public ResponseEntity<Page<PlanDto.Get>> readPlanList(@RequestParam(defaultValue = "1") int page,
+                                                          @RequestParam(defaultValue = "10") int size,
+                                                          @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                                          @RequestParam(required = false, defaultValue = "false") boolean isAsc) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanList(page, size, sortBy, isAsc));
     }
 
-    // Plan 유저별 전체목록 조회 (memberId)
+    // Plan 유저별 전체목록 조회
     @GetMapping("/users/plans") // 예시: /plans?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터
-    public ResponseEntity<Page<PlanDto.Get>> readPlanListForMember(@RequestParam int page,
-                                                                   @RequestParam int size,
-                                                                   @RequestParam String sortBy,
-                                                                   @RequestParam boolean isAsc) {
+    public ResponseEntity<Page<PlanDto.Get>> readPlanListForMember(@RequestParam(defaultValue = "1") int page,
+                                                                   @RequestParam(defaultValue = "10") int size,
+                                                                   @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                                                   @RequestParam(required = false, defaultValue = "false") boolean isAsc) {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanListForMember(page, size, sortBy, isAsc));
     }
 
@@ -121,28 +121,28 @@ public class PlanController implements PlanControllerDocs {
 
 
 //    // DayPlan 작성
-//    @PostMapping("/dayPlans/{planId}")
+//    @PostMapping("/plans/{planId}/dayPlans")
 //    public ResponseEntity<DayPlanDto.Id> createDayPlan(@PathVariable Long planId, @Validated(PlanValidationSequence.class) @RequestBody DayPlanDto.Create request) {
 //        DayPlanDto.Id response = planService.createDayPlan(planId, request);
 //        return ResponseEntity.status(HttpStatus.CREATED).body(response);
 //    }
 //
 //    // DayPlan 조회 (planId)
-//    @GetMapping("/dayPlans/{planId}")
+//    @GetMapping("/plans/{planId}/dayPlans")
 //    public ResponseEntity<List<DayPlanDto.Get>> readDayPlan(@PathVariable Long planId) {
 //        List<DayPlanDto.Get> responses = planService.readDayPlan(planId);
 //        return ResponseEntity.status(HttpStatus.OK).body(responses);
 //    }
 //
 //    // DayPlan 수정
-//    @PutMapping("/dayPlans/{dayPlanId}")
+//    @PutMapping("/plans/dayPlans/{dayPlanId}")
 //    public ResponseEntity<DayPlanDto.Id> updateDayPlan(@PathVariable Long dayPlanId, @Validated(PlanValidationSequence.class) @RequestBody DayPlanDto.Update request) {
 //        DayPlanDto.Id response = planService.updateDayPlan(dayPlanId, request);
 //        return ResponseEntity.status(HttpStatus.OK).body(response);
 //    }
 //
 //    // DayPlan 삭제
-//    @DeleteMapping("/dayPlans/{dayPlanId}")
+//    @DeleteMapping("/plans/dayPlans/{dayPlanId}")
 //    public ResponseEntity<DayPlanDto.Delete> deleteDayPlan(@PathVariable Long dayPlanId) {
 //        DayPlanDto.Delete response = planService.deleteDayPlan(dayPlanId);
 //        return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -158,28 +158,28 @@ public class PlanController implements PlanControllerDocs {
 
 
 //    // UnitPlan 작성
-//    @PostMapping("/unitPlans/{dayPlanId}")
+//    @PostMapping("/plans/dayPlans/{dayPlanId}/unitPlans")
 //    public ResponseEntity<UnitPlanDto.Id> createUnitPlan(@PathVariable Long dayPlanId, @Validated(PlanValidationSequence.class) @RequestBody UnitPlanDto.Create request) {
 //        UnitPlanDto.Id response = planService.createUnitPlan(dayPlanId, request);
 //        return ResponseEntity.status(HttpStatus.CREATED).body(response);
 //    }
 //
 //    // UnitPlan 조회 (dayPlanId)
-//    @GetMapping("/unitPlans/{dayPlanId}")
+//    @GetMapping("/plans/dayPlans/{dayPlanId}/unitPlans")
 //    public ResponseEntity<List<UnitPlanDto.Get>> readUnitPlan(@PathVariable Long dayPlanId) {
 //        List<UnitPlanDto.Get> responses = planService.readUnitPlan(dayPlanId);
 //        return ResponseEntity.status(HttpStatus.OK).body(responses);
 //    }
 //
 //    // UnitPlan 수정
-//    @PutMapping("/unitPlans/{unitPlanId}")
+//    @PutMapping("/plans/dayPlans/unitPlans/{unitPlanId}")
 //    public ResponseEntity<UnitPlanDto.Id> updateUnitPlan(@PathVariable Long unitPlanId, @Validated(PlanValidationSequence.class) @RequestBody UnitPlanDto.Update request) {
 //        UnitPlanDto.Id response = planService.updateUnitPlan(unitPlanId, request);
 //        return ResponseEntity.status(HttpStatus.OK).body(response);
 //    }
 //
 //    // UnitPlan 삭제
-//    @DeleteMapping("/unitPlans/{unitPlanId}")
+//    @DeleteMapping("/plans/dayPlans/unitPlans/{unitPlanId}")
 //    public ResponseEntity<UnitPlanDto.Delete> deleteUnitPlan(@PathVariable Long unitPlanId) {
 //        UnitPlanDto.Delete response = planService.deleteUnitPlan(unitPlanId);
 //        return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -208,12 +208,12 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    // PlanVote 전체목록 조회: 주의: id기준정렬은 planVoteId(x) id(o), 예시: /votes?page=1&size=20&sortBy=id&isAsc=false, page는 1부터
+    // PlanVote 전체목록 조회
     @GetMapping("/votes")
-    public ResponseEntity<Page<PlanVoteDto.Get>> readPlanVoteList(@RequestParam int page,
-                                                                  @RequestParam int size,
-                                                                  @RequestParam String sortBy,
-                                                                  @RequestParam boolean isAsc) {
+    public ResponseEntity<Page<PlanVoteDto.Get>> readPlanVoteList(@RequestParam(defaultValue = "1") int page,
+                                                                  @RequestParam(defaultValue = "10") int size,
+                                                                  @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                                                  @RequestParam(required = false, defaultValue = "false") boolean isAsc) {
         Page<PlanVoteDto.Get> response = planService.readPlanVoteList(page, size, sortBy, isAsc);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -222,6 +222,13 @@ public class PlanController implements PlanControllerDocs {
     @PutMapping("/votes/{voteId}")
     public ResponseEntity<PlanVoteDto.Id> updatePlanVote(@PathVariable Long voteId, @Validated(PlanValidationSequence.class) @RequestBody PlanVoteDto.Update request) {
         PlanVoteDto.Id response = planService.updatePlanVote(voteId, request);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    // PlanVote 종료
+    @PatchMapping("/votes/{voteId}")
+    public ResponseEntity<PlanVoteDto.Close> closePlanVote(@PathVariable Long voteId) {
+        PlanVoteDto.Close response = planService.closePlanVote(voteId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -255,12 +262,12 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    // VotePaper 유저별 전체목록 조회: 주의: id기준정렬은 votePaperId(x) id(o), 예시: /votePapers?page=1&size=20&sortBy=id&isAsc=false, page는 1부터
+    // VotePaper 유저별 전체목록 조회
     @GetMapping("/users/votePapers")
-    public ResponseEntity<Page<VotePaperDto.Get>> readVotePaperList(@RequestParam int page,
-                                                                    @RequestParam int size,
-                                                                    @RequestParam String sortBy,
-                                                                    @RequestParam boolean isAsc) {
+    public ResponseEntity<Page<VotePaperDto.Get>> readVotePaperList(@RequestParam(defaultValue = "1") int page,
+                                                                    @RequestParam(defaultValue = "10") int size,
+                                                                    @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                                                    @RequestParam(required = false, defaultValue = "false") boolean isAsc) {
         Page<VotePaperDto.Get> response = planService.readVotePaperList(page, size, sortBy, isAsc);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -296,11 +303,10 @@ public class PlanController implements PlanControllerDocs {
 //
 //    // Plan 댓글 전체목록 조회 (planId)
 //    @GetMapping("/plans/{planId}/comments") // 예시: /plans/{planId}/comments?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터
-//    public ResponseEntity<Page<PlanCommentDto.Get>> readPlanCommentList(@PathVariable Long planId,
-//                                                                        @RequestParam int page,
-//                                                                        @RequestParam int size,
-//                                                                        @RequestParam String sortBy,
-//                                                                        @RequestParam boolean isAsc) {
+//    public ResponseEntity<Page<PlanCommentDto.Get>> readPlanCommentList(@RequestParam(defaultValue = "1") int page,
+//                                                                        @RequestParam(defaultValue = "10") int size,
+//                                                                        @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+//                                                                        @RequestParam(required = false, defaultValue = "false") boolean isAsc) {
 //        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanCommentList(planId, page, size, sortBy, isAsc));
 //    }
 //

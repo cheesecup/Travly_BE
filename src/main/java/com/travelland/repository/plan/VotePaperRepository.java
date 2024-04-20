@@ -6,7 +6,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface VotePaperRepository extends JpaRepository<VotePaper, Long> {
-    Page<VotePaper> findAllByMemberId(Pageable pageable, Long memberId);
+    Optional<VotePaper> findFirstByMemberIdAndPlanVoteIdOrderByCreatedAtDesc(Long memberId, Long planVoteId);
+
+    Optional<VotePaper> findByIdAndIsDeleted(Long votePaperId, boolean isDeleted);
+
+    Page<VotePaper> findAllByIsDeletedAndMemberId(Pageable pageable, boolean isDeleted, Long memberId);
+    Page<VotePaper> findAllByIsDeleted(Pageable pageable, boolean isDeleted);
 }
