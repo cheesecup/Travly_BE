@@ -6,6 +6,7 @@ import com.travelland.domain.plan.PlanLike;
 import com.travelland.dto.plan.PlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
+import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.PlanLikeRepository;
 import com.travelland.repository.plan.PlanRepository;
@@ -28,9 +29,15 @@ public class PlanLikeService {
     private final MemberRepository memberRepository;
     private final RedisTemplate<String,String> redisTemplate;
 
+    // Plan 좋아요 등록
     @Transactional
-    public void registerPlanLike(Long planId, String email) {
+    public void registerPlanLike(Long planId) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+//        String email = member.getEmail();
+        String email = "test@test.com";
         Member member = getMember(email);
+
         Plan plan = getPlan(planId);
         planLikeRepository.findByMemberAndPlan(member, plan)
                 .ifPresentOrElse(
@@ -40,18 +47,38 @@ public class PlanLikeService {
         redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID + planId, email);
     }
 
+    // Plan 좋아요 취소
     @Transactional
-    public void cancelPlanLike(Long planId, String email) {
+    public void cancelPlanLike(Long planId) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+//        String email = member.getEmail();
+        String email = "test@test.com";
+        Member member = getMember(email);
+
         getPlanLike(planId,email).cancelLike();
         redisTemplate.opsForSet().remove(PLAN_LIKES_PLAN_ID + planId, email);
     }
 
+    // Plan 좋아요 유저별 전체목록 조회
     @Transactional(readOnly = true)
-    public List<PlanDto.GetList> getPlanLikeList(int page, int size, String email) {
+    public List<PlanDto.GetList> getPlanLikeList(int page, int size) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+//        String email = member.getEmail();
+        String email = "test@test.com";
+        Member member = getMember(email);
+
         return  planLikeRepository.getLikeListByMember(getMember(email),size,page);
     }
 
-    public boolean statusPlanLike(Long planId, String email) {
+    public boolean statusPlanLike(Long planId) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+//        String email = member.getEmail();
+        String email = "test@test.com";
+        Member member = getMember(email);
+
         if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(PLAN_LIKES_PLAN_ID + planId, email)))
             return true;
         Optional<PlanLike> planLike = planLikeRepository.findByMemberAndPlan(getMember(email), getPlan(planId));
@@ -74,6 +101,6 @@ public class PlanLikeService {
 
     private Plan getPlan(Long planId) {
         return planRepository.findById(planId)
-                .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
     }
 }

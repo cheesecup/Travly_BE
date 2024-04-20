@@ -23,31 +23,8 @@ public class PlanVote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long memberId;
-
-    @Column(length = 15)
-    private String nickname;
-
-    private String profileImage;
-
-    private Long planAId; // 객체형 연관관계를 맺기엔 planId만 필요하고 planId가 바뀔일도 없음
-
-    private Long planBId; // 객체형 연관관계를 맺기엔 planId만 필요하고 planId가 바뀔일도 없음
-
-    private int planACount = 0;
-
-    private int planBCount = 0;
-
-    private Boolean isDeleted = false;
-
-    private Boolean isClosed = false;
-
     @Column(length = 30)
-    private String title;
-
-    @Column(length = 10)
-    @Enumerated(EnumType.STRING)
-    private PlanVoteDuration planVoteDuration;
+    private String planVoteTitle;
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
@@ -57,20 +34,55 @@ public class PlanVote {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime modifiedAt;
 
-    public PlanVote(PlanVoteDto.Create request, Member member) {
-        this.memberId = member.getId();
-        this.nickname = member.getNickname();
-        this.profileImage = member.getProfileImage();
-        this.planAId = request.getPlanAId();
-        this.planBId = request.getPlanBId();
-        this.title = request.getTitle();
+    @Column(length = 10)
+    @Enumerated(EnumType.STRING)
+    private PlanVoteDuration planVoteDuration;
+
+    private Boolean isClosed = false;
+
+    private Boolean isDeleted = false;
+
+//    private Long memberId;
+//    private String nickname;
+//    private String profileImage;
+//    private Long planAId;
+//    private Long planBId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plan_a_id")
+    private Plan planA;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plan_b_id")
+    private Plan planB;
+
+    private int planACount = 0;
+
+    private int planBCount = 0;
+
+    public PlanVote(PlanVoteDto.Create request, Plan planA, Plan planB, Member member) {
+        this.member = member;
+        this.planA = planA;
+        this.planB = planB;
+//        this.memberId = member.getId();
+//        this.nickname = member.getNickname();
+//        this.profileImage = member.getProfileImage();
+//        this.planAId = request.getPlanAId();
+//        this.planBId = request.getPlanBId();
+        this.planVoteTitle = request.getTitle();
         this.planVoteDuration = request.getPlanVoteDuration();
     }
 
-    public PlanVote update(PlanVoteDto.Update request) {
-        this.planAId = request.getPlanAId();
-        this.planBId = request.getPlanBId();
-        this.title = request.getTitle();
+    public PlanVote update(PlanVoteDto.Update request, Plan planA, Plan planB) {
+        this.planA = planA;
+        this.planB = planB;
+//        this.planAId = request.getPlanAId();
+//        this.planBId = request.getPlanBId();
+        this.planVoteTitle = request.getTitle();
         this.planVoteDuration = request.getPlanVoteDuration();
 
         return this;
