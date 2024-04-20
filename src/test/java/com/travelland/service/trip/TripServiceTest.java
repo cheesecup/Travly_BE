@@ -1,5 +1,6 @@
 package com.travelland.service.trip;
 
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -8,6 +9,11 @@ class TripServiceTest {
 
     @Autowired
     private TripService tripService;
+
+    @Test
+    void getTrip(){
+        tripService.getTrip(17L,"a2");
+    }
 
 //    public static TripDto.Create generateRandomCreate(Faker faker, List<String> hashtag) {
 //        Collections.shuffle(hashtag);

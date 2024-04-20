@@ -28,6 +28,26 @@ public class CustomTripLikeRepositoryImpl implements CustomTripLikeRepository {
     }
 
     @Override
+    public List<Long> getMemberIdsByTripId(Long tripId, int size, int page) {
+        return  jpaQueryFactory.select(tripLike.member.id)
+                .from(tripLike)
+                .where(tripLike.trip.id.eq(tripId))
+                .limit(size)
+                .offset((long) (page - 1) * size)
+                .fetch();
+    }
+
+    @Override
+    public List<Long> getTripIdsByMemberId(Long memberId, int size, int page) {
+        return  jpaQueryFactory.select(tripLike.trip.id)
+                .from(tripLike)
+                .where(tripLike.member.id.eq(memberId))
+                .limit(size)
+                .offset((long) (page - 1) * size)
+                .fetch();
+    }
+
+    @Override
     public long deleteByTrip(Trip trip) {
         return jpaQueryFactory.update(tripLike)
                 .set(tripLike.isDeleted, true)

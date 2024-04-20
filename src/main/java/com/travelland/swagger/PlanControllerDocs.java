@@ -1,11 +1,13 @@
 package com.travelland.swagger;
 
+import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.valid.plan.PlanValidationSequence;
 import com.travelland.dto.plan.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -189,24 +191,25 @@ public interface PlanControllerDocs {
 
 
     @Operation(summary = "Plan 좋아요 등록", description = "선택한 Plan 좋아요를 등록하는 API")
-    ResponseEntity<PlanDto.Result> createPlanLike(@PathVariable Long planId) ;
+    ResponseEntity createPlanLike(@PathVariable Long planId) ;
 
     @Operation(summary = "Plan 좋아요 취소", description = "선택한 Plan 좋아요를 취소하는 API")
-    ResponseEntity<PlanDto.Result> deletePlanLike(@PathVariable Long planId);
+    ResponseEntity deletePlanLike(@PathVariable Long planId);
 
     @Operation(summary = "Plan 좋아요 전체목록 조회", description = "좋아요을 누른 Plan 목록을 페이지별로 조회하는 API")
-    ResponseEntity<List<PlanDto.Likes>> getPlanLikeList(@RequestParam(defaultValue = "1") int page,
-                                                        @RequestParam(defaultValue = "20") int size);
+    ResponseEntity getPlanLikeList(@RequestParam(defaultValue = "1") int page,
+                                   @RequestParam(defaultValue = "20") int size,
+                                   @AuthenticationPrincipal UserDetailsImpl userDetails);
 
     @Operation(summary = "Plan 스크랩 등록", description = "선택한 Plan 스크랩에 추가하는 API")
-    ResponseEntity<PlanDto.Result> createPlanScrap(@PathVariable Long planId);
+    ResponseEntity createPlanScrap(@PathVariable Long planId);
 
     @Operation(summary = "Plan 스크랩 취소", description = "선택한 Plan 스크랩에서 삭제하는 API")
-    ResponseEntity<PlanDto.Result> deletePlanScrap(@PathVariable Long planId);
+    ResponseEntity deletePlanScrap(@PathVariable Long planId);
 
     @Operation(summary = "Plan 스크랩 전체목록 조회", description = "스크랩한 Plan 목록을 페이지별로 조회하는 API")
-    ResponseEntity<List<PlanDto.Scraps>> getPlanScrapList(@RequestParam(defaultValue = "1") int page,
-                                                          @RequestParam(defaultValue = "20") int size);
+    ResponseEntity getPlanScrapList(@RequestParam(defaultValue = "1") int page,
+                                                          @RequestParam(defaultValue = "20") int size, @AuthenticationPrincipal UserDetailsImpl userDetails);
 
 
 

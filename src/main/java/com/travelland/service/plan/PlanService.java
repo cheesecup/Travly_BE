@@ -13,7 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.travelland.constant.Constants.PLAN_TOTAL_COUNT;
+import static com.travelland.constant.Constants.PLAN_VIEW_COUNT;
 
 
 @Service
@@ -35,9 +38,8 @@ public class PlanService {
     private final PlanVoteRepository planVoteRepository;
     private final VotePaperRepository votePaperRepository;
     private final PlanCommentRepository planCommentRepository;
+    private final RedisTemplate<String,String> redisTemplate;
 
-    private final StringRedisTemplate redisTemplate;
-    private static final String PLAN_TOTAL_COUNT = "plan_total_count";
 
     // Plan 작성
     public PlanDto.Id createPlan(PlanDto.Create request) {
@@ -78,17 +80,14 @@ public class PlanService {
     // Plan 상세단일 조회
     public PlanDto.Get readPlan(Long planId) {
         Plan plan = planRepository.findByIdAndIsDeletedAndIsPublic(planId, false, true).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        plan.increaseViewCount(); // 조회수 증가
+//        plan.increaseViewCount(); // 조회수 증가
         return new PlanDto.Get(plan);
     }
 
     // Plan 유저별 단일상세 조회
     public PlanDto.Get readPlanForMember(Long planId) {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = userDetails.getMember();
-
         Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        plan.increaseViewCount(); // 조회수 증가
+//        plan.increaseViewCount(); // 조회수 증가
         return new PlanDto.Get(plan);
     }
 
@@ -137,6 +136,11 @@ public class PlanService {
                     .path(pathString)
                     .build());
         }
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long result = redisTemplate.opsForSet()
+                .add(PLAN_VIEW_COUNT+planId,userDetails.getMember().getEmail());
+        if(result != null && result == 1L)
+            plan.increaseViewCount();
 
         List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAIdOrPlanBId(planId, planId);
         List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
@@ -315,13 +319,6 @@ public class PlanService {
         plan.delete();
         return new PlanDto.Delete(plan.getIsDeleted());
     }
-
-
-
-
-
-
-
 
 
 

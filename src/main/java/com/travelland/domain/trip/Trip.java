@@ -13,8 +13,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -81,6 +79,9 @@ public class Trip {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.isPublic = requestDto.getIsPublic();
+    }
+    public void updateViewCount(int viewCount) {
+        this.viewCount = viewCount;
     }
 
     public void delete() {
