@@ -24,8 +24,7 @@ jobs: # 실제 어떤 작업을 실행할지에 대한 명시
       - name: make application.yml # application.yml 은 파일로 추출, so 파일출력명령 '>'가 필요
         run: |
           touch ./src/main/resources/application.yml
-          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
-          echo "  isUpdate: true" >> ./src/main/resources/application.yml # 서버1은 true, 서버2는 false 로 다르게 yml 생성
+          echo "${{ secrets.APPLICATION_YML }}" | sed 's/batchsync:\n  isUpdate: true/batchsync:\n  isUpdate: true/' > ./src/main/resources/application.yml # 서버1은 true, 서버2는 false 로 다르게 yml 생성
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -93,8 +92,7 @@ jobs: # 실제 어떤 작업을 실행할지에 대한 명시
       - name: make application.yml # application.yml 은 파일로 추출, so 파일출력명령 '>'가 필요
         run: |
           touch ./src/main/resources/application.yml
-          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
-          echo "  isUpdate: false" >> ./src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_YML }}" | sed 's/batchsync:\n  isUpdate: true/batchsync:\n  isUpdate: false/' > ./src/main/resources/application.yml
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
