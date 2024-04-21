@@ -146,6 +146,7 @@ public class PlanService {
                     .build());
         }
 
+        // 본인글이 아닌 글 조회시에만 조회수 증가
 //        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        Member member = userDetails.getMember();
 //        String email = member.getEmail();

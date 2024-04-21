@@ -39,6 +39,7 @@ public class PlanLikeService {
         Member member = getMember(email);
 
         Plan plan = getPlan(planId);
+        plan.increaseLikeCount(); // 좋아요수 증가 (스크랩은 스크립수 증가 없음)
         planLikeRepository.findByMemberAndPlan(member, plan)
                 .ifPresentOrElse(
                         PlanLike::registerLike, // 좋아요를 한번이라도 등록한적이 있을경우
@@ -55,6 +56,9 @@ public class PlanLikeService {
 //        String email = member.getEmail();
         String email = "test@test.com";
         Member member = getMember(email);
+
+        Plan plan = getPlan(planId);
+        plan.decreaseLikeCount(); // 좋아요수 감소 (스크랩은 스크립수 감소 없음)
 
         getPlanLike(planId,email).cancelLike();
         redisTemplate.opsForSet().remove(PLAN_LIKES_PLAN_ID + planId, email);
