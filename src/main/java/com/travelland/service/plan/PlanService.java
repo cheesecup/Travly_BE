@@ -38,6 +38,8 @@ public class PlanService {
     private final PlanVoteRepository planVoteRepository;
     private final VotePaperRepository votePaperRepository;
     private final PlanCommentRepository planCommentRepository;
+    private final PlanLikeService planLikeService;
+    private final PlanScrapService planScrapService;
     private final RedisTemplate<String,String> redisTemplate;
 
 
@@ -88,6 +90,9 @@ public class PlanService {
 
     // Plan 유저별 단일상세 조회
     public PlanDto.Get readPlanForMember(Long planId) {
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+
         Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
 
         plan.increaseViewCount(); // 조회수 증가
@@ -141,13 +146,15 @@ public class PlanService {
                     .build());
         }
 
-        // 조회수 증가
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT+planId,userDetails.getMember().getEmail());
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+//        String email = member.getEmail();
+        String email = "test@test.com";
+        Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT+planId,email);
         if(result != null && result == 1L)
-            plan.increaseViewCount();
+            plan.increaseViewCount(); // 조회수 증가
 
-        List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAIdOrPlanBId(planId, planId);
+        List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAOrPlanB(plan, plan);
         List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
 
         // Plan에 DayPlan과 PlanVote 담는중
@@ -155,6 +162,8 @@ public class PlanService {
                 .plan(plan)
                 .dayPlans(ones)
                 .planVotes(planVoteDtos)
+                .isLike(planLikeService.statusPlanLike(planId))
+                .isScrap(planScrapService.statusPlanScrap(planId))
                 .build();
     }
 
@@ -208,7 +217,7 @@ public class PlanService {
                     .build());
         }
 
-        List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAIdOrPlanBId(planId, planId);
+        List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAOrPlanB(plan, plan);
         List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
 
         // Plan에 DayPlan과 PlanVote 담는중
@@ -216,6 +225,8 @@ public class PlanService {
                 .plan(plan)
                 .dayPlans(ones)
                 .planVotes(planVoteDtos)
+                .isLike(planLikeService.statusPlanLike(planId))
+                .isScrap(planScrapService.statusPlanScrap(planId))
                 .build();
     }
 
@@ -329,6 +340,13 @@ public class PlanService {
 
         return new PlanDto.Delete(plan.getIsDeleted());
     }
+
+
+
+
+
+
+
 
 
 

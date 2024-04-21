@@ -119,9 +119,11 @@ public class PlanDto {
         private final String profileUrl;
         private List<DayPlanDto.GetAllInOne> dayPlans;
         private List<PlanVoteDto.GetAllInOne> planVotes;
+        private final Boolean isLike;
+        private final Boolean isScrap;
 
         @Builder
-        public GetAllInOne(Plan plan, List<DayPlanDto.GetAllInOne> dayPlans, List<PlanVoteDto.GetAllInOne> planVotes) {
+        public GetAllInOne(Plan plan, List<DayPlanDto.GetAllInOne> dayPlans, List<PlanVoteDto.GetAllInOne> planVotes, Boolean isLike, Boolean isScrap) {
             this.planId = plan.getId();
             this.title = plan.getTitle();
 //            this.content = plan.getContent();
@@ -138,6 +140,8 @@ public class PlanDto {
             this.profileUrl = plan.getMember().getProfileImage();
             this.dayPlans = dayPlans;
             this.planVotes = planVotes;
+            this.isLike = isLike;
+            this.isScrap = isScrap;
         }
     }
 

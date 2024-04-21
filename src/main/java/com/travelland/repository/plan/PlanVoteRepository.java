@@ -1,5 +1,6 @@
 package com.travelland.repository.plan;
 
+import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanVote;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,5 +20,5 @@ public interface PlanVoteRepository extends JpaRepository<PlanVote, Long> {
 
     Page<PlanVote> findAllByIsDeleted(Pageable pageable, boolean isDeleted);
 
-    List<PlanVote> findAllByPlanAIdOrPlanBId(Long planAId, Long planBId);
+    List<PlanVote> findAllByPlanAOrPlanB(Plan planA, Plan planB);
 }
