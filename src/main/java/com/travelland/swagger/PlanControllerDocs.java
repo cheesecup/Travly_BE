@@ -196,10 +196,8 @@ public interface PlanControllerDocs {
     @Operation(summary = "Plan 좋아요 취소", description = "선택한 Plan 좋아요를 취소하는 API")
     ResponseEntity deletePlanLike(@PathVariable Long planId);
 
-    @Operation(summary = "Plan 좋아요 전체목록 조회", description = "좋아요을 누른 Plan 목록을 페이지별로 조회하는 API")
-    ResponseEntity getPlanLikeList(@RequestParam(defaultValue = "1") int page,
-                                   @RequestParam(defaultValue = "20") int size,
-                                   @AuthenticationPrincipal UserDetailsImpl userDetails);
+    @Operation(summary = "Plan 좋아요 유저별 전체목록 조회", description = "좋아요을 누른 Plan 목록을 페이지별로 조회하는 API")
+    ResponseEntity getPlanLikeList(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size);
 
     @Operation(summary = "Plan 스크랩 등록", description = "선택한 Plan 스크랩에 추가하는 API")
     ResponseEntity createPlanScrap(@PathVariable Long planId);
@@ -207,9 +205,8 @@ public interface PlanControllerDocs {
     @Operation(summary = "Plan 스크랩 취소", description = "선택한 Plan 스크랩에서 삭제하는 API")
     ResponseEntity deletePlanScrap(@PathVariable Long planId);
 
-    @Operation(summary = "Plan 스크랩 전체목록 조회", description = "스크랩한 Plan 목록을 페이지별로 조회하는 API")
-    ResponseEntity getPlanScrapList(@RequestParam(defaultValue = "1") int page,
-                                                          @RequestParam(defaultValue = "20") int size, @AuthenticationPrincipal UserDetailsImpl userDetails);
+    @Operation(summary = "Plan 스크랩 유저별 전체목록 조회", description = "스크랩한 Plan 목록을 페이지별로 조회하는 API")
+    ResponseEntity getPlanScrapList(@RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "20") int size);
 
 
 

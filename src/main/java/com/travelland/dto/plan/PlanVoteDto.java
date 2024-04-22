@@ -31,66 +31,74 @@ public class PlanVoteDto {
     @Getter
     public static class Get {
         private final Long planVoteId;
+        private final String title;
+        private final LocalDateTime createdAt;
+        private final LocalDateTime modifiedAt;
+        private final PlanVoteDuration planVoteDuration;
+        private final Boolean isClosed;
         private final Long memberId;
         private final String nickname;
         private final String profileImage;
         private final Long planAId;
         private final Long planBId;
+        private final String planATitle;
+        private final String planBTitle;
         private final int planACount;
         private final int planBCount;
-        private final Boolean isClosed;
-        private final String title;
-        private final PlanVoteDuration planVoteDuration;
-        private final LocalDateTime createdAt;
-        private final LocalDateTime modifiedAt;
 
         public Get(PlanVote planVote) {
             this.planVoteId = planVote.getId();
-            this.memberId = planVote.getMemberId();
-            this.nickname = planVote.getNickname();
-            this.profileImage = planVote.getProfileImage();
-            this.planAId = planVote.getPlanAId();
-            this.planBId = planVote.getPlanBId();
-            this.planACount = planVote.getPlanACount();
-            this.planBCount = planVote.getPlanBCount();
-            this.isClosed = planVote.getIsClosed();
-            this.title = planVote.getTitle();
-            this.planVoteDuration = planVote.getPlanVoteDuration();
+            this.title = planVote.getPlanVoteTitle();
             this.createdAt = planVote.getCreatedAt();
             this.modifiedAt = planVote.getModifiedAt();
+            this.isClosed = planVote.getIsClosed();
+            this.planVoteDuration = planVote.getPlanVoteDuration();
+            this.memberId = planVote.getMember().getId();
+            this.nickname = planVote.getMember().getNickname();
+            this.profileImage = planVote.getMember().getProfileImage();
+            this.planAId = planVote.getPlanA().getId();
+            this.planBId = planVote.getPlanB().getId();
+            this.planATitle = planVote.getPlanA().getTitle();
+            this.planBTitle = planVote.getPlanB().getTitle();
+            this.planACount = planVote.getPlanACount();
+            this.planBCount = planVote.getPlanBCount();
         }
     }
 
     @Getter
     public static class GetAllInOne {
         private final Long planVoteId;
+        private final String title;
+        private final LocalDateTime createdAt;
+        private final LocalDateTime modifiedAt;
+        private final PlanVoteDuration planVoteDuration;
+        private final Boolean isClosed;
         private final Long memberId;
         private final String nickname;
         private final String profileImage;
         private final Long planAId;
         private final Long planBId;
+        private final String planATitle;
+        private final String planBTitle;
         private final int planACount;
         private final int planBCount;
-        private final Boolean isClosed;
-        private final String title;
-        private final PlanVoteDuration planVoteDuration;
-        private final LocalDateTime createdAt;
-        private final LocalDateTime modifiedAt;
 
         public GetAllInOne(PlanVote planVote) {
             this.planVoteId = planVote.getId();
-            this.memberId = planVote.getMemberId();
-            this.nickname = planVote.getNickname();
-            this.profileImage = planVote.getProfileImage();
-            this.planAId = planVote.getPlanAId();
-            this.planBId = planVote.getPlanBId();
-            this.planACount = planVote.getPlanACount();
-            this.planBCount = planVote.getPlanBCount();
-            this.isClosed = planVote.getIsClosed();
-            this.title = planVote.getTitle();
-            this.planVoteDuration = planVote.getPlanVoteDuration();
+            this.title = planVote.getPlanVoteTitle();
             this.createdAt = planVote.getCreatedAt();
             this.modifiedAt = planVote.getModifiedAt();
+            this.isClosed = planVote.getIsClosed();
+            this.planVoteDuration = planVote.getPlanVoteDuration();
+            this.memberId = planVote.getMember().getId();
+            this.nickname = planVote.getMember().getNickname();
+            this.profileImage = planVote.getMember().getProfileImage();
+            this.planAId = planVote.getPlanA().getId();
+            this.planBId = planVote.getPlanB().getId();
+            this.planATitle = planVote.getPlanA().getTitle();
+            this.planBTitle = planVote.getPlanB().getTitle();
+            this.planACount = planVote.getPlanACount();
+            this.planBCount = planVote.getPlanBCount();
         }
     }
 

@@ -332,50 +332,67 @@ public class PlanController implements PlanControllerDocs {
 //        return ResponseEntity.status(HttpStatus.OK).body(planService.deletePlanComment(commentId));
 //    }
 
+
+
+
+
+
+
+
+
+
     // Plan 좋아요 등록
     @PostMapping("/plans/{planId}/like")
     public ResponseEntity<PlanDto.Result> createPlanLike(@PathVariable Long planId) {
-        planLikeService.registerPlanLike(planId, "test@test.com");
+        planLikeService.registerPlanLike(planId);
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(true));
     }
 
     // Plan 좋아요 취소
     @DeleteMapping("/plans/{planId}/like")
-    public ResponseEntity<PlanDto.Result> deletePlanLike(@PathVariable Long planId ) {
-        planLikeService.cancelPlanLike(planId, "test@test.com");
+    public ResponseEntity<PlanDto.Result> deletePlanLike(@PathVariable Long planId) {
+        planLikeService.cancelPlanLike(planId);
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(false));
     }
 
     // Plan 좋아요 전체목록 조회
     @GetMapping("/plans/like")
     public ResponseEntity<List<PlanDto.GetList>> getPlanLikeList(@RequestParam(defaultValue = "1") int page,
-                                                               @RequestParam(defaultValue = "20") int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+                                                                 @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(planLikeService.getPlanLikeList(page, size, userDetails.getUsername()));
+                .body(planLikeService.getPlanLikeList(page, size));
     }
 
     // Plan 스크랩 등록
     @PostMapping("/plans/{planId}/scrap")
     public ResponseEntity<PlanDto.Result> createPlanScrap(@PathVariable Long planId) {
-        planScrapService.registerPlanScrap(planId, "test@test.com");
+        planScrapService.registerPlanScrap(planId);
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(true));
     }
 
     // Plan 스크랩 취소
     @DeleteMapping("/plans/{planId}/scrap")
     public ResponseEntity<PlanDto.Result> deletePlanScrap(@PathVariable Long planId) {
-        planScrapService.cancelPlanScrap(planId, "test@test.com");
+        planScrapService.cancelPlanScrap(planId);
         return ResponseEntity.status(HttpStatus.OK).body(new PlanDto.Result(false));
     }
 
     // Plan 스크랩 전체목록 조회
     @GetMapping("/plans/scrap")
     public ResponseEntity<List<PlanDto.GetList>> getPlanScrapList(@RequestParam(defaultValue = "1") int page,
-                                                                 @RequestParam(defaultValue = "20") int size,
-                                                                  @AuthenticationPrincipal UserDetailsImpl userDetails) {
+                                                                  @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(planScrapService.getPlanScrapList(page, size, userDetails.getUsername()));
+                .body(planScrapService.getPlanScrapList(page, size));
     }
+
+
+
+
+
+
+
+
+
 
     // HTTPS 수신상태가 양호함을 AWS 와 통신하는 API
     @GetMapping("/healthcheck")
