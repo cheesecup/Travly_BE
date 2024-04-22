@@ -37,6 +37,8 @@ public class Trip {
 
     private String address; //도로명 주소
 
+    private String placeName; //여행장소
+
     private boolean isPublic;
 
     private LocalDate tripStartDate;
@@ -67,6 +69,7 @@ public class Trip {
         this.address = requestDto.getAddress();
         this.area = splitAddress(requestDto.getAddress());
         this.isPublic = requestDto.getIsPublic();
+        this.placeName = requestDto.getPlaceName();
         this.tripStartDate = requestDto.getTripStartDate();
         this.tripEndDate = requestDto.getTripEndDate();
         this.viewCount = 0;
