@@ -13,6 +13,8 @@ public interface CustomTripRepositoryV2 {
 
     List<Trip> searchTripByHashtag(String hashtag, int page, int size, String sort, boolean ASC);
 
+    Optional<Trip> getTripWithMember(Long tripId, boolean isDeleted);
+
     Optional<Trip> getTripById(Long tripId);
 
 }

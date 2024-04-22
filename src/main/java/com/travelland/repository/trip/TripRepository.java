@@ -12,9 +12,8 @@ import java.util.Optional;
 public interface TripRepository extends JpaRepository<Trip, Long>, CustomTripRepositoryV2 {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<Trip> findByIdAndIsDeletedAndIsPublic(Long tripId, boolean isDeleted, boolean isPublic);
-
     Optional<Trip> findByIdAndIsDeleted(Long tripId, boolean isDeleted);
+
 
 
 }
