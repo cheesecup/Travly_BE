@@ -61,10 +61,10 @@ public class TripSearchService {
         return tripSearchRepository.findRankList(keys);
     }
 
-    public List<String> getRecentlyTopSearch() {
+    public List<String> getRecentlyTopSearch(String field) {
         LocalDateTime now = LocalDateTime.now();
         return elasticsearchLogService.
-                getRankInRange(SEARCH_RANK_FIELD, now.minusWeeks(1), now)
+                getRankInRange(field, now.minusWeeks(1), now)
                 .stream()
                 .map(recentKeyword -> recentKeyword.get("key").toString())
                 .toList();

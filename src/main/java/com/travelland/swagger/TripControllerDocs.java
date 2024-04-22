@@ -88,8 +88,11 @@ public interface TripControllerDocs {
                                        @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                                        @RequestParam(required = false, defaultValue = "false") Boolean isAsc);
 
-    @Operation(summary = "인기 해쉬태그 TOP 5", description = "일일 해시태그 검색량 상위 5개를 보여주는 API")
+    @Operation(summary = "인기 해쉬태그 TOP 5", description = "주간 해시태그 검색량 상위 5개를 보여주는 API")
     ResponseEntity getRecentTopHashtag();
+
+    @Operation(summary = "인기 지역 TOP 5", description = "주간 인기 지역 검색량 상위 5개를 보여주는 API")
+    ResponseEntity getRecentTopArea();
 
     @Operation(summary = "여행정보 댓글 등록", description = "선택한 여행정보 게시글에 댓글을 등록하는 API")
     ResponseEntity createTripComment(@PathVariable Long tripId,
