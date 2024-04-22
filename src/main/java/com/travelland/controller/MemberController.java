@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
@@ -29,18 +31,23 @@ public class MemberController implements MemberControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.Response(memberService.signout(request, response, userDetails.getUsername())));
     }
 
-    @PatchMapping
+    @PatchMapping("/change-nickname")
     public ResponseEntity<MemberDto.Response> changeNickname(@RequestBody MemberDto.ChangeNicknameRequest request, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.Response(memberService.changeNickname(request, userDetails.getUsername())));
     }
 
-    @GetMapping("/{nickname}")
+    @GetMapping("/check-nickname/{nickname}")
     public ResponseEntity<MemberDto.DuplicateCheck> checkNickname(@PathVariable String nickname) {
         return ResponseEntity.status(HttpStatus.OK).body(new MemberDto.DuplicateCheck(memberService.checkNickname(nickname)));
     }
 
+    @GetMapping("/search-nickname")
+    public ResponseEntity<List<MemberDto.MemberInfo>> searchNickname(@RequestParam String nickname) {
+        return ResponseEntity.status(HttpStatus.OK).body(memberService.searchNickname(nickname));
+    }
+
     @GetMapping("/memberInfo")
-    public ResponseEntity<MemberDto.MemberInfo> getMemberInfo() {
-        return ResponseEntity.status(HttpStatus.OK).body(memberService.getMemberInfo());
+    public ResponseEntity<MemberDto.MemberInfo> getMemberInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.status(HttpStatus.OK).body(memberService.getMemberInfo(userDetails.getMember()));
     }
 }

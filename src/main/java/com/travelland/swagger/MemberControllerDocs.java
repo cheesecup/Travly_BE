@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
+
 @Tag(name = "회원 API", description = "회원 관련 API 명세서입니다.")
 public interface MemberControllerDocs {
 
@@ -30,6 +32,9 @@ public interface MemberControllerDocs {
     @Operation(summary = "닉네임 중복체크", description = "닉네임 중복체크 API")
     ResponseEntity checkNickname(@PathVariable String nickname);
 
+    @Operation(summary = "닉네임 목록 검색", description = "닉네임 목록 검색 API")
+    ResponseEntity searchNickname(@RequestParam String nickname);
+
     @Operation(summary = "회원정보", description = "닉네임 / 이메일 / 프로필이미지 API")
-    ResponseEntity getMemberInfo();
+    ResponseEntity getMemberInfo(@AuthenticationPrincipal UserDetailsImpl userDetails);
 }

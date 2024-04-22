@@ -16,6 +16,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -64,12 +66,13 @@ public class MemberService {
 
         return true;
     }
+    @Transactional(readOnly = true)
+    public List<MemberDto.MemberInfo> searchNickname(String nickname) {
+        return memberRepository.findAllByNicknameContainsOrderByNicknameAsc(nickname).stream().map(MemberDto.MemberInfo::new).toList();
+    }
 
-    @Transactional
-    public MemberDto.MemberInfo getMemberInfo() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = userDetails.getMember();
-
+    @Transactional(readOnly = true)
+    public MemberDto.MemberInfo getMemberInfo(Member member) {
         return new MemberDto.MemberInfo(member);
     }
 }
