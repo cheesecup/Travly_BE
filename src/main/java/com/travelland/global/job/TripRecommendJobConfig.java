@@ -12,6 +12,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.database.JdbcPagingItemReader;
 import org.springframework.batch.item.database.Order;
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -52,7 +54,7 @@ public class TripRecommendJobConfig {
 
     private static final String TRIP_RECOMMEND_STEP = "trip_recommend_step";
     private static final String TRIP_RECOMMEND = "trip_recommend:";
-    private static final int WORKER_SIZE = 4;
+    private static final int WORKER_SIZE = 2;
 
     @Value("${spring.batch.chunk-size}")
     private int chunkSize;
@@ -72,16 +74,15 @@ public class TripRecommendJobConfig {
                 .<Long, DataSet>chunk(completionPolicy(), new DataSourceTransactionManager(dataSource))
                 .reader(jdbcPagingItemReader())
                 .processor(itemProcessor())
-                .writer(chunkData -> {
-                    for(DataSet data : chunkData){
-                        redisTemplate.delete(TRIP_RECOMMEND + data.getId());
-
-                        if(data.getRecommendIds().isEmpty())
-                            continue;
-
-                        redisTemplate.opsForList().rightPushAll(TRIP_RECOMMEND + data.getId(), data.getRecommendIds());
-                    }
-                })
+                .writer(this::writeChunkDataToRedis)
+//                .writer(chunkData -> {
+//                    for(DataSet data : chunkData){
+//                        if(data.getRecommendIds().isEmpty())
+//                            continue;
+//                        redisTemplate.delete(TRIP_RECOMMEND + data.getId());
+//                        redisTemplate.opsForList().rightPushAll(TRIP_RECOMMEND + data.getId(), data.getRecommendIds());
+//                    }
+//                })
                 .transactionManager(platformTransactionManager)
                 .taskExecutor(taskExecutor())
                 .listener(jobExecutionListener(taskExecutor()))
@@ -120,14 +121,11 @@ public class TripRecommendJobConfig {
         return id ->{
             Map<Long, Integer> recommendCount = new HashMap<>();
 
-            List<Long> memberIds = tripLikeRepository.getMemberIdsByTripId(id,10000,1);
-
-            for(Long memberId : memberIds){
+            for(Long memberId : tripLikeRepository.getMemberIdsByTripId(id,10000,1)){
                 tripLikeRepository.getTripIdsByMemberId(memberId, 10000, 1)
                         .forEach(tripId ->
                                 recommendCount.put(tripId, recommendCount.getOrDefault(tripId, 0) + 1));
             }
-
 
             List<Long> res = new ArrayList<>(recommendCount.entrySet().stream()
                     .sorted(Map.Entry.comparingByValue())
@@ -141,9 +139,24 @@ public class TripRecommendJobConfig {
 
             List<Long> subRes =  res.subList(0,6);
             subRes.remove(id);
-
             return new DataSet(id, subRes.stream().limit(5).map(Object::toString).toList());
         };
+    }
+
+    private void writeChunkDataToRedis(Chunk<? extends DataSet> chunkData) {
+        redisTemplate.executePipelined((RedisCallback<Object>) redisConnection -> {
+            chunkData.forEach(data -> {
+                if (data.getRecommendIds().isEmpty()) return;
+                byte[] serializedKey = redisTemplate.getStringSerializer().serialize(TRIP_RECOMMEND + data.getId());
+                if(serializedKey == null) return;
+                redisConnection.keyCommands().del(serializedKey);
+
+                data.getRecommendIds().stream()
+                        .map(id -> redisTemplate.getStringSerializer().serialize(id))
+                        .forEach(serializedId -> redisConnection.listCommands().rPush(serializedKey, serializedId));
+            });
+            return null;
+        });
     }
 
 @Bean

@@ -48,7 +48,7 @@ public class TripService {
         if (!thumbnail.isEmpty()) //여행정보 이미지 정보 저장
             thumbnailUrl = tripImageService.createTripImage(thumbnail, imageList, trip);
 
-        redisTemplate.opsForValue().increment(TRIP_TOTAL_ELEMENTS);
+//        redisTemplate.opsForValue().increment(TRIP_TOTAL_ELEMENTS);
 
         tripSearchService.createTripDocument(trip, requestDto.getHashTag(), email, thumbnailUrl); //ES 저장
 
@@ -57,7 +57,12 @@ public class TripService {
 
     @Transactional
     public TripDto.Get getTrip(Long tripId, String email) {
-        Trip trip = tripRepository.findByIdAndIsDeletedAndIsPublic(tripId, false, true).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+        Trip trip = tripRepository.getTripWithMember(tripId, false).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+
+        if (!trip.isPublic() && !trip.getMember().getEmail().equals(email)) { //비공개 글인 경우
+            throw new CustomException(ErrorCode.POST_ACCESS_NOT_PERMISSION);
+        }
 
         List<String> hashtagList = tripHashtagRepository.findAllByTrip(trip).stream().map(TripHashtag::getTitle).toList();
         List<String> imageUrlList = tripImageService.getTripImageUrl(trip);

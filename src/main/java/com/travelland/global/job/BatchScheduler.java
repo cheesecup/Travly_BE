@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
+import static com.travelland.constant.Constants.TRIP_RECOMMEND_JOB_NAME;
+
 @Slf4j(topic = "Scheduler Start : ")
 @Component
 @RequiredArgsConstructor
@@ -27,13 +29,14 @@ public class BatchScheduler {
     @Value("${batchsync.isUpdate}")
     private boolean isUpdate;
 
-    @Scheduled(cron = "0 0 3 * * *") // 매일 3시마다 실행
+//    @Scheduled(cron = "0 0 3 * * *") // 매일 3시마다 실행
+@Scheduled(fixedRate = 3600000)
     public void runJob() {
         if (!isUpdate) return;
 
         log.info("start Job");
         try {
-            jobLauncher.run(jobRegistry.getJob("dbSync"), new JobParametersBuilder()
+            jobLauncher.run(jobRegistry.getJob(TRIP_RECOMMEND_JOB_NAME), new JobParametersBuilder()
                             .addString("time", LocalDateTime.now().toString())
                             .toJobParameters());
         } catch (NoSuchJobException | JobInstanceAlreadyCompleteException | JobExecutionAlreadyRunningException |
