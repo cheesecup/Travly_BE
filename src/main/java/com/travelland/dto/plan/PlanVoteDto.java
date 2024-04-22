@@ -2,6 +2,7 @@ package com.travelland.dto.plan;
 
 import com.travelland.constant.PlanVoteDuration;
 import com.travelland.domain.plan.PlanVote;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +16,7 @@ public class PlanVoteDto {
         private Long planAId;
         //@NotBlank(message = "대상 플랜B를 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private Long planBId;
+        @Size(max = 100)
         private String title;
         //@NotBlank(message = "투표기간을 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private PlanVoteDuration planVoteDuration;
@@ -108,6 +110,7 @@ public class PlanVoteDto {
         private Long planAId;
         //@NotBlank(message = "대상 플랜B를 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private Long planBId;
+        @Size(max = 100)
         private String title;
         //@NotBlank(message = "투표기간을 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private PlanVoteDuration planVoteDuration;
