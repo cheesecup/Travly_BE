@@ -29,7 +29,7 @@ public class BatchScheduler {
     @Value("${batchsync.isUpdate}")
     private boolean isUpdate;
 
-    @Scheduled(cron = "0 0 3 * * *") // 매일 3시마다 실행
+    @Scheduled(cron = "0 0 18 * * *") // 매일 3시마다 실행
 //    @Scheduled(fixedRate = 3600000)
     public void runJob() {
         if (!isUpdate) return;
