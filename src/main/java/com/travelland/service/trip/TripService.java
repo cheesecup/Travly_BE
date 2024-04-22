@@ -48,7 +48,7 @@ public class TripService {
         if (!thumbnail.isEmpty()) //여행정보 이미지 정보 저장
             thumbnailUrl = tripImageService.createTripImage(thumbnail, imageList, trip);
 
-        redisTemplate.opsForValue().increment(TRIP_TOTAL_ELEMENTS);
+//        redisTemplate.opsForValue().increment(TRIP_TOTAL_ELEMENTS);
 
         tripSearchService.createTripDocument(trip, requestDto.getHashTag(), email, thumbnailUrl); //ES 저장
 
