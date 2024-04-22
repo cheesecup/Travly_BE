@@ -792,10 +792,10 @@ public class PlanService {
                 contentBuilder.append(unitPlan.getTime());
                 contentBuilder.append("\n");
                 contentBuilder.append(unitPlan.getAddress());
-                contentBuilder.append(" ");
-                String placeName = unitPlan.getPlaceName();
-                if (placeName == null) placeName = "건물명 필요";
-                contentBuilder.append(placeName);
+//                contentBuilder.append(" ");
+//                String placeName = unitPlan.getPlaceName();
+//                if (placeName == null) placeName = "건물명 필요";
+//                contentBuilder.append(placeName);
                 contentBuilder.append("\n");
                 contentBuilder.append("비용:");
                 contentBuilder.append(unitPlan.getBudget());
