@@ -14,6 +14,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -148,15 +150,36 @@ public class PlanService {
         }
 
         // 접속유저가 안 본 글만 조회수 증가
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = userDetails.getMember();
-        String email = member.getEmail();
-//        String email = "test@test.com";
-        Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT + planId,email);
-        if(result != null && result == 1L)
-            plan.increaseViewCount(); // 조회수 증가
+//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        Member member = userDetails.getMember();
+//        String email = member.getEmail();
+////        String email = "test@test.com";
+//        Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT + planId,email);
+//        if(result != null && result == 1L)
+//            plan.increaseViewCount(); // 조회수 증가
 
+        // 로그인 여부 검사: authentication이 null이 아니고, 인증된 상태인 경우에만 실행
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            // UserDetailsImpl 으로 캐스팅
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            Member member = userDetails.getMember();
+            if (member != null) {
+                String email = member.getEmail();
+
+                // Redis를 사용하여 이메일이 저장되어 있는지 확인 후, 없는 경우에만 조회수 증가
+                Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT + planId, email);
+                if (result != null && result == 1L) {
+                    plan.increaseViewCount(); // 조회수 증가
+                }
+            }
+        }
+
+        // Plan에 담을 PlanVote 준비중
         List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAOrPlanB(plan, plan);
+        for (PlanVote planVote : planVoteList) {
+            planVote.checkTimeOut(); // 투표기간이 종료됐는지 체크
+        }
         List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
 
         // Plan에 DayPlan과 PlanVote 담는중
