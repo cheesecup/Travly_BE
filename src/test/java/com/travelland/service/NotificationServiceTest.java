@@ -41,6 +41,6 @@ class NotificationServiceTest {
         notificationService.subscribe(member.getId(), lastEventId);
 
         //when, then
-        Assertions.assertDoesNotThrow(() -> notificationService.send(member, "스터디 신청에 지원하셨습니다.", "localhost:8080/study/1", NotificationType.INVITE));
+        Assertions.assertDoesNotThrow(() -> notificationService.send(member, "코딩 스터디", "스터디 신청에 지원하셨습니다.", "localhost:8080/study/1", NotificationType.INVITE));
     }
 }

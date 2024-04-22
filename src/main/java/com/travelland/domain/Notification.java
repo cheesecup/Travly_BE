@@ -21,6 +21,9 @@ public class Notification {
     private Long id;
 
     @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
     private String content;
 
     private String url;
@@ -37,11 +40,12 @@ public class Notification {
     private Member receiver;
 
     @CreatedDate
-    @Column(updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime createdAt;
 
     @Builder
-    public Notification(String content, String url, Boolean isRead, NotificationType notificationType, Member receiver) {
+    public Notification(String title, String content, String url, Boolean isRead, NotificationType notificationType, Member receiver) {
+        this.title = title;
         this.content = content;
         this.url = url;
         this.isRead = isRead;

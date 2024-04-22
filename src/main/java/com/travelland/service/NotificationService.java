@@ -66,8 +66,8 @@ public class NotificationService {
     }
 
     // 알림 보내기(sender -> receiver)
-    public void send(Member receiver, String content, String url, NotificationType notificationType) {
-        Notification notification = createNotification(receiver, content, url, notificationType);
+    public void send(Member receiver, String title, String content, String url, NotificationType notificationType) {
+        Notification notification = createNotification(receiver, title, content, url, notificationType);
 
         String receiverId = String.valueOf(receiver.getId());
         String eventId = receiverId + "_" + System.currentTimeMillis();
@@ -80,9 +80,10 @@ public class NotificationService {
         );
     }
 
-    private Notification createNotification(Member receiver, String content, String url, NotificationType notificationType) {
+    private Notification createNotification(Member receiver, String title, String content, String url, NotificationType notificationType) {
         return Notification.builder()
                 .receiver(receiver)
+                .title(title)
                 .content(content)
                 .url(url)
                 .isRead(false)

@@ -6,11 +6,9 @@ import com.travelland.dto.plan.*;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.security.UserDetailsImpl;
-import com.travelland.global.notify.DoEvent;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +36,6 @@ public class PlanService {
     private final PlanCommentRepository planCommentRepository;
 
     private final StringRedisTemplate redisTemplate;
-    private final ApplicationEventPublisher eventPublisher;
     private static final String PLAN_TOTAL_COUNT = "plan_total_count";
 
     // Plan 작성
@@ -205,7 +202,7 @@ public class PlanService {
     public Page<PlanDto.Get> readPlanList(int page, int size, String sortBy, boolean isAsc) {
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
 
         Page<Plan> plans = planRepository.findAllByIsDeletedAndIsPublic(pageable, false, true);
         return plans.map(PlanDto.Get::new);
@@ -219,7 +216,7 @@ public class PlanService {
 
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
 
         Page<Plan> plans = planRepository.findAllByMemberIdAndIsDeleted(pageable, member.getId(), false);
         return plans.map(PlanDto.Get::new);
@@ -289,7 +286,7 @@ public class PlanService {
         }
 
         // 연관된 DayPlan 과 UnitPlan 을 먼저 삭제
-        List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId,false);
+        List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
         for (DayPlan dayPlan : dayPlanList) {
 
             List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanIdAndIsDeleted(dayPlan.getId(), false);
@@ -309,14 +306,6 @@ public class PlanService {
         plan.delete();
         return new PlanDto.Delete(plan.getIsDeleted());
     }
-
-
-
-
-
-
-
-
 
 
     // DayPlan 작성
@@ -364,14 +353,6 @@ public class PlanService {
     }
 
 
-
-
-
-
-
-
-
-
     // UnitPlan 작성
     public UnitPlanDto.Id createUnitPlan(Long dayPlanId, UnitPlanDto.Create request) {
         DayPlan dayPlan = dayPlanRepository.findById(dayPlanId).orElseThrow(() -> new CustomException(ErrorCode.DAY_PLAN_NOT_FOUND));
@@ -411,14 +392,6 @@ public class PlanService {
     }
 
 
-
-
-
-
-
-
-
-
     // PlanVote 생성
     public PlanVoteDto.Id createPlanVote(PlanVoteDto.Create request) {
         PlanVote planVote = new PlanVote(request);
@@ -437,7 +410,7 @@ public class PlanService {
     public Page<PlanVoteDto.Get> readPlanVoteList(int page, int size, String sortBy, boolean isAsc) {
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
 
         Page<PlanVote> planVotes = planVoteRepository.findAll(pageable);
         return planVotes.map(PlanVoteDto.Get::new);
@@ -458,14 +431,6 @@ public class PlanService {
         planVote.delete();
         return new PlanVoteDto.Delete(planVote.getIsDeleted());
     }
-
-
-
-
-
-
-
-
 
 
     // VotePaper 생성
@@ -501,7 +466,7 @@ public class PlanService {
 
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
 
         Page<VotePaper> votePapers = votePaperRepository.findAllByMemberId(pageable, member.getId());
         return votePapers.map(VotePaperDto.Get::new);
@@ -554,14 +519,6 @@ public class PlanService {
      */
 
 
-
-
-
-
-
-
-
-
     // Plan 댓글 등록
     public PlanCommentDto.Id createPlanComment(Long planId, PlanCommentDto.Create request) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -580,7 +537,7 @@ public class PlanService {
     public Page<PlanCommentDto.Get> readPlanCommentList(Long planId, int page, int size, String sortBy, boolean isAsc) {
         Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
         Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
+        Pageable pageable = PageRequest.of(page - 1, size, sort);
 
         Page<PlanComment> planComments = planCommentRepository.findAllByPlanId(pageable, planId);
         return planComments.map(PlanCommentDto.Get::new);
@@ -619,14 +576,6 @@ public class PlanService {
     }
 
 
-
-
-
-
-
-
-
-
     private Member getMember(String email) {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
@@ -635,20 +584,5 @@ public class PlanService {
     private Plan getPlan(Long planId) {
         return planRepository.findById(planId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-    }
-
-    @Transactional
-    public void invitePlan(Long planId, PlanDto.Invitee invitee, String invitor) {
-        eventPublisher.publishEvent(new DoEvent.DoInviteEvent(this, planId, invitee.getInvitee(), invitor));
-    }
-
-    @Transactional
-    public void agreeInvitedPlan(Long planId, String invitee) {
-        eventPublisher.publishEvent(new DoEvent.DoAgreeEvent(this, planId, invitee));
-    }
-
-    @Transactional
-    public void disagreeInvitedPlan(Long planId, String invitee) {
-        eventPublisher.publishEvent(new DoEvent.DoDisagreeEvent(this, planId, invitee));
     }
 }

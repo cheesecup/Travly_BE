@@ -254,6 +254,7 @@ public class PlanDto {
 
     @Getter
     public static class Invitee {
-        private List<String> invitee;
+        private String nickname;
+        private String email;
     }
 }

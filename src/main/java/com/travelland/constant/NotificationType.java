@@ -6,7 +6,9 @@ import lombok.Getter;
 public enum NotificationType {
     INVITE("INVITE"),
     AGREE("AGREE"),
-    DISAGREE("DISAGREE");
+    DISAGREE("DISAGREE"),
+
+    VOTE("VOTE");
 
     private final String notify;
 

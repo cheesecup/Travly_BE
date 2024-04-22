@@ -30,33 +30,46 @@ public class NotificationSender {
     @TransactionalEventListener
     @Async
     public void handleDoInvite(DoEvent.DoInviteEvent event) {
-        String content = event.getInvitor() + "님의 여행플랜에 초대합니다.";
+        Plan plan = planRepository.findById(event.getPlanId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        String title = plan.getTitle();
+        String content = "플랜에 초대되었습니다. 수락하시겠습니까?";
         String url = BASE_FRONT_URL + "/planDetail/" + event.getPlanId();
 
-        event.getInvitee().stream()
-                .map(memberRepository::findByEmail)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .forEach(receiver -> notificationService.send(receiver, content, url, NotificationType.INVITE));
+        Member receiver = memberRepository.findByEmail(event.getInvitee()).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        notificationService.send(receiver, title, content, url, NotificationType.INVITE);
     }
 
     @TransactionalEventListener
     @Async
     public void handleDoAgree(DoEvent.DoAgreeEvent event) {
-        String content = event.getInvitee() + "님이 여행플랜 초대를 수락하였습니다.";
+        Plan plan = planRepository.findById(event.getPlanId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        String title = plan.getTitle();
+        String content = event.getInviteeNickname() + "님이 플랜 초대를 수락하였습니다.";
         String url = BASE_FRONT_URL + "/planDetail/" + event.getPlanId();
 
-        Plan plan = planRepository.findById(event.getPlanId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        notificationService.send(plan.getMember(), content, url, NotificationType.AGREE);
+        notificationService.send(plan.getMember(), title, content, url, NotificationType.AGREE);
     }
 
     @TransactionalEventListener
     @Async
     public void handleDoDisagree(DoEvent.DoAgreeEvent event) {
-        String content = event.getInvitee() + "님이 여행플랜 초대를 거절하였습니다.";
+        Plan plan = planRepository.findById(event.getPlanId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        String title = plan.getTitle();
+        String content = event.getInviteeNickname() + "님이 플랜 초대를 거절하였습니다.";
         String url = BASE_FRONT_URL + "/planDetail/" + event.getPlanId();
 
+        notificationService.send(plan.getMember(), title, content, url, NotificationType.DISAGREE);
+    }
+
+    @TransactionalEventListener
+    @Async
+    public void handleDoVote(DoEvent.DoVoteEvent event) {
         Plan plan = planRepository.findById(event.getPlanId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        notificationService.send(plan.getMember(), content, url, NotificationType.DISAGREE);
+        String title = plan.getTitle();
+        String content = "에 투표할 수 있습니다.";
+        String url = BASE_FRONT_URL + "/planDetail/" + event.getPlanId();
+
+        Member receiver = memberRepository.findByNickname(event.getInvitee()).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        notificationService.send(receiver, title, content, url, NotificationType.VOTE);
     }
 }

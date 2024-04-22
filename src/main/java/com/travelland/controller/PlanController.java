@@ -1,15 +1,20 @@
 package com.travelland.controller;
 
-import com.travelland.valid.plan.PlanValidationSequence;
-import com.travelland.dto.plan.*;
-import com.travelland.swagger.PlanControllerDocs;
+import com.travelland.dto.plan.PlanDto;
+import com.travelland.dto.plan.PlanVoteDto;
+import com.travelland.dto.plan.VotePaperDto;
+import com.travelland.global.security.UserDetailsImpl;
+import com.travelland.service.plan.PlanInviteService;
 import com.travelland.service.plan.PlanLikeService;
 import com.travelland.service.plan.PlanScrapService;
 import com.travelland.service.plan.PlanService;
+import com.travelland.swagger.PlanControllerDocs;
+import com.travelland.valid.plan.PlanValidationSequence;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +28,7 @@ public class PlanController implements PlanControllerDocs {
     private final PlanService planService;
     private final PlanLikeService planLikeService;
     private final PlanScrapService planScrapService;
+    private final PlanInviteService planInviteService;
 
 //    // Plan 작성
 //    @PostMapping("/plans")
@@ -112,14 +118,6 @@ public class PlanController implements PlanControllerDocs {
 //    }
 
 
-
-
-
-
-
-
-
-
 //    // DayPlan 작성
 //    @PostMapping("/dayPlans/{planId}")
 //    public ResponseEntity<DayPlanDto.Id> createDayPlan(@PathVariable Long planId, @Validated(PlanValidationSequence.class) @RequestBody DayPlanDto.Create request) {
@@ -149,14 +147,6 @@ public class PlanController implements PlanControllerDocs {
 //    }
 
 
-
-
-
-
-
-
-
-
 //    // UnitPlan 작성
 //    @PostMapping("/unitPlans/{dayPlanId}")
 //    public ResponseEntity<UnitPlanDto.Id> createUnitPlan(@PathVariable Long dayPlanId, @Validated(PlanValidationSequence.class) @RequestBody UnitPlanDto.Create request) {
@@ -184,14 +174,6 @@ public class PlanController implements PlanControllerDocs {
 //        UnitPlanDto.Delete response = planService.deleteUnitPlan(unitPlanId);
 //        return ResponseEntity.status(HttpStatus.OK).body(response);
 //    }
-
-
-
-
-
-
-
-
 
 
     // PlanVote 생성
@@ -233,14 +215,6 @@ public class PlanController implements PlanControllerDocs {
     }
 
 
-
-
-
-
-
-
-
-
     // VotePaper 생성
     @PostMapping("/votePapers")
     public ResponseEntity<VotePaperDto.Id> createVotePaper(@Validated(PlanValidationSequence.class) @RequestBody VotePaperDto.Create request) {
@@ -280,14 +254,6 @@ public class PlanController implements PlanControllerDocs {
     }
 
 
-
-
-
-
-
-
-
-
 //    // Plan 댓글 등록
 //    @PostMapping("/plans/{planId}/comments")
 //    public ResponseEntity<PlanCommentDto.Id> createPlanComment(@PathVariable Long planId, @Validated(PlanValidationSequence.class) @RequestBody PlanCommentDto.Create request) {
@@ -315,13 +281,6 @@ public class PlanController implements PlanControllerDocs {
 //    public ResponseEntity<PlanCommentDto.Delete> deletePlanComment(@PathVariable Long planId, @PathVariable Long commentId) {
 //        return ResponseEntity.status(HttpStatus.OK).body(planService.deletePlanComment(commentId));
 //    }
-
-
-
-
-
-
-
 
 
     // Plan 좋아요 등록
@@ -368,26 +327,44 @@ public class PlanController implements PlanControllerDocs {
                 .body(planScrapService.getPlanScrapList(page, size));
     }
 
+    // Plan 초대
     @PostMapping("/plans/{planId}/invite")
     public ResponseEntity<?> invitePlan(@PathVariable Long planId,
-                                        @RequestBody PlanDto.Invitee invitee,
-                                        @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        planService.invitePlan(planId, invitee, userDetails.getMember().getNickname());
+                                        @RequestBody PlanDto.Invitee invitee) {
+        planInviteService.invitePlan(planId, invitee);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    // Plan 초대 수락
     @PostMapping("/plans/{planId}/invite/agree")
     public ResponseEntity<?> agreeInvitedPlan(@PathVariable Long planId,
                                               @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        planService.agreeInvitedPlan(planId, userDetails.getMember().getNickname());
+        planInviteService.agreeInvitedPlan(planId, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    // Plan 초대 거절
     @PostMapping("/plans/{planId}/invite/disagree")
     public ResponseEntity<?> disagreeInvitedPlan(@PathVariable Long planId,
                                                  @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        planService.disagreeInvitedPlan(planId, userDetails.getMember().getNickname());
+        planInviteService.disagreeInvitedPlan(planId, userDetails.getMember());
         return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    // Plan 초대 멤버 삭제
+    @DeleteMapping("/plans/{planId}/invite")
+    public ResponseEntity<?> deleteInvitedMember(@PathVariable Long planId,
+                                                 @RequestBody PlanDto.Invitee invitee) {
+        planInviteService.deleteInvitedMember(planId, invitee);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    // Plan 초대 목록 조회(마이페이지)
+    @GetMapping("/users/plans/invite")
+    public ResponseEntity<Page<PlanDto.Get>> readPlanListForInvitee(@RequestParam int page,
+                                                    @RequestParam int size,
+                                                    @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.status(HttpStatus.OK).body(planInviteService.readPlanListForInvitee(page, size, userDetails.getMember()));
     }
 
 
