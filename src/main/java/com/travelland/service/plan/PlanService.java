@@ -93,6 +93,7 @@ public class PlanService {
 //        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 //        Member member = userDetails.getMember();
 
+//        Plan plan = planRepository.findByIdAndIsDeletedAndMemberId(planId, false, member.getId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
         Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
 
         plan.increaseViewCount(); // 조회수 증가
@@ -146,12 +147,12 @@ public class PlanService {
                     .build());
         }
 
-        // 본인글이 아닌 글 조회시에만 조회수 증가
-//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Member member = userDetails.getMember();
-//        String email = member.getEmail();
-        String email = "test@test.com";
-        Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT+planId,email);
+        // 접속유저가 안 본 글만 조회수 증가
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Member member = userDetails.getMember();
+        String email = member.getEmail();
+//        String email = "test@test.com";
+        Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT + planId,email);
         if(result != null && result == 1L)
             plan.increaseViewCount(); // 조회수 증가
 
