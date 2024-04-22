@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface UnitPlanRepository extends JpaRepository<UnitPlan, Long> {
     List<UnitPlan> findAllByDayPlanIdAndIsDeleted(Long id, boolean isDeleted);
+
+    Optional<UnitPlan> findByIdAndIsDeleted(Long unitPlanId, boolean isDeleted);
 }

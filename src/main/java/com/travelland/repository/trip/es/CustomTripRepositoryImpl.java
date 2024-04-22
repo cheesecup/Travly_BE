@@ -1,72 +1,77 @@
 package com.travelland.repository.trip.es;
 
+import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
 import lombok.RequiredArgsConstructor;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.data.elasticsearch.core.query.Criteria;
-import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
-import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
+
 @RequiredArgsConstructor
 @Component
 public class CustomTripRepositoryImpl implements CustomTripRepository {
     private final ElasticsearchOperations elasticsearchOperations;
 
     @Override
+    public SearchHits<TripSearchDoc> searchByText(String text, Pageable pageable) {
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
+        searchQueryBuilder.withPageable(pageable);
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        Arrays.stream(text.split("\\s+"))
+                .forEach(word -> {
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("title", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("content", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("area", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("hashtag", word));
+                });
+        boolQueryBuilder.must(QueryBuilders.matchQuery("isPublic", true));
+        searchQueryBuilder.withQuery(boolQueryBuilder);
+        return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
+    }
+
+    @Override
     public SearchHits<TripSearchDoc> searchByTitle(String title, Pageable pageable) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
         searchQueryBuilder.withPageable(pageable);
-
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-
         Arrays.stream(title.split("\\s+"))
                 .forEach(word -> boolQueryBuilder.must(QueryBuilders.matchQuery("title", word)));
-
-        // 생성된 boolQuery를 검색 쿼리에 설정
+        boolQueryBuilder.must(QueryBuilders.matchQuery("isPublic", true));
         searchQueryBuilder.withQuery(boolQueryBuilder);
 
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
 
     @Override
-    public SearchHits<TripSearchDoc> searchByHashtag(String hashtag, Pageable pageable) {
+    public SearchHits<TripSearchDoc> searchByField(String field, String keyword, boolean isPublic, Pageable pageable) {
 
-        Query query = new CriteriaQuery(Criteria.where("hashtag").contains(hashtag))
-                .setPageable(pageable);
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
+        searchQueryBuilder.withPageable(pageable);
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", isPublic));
+        boolQueryBuilder.must(QueryBuilders.matchQuery(field, keyword));
+        searchQueryBuilder.withQuery(boolQueryBuilder);
 
-        return elasticsearchOperations.search(query, TripSearchDoc.class);
+        return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
 
     @Override
-    public List<String> searchByAddress(String address) {
+    public List<TripDto.GetList> findRankList(List<Long> keys) {
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
+        searchQueryBuilder.withQuery(termsQuery("trip_id", keys));
 
-        Query query = new CriteriaQuery(Arrays.stream(address.split("\\s+"))
-                .map(part -> Criteria.where("address").contains(part))
-                .reduce(Criteria::and)
-                .orElseThrow(() -> new IllegalArgumentException("No address parts provided")));
-
-        return elasticsearchOperations.search(query, TripSearchDoc.class)
+        return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class)
                 .stream()
-                .limit(7)
-                .map(SearchHit::getContent)
-                .map(TripSearchDoc::getAddress)
+                .map(hit -> new TripDto.GetList(hit.getContent()))
                 .toList();
-    }
-
-    @Override
-    public SearchHits<TripSearchDoc> searchByEmail(Pageable pageable, String email) {
-        Query query = new CriteriaQuery(Criteria.where("email").contains(email))
-                .setPageable(pageable);
-
-        return elasticsearchOperations.search(query, TripSearchDoc.class);
     }
 }
