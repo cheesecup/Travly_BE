@@ -68,7 +68,8 @@ public class ElasticsearchLogService {
                 .gte(startTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
                 .lte(endTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()));
 
-        TermsAggregationBuilder aggregation = AggregationBuilders.terms("by_query").field("query."+field);
+        searchSourceBuilder.query(QueryBuilders.matchQuery("field", field));
+        TermsAggregationBuilder aggregation = AggregationBuilders.terms("by_query").field("query.keyword");
         searchSourceBuilder.aggregation(aggregation);
         searchRequest.source(searchSourceBuilder);
         try {

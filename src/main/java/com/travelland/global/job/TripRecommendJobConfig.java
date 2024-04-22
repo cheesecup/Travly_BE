@@ -75,14 +75,6 @@ public class TripRecommendJobConfig {
                 .reader(jdbcPagingItemReader())
                 .processor(itemProcessor())
                 .writer(this::writeChunkDataToRedis)
-//                .writer(chunkData -> {
-//                    for(DataSet data : chunkData){
-//                        if(data.getRecommendIds().isEmpty())
-//                            continue;
-//                        redisTemplate.delete(TRIP_RECOMMEND + data.getId());
-//                        redisTemplate.opsForList().rightPushAll(TRIP_RECOMMEND + data.getId(), data.getRecommendIds());
-//                    }
-//                })
                 .transactionManager(platformTransactionManager)
                 .taskExecutor(taskExecutor())
                 .listener(jobExecutionListener(taskExecutor()))
