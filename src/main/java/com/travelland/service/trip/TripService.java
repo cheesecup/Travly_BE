@@ -10,6 +10,7 @@ import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripHashtagRepository;
 import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,8 +34,6 @@ public class TripService {
     private final TripLikeService tripLikeService;
     private final TripScrapService tripScrapService;
     private final TripSearchService tripSearchService;
-
-
 
     @Transactional
     public TripDto.Id createTrip(TripDto.Create requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, String email) {
@@ -64,7 +63,7 @@ public class TripService {
             throw new CustomException(ErrorCode.POST_ACCESS_NOT_PERMISSION);
         }
 
-        List<String> hashtagList = tripHashtagRepository.findAllByTrip(trip).stream().map(TripHashtag::getTitle).toList();
+        List<String> hashtagList = getHashtags(trip).stream().map(TripHashtag::getTitle).toList();
         List<String> imageUrlList = tripImageService.getTripImageUrl(trip);
 
         boolean isLike = false;
@@ -79,11 +78,14 @@ public class TripService {
         isScrap = tripScrapService.statusTripScrap(tripId, email);
 
         //조회수 증가
-        Long result = redisTemplate.opsForSet().add(TRIP_VIEW_COUNT + tripId, email); //redis 조회수 증가
+        Long result = redisTemplate.opsForSet().add(TRIP_VIEW_COUNT + tripId, email);
 
         if (result != null && result == 1L) {
-            Long view = redisTemplate.opsForSet().size(TRIP_VIEW_COUNT + tripId); //redis 조회수 Get
-            redisTemplate.opsForZSet().add(VIEW_RANK, tripId.toString(), view);
+            trip.increaseViewCount();
+            Long view = redisTemplate.opsForSet().size(TRIP_VIEW_COUNT + tripId);
+
+            if(view != null)
+                redisTemplate.opsForZSet().add(VIEW_RANK, tripId.toString(), view);
         }
 
         return new TripDto.Get(trip, hashtagList, imageUrlList, isLike, isScrap);
@@ -145,6 +147,11 @@ public class TripService {
         return tripSearchService.getRankByViewCount(ranks.stream()
                 .map(Long::parseLong)
                 .toList());
+    }
+
+
+    private List<TripHashtag> getHashtags(Trip trip){
+        return tripHashtagRepository.findAllByTrip(trip);
     }
 
     private Member getMember(String email) {

@@ -182,7 +182,12 @@ public class TripController implements TripControllerDocs {
     //여행정보 해쉬태그 검색량 상위 TOP5
     @GetMapping("/trips/rank/hashtag")
     public ResponseEntity<List<String>> getRecentTopHashtag(){
-        return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRecentlyTopSearch());
+        return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRecentlyTopSearch("hashtag"));
+    }
+
+    @GetMapping("/trips/rank/area")
+    public ResponseEntity<List<String>> getRecentTopArea(){
+        return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRecentlyTopSearch("area"));
     }
 
     //여행정보 댓글 작성
