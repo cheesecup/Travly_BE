@@ -1,9 +1,12 @@
 package com.travelland.service.trip;
 
 import com.travelland.domain.trip.Trip;
+import com.travelland.domain.trip.TripHashtag;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.global.elasticsearch.ElasticsearchLogService;
+import com.travelland.repository.trip.TripHashtagRepository;
+import com.travelland.repository.trip.TripRepository;
 import com.travelland.repository.trip.TripSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +27,9 @@ import static com.travelland.constant.Constants.SEARCH_RANK_FIELD;
 public class TripSearchService {
     private final TripSearchRepository tripSearchRepository;
     private final ElasticsearchLogService elasticsearchLogService;
+    private final TripRepository tripRepository;
+    private final TripHashtagRepository tripHashtagRepository;
+    private final TripImageService tripImageService;
 
     public void createTripDocument(Trip trip, List<String> hashtag, String email, String thumbnailUrl){
         tripSearchRepository.save(new TripSearchDoc(trip, hashtag, email, thumbnailUrl));
@@ -84,6 +90,15 @@ public class TripSearchService {
     public List<TripDto.GetList> getRandomTrip(){
         return tripSearchRepository.getRandomList(8);
     }
+
+    public void syncDBtoES() {
+        for(Trip trip : tripRepository.findAll()){
+         tripSearchRepository.save(new TripSearchDoc(trip,tripHashtagRepository.findAllByTrip(trip).stream().map(TripHashtag::getTitle).toList(),trip.getMember().getEmail(),
+                 tripImageService.getTripThumbnailUrl(trip)
+         ));
+        }
+    }
+
 
     private TripDto.SearchResult searchMapper(String field, String keyword, SearchHits<TripSearchDoc> result){
         if (result.getTotalHits() == 0)
