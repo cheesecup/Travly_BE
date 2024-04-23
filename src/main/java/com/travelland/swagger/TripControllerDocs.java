@@ -121,4 +121,6 @@ public interface TripControllerDocs {
     @Operation(summary = "여행정보 무작위 조회", description = "여행 후기 전체 글 중 무작위 8개 선정")
     ResponseEntity getTripListRandom8();
 
+    @Operation(summary = "ES DB 동기화 사용금지", description = "사용금지")
+    ResponseEntity syncDBtoES();
 }

@@ -241,4 +241,10 @@ public class TripController implements TripControllerDocs {
     public ResponseEntity<List<TripDto.GetList>> getTripListRandom8(){
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRandomTrip());
     }
+
+    @GetMapping("/trips/sync/es")
+    public ResponseEntity<Boolean> syncDBtoES(){
+        tripSearchService.syncDBtoES();
+        return ResponseEntity.status(HttpStatus.OK).body(true);
+    }
 }
