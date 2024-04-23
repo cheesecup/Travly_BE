@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -207,6 +208,7 @@ public class TripDto {
         private final Long tripId;
         private final String title;
         private final String area;
+        private final String thumbnailUrl;
         private final String content;
         private final String placeName;
         private final LocalDate tripStartDate;
@@ -217,6 +219,7 @@ public class TripDto {
             this.id = tripSearchDoc.getId();
             this.tripId = tripSearchDoc.getTripId();
             this.area = tripSearchDoc.getArea();
+            this.thumbnailUrl = tripSearchDoc.getThumbnailUrl();
             this.title = tripSearchDoc.getTitle();
             this.content = tripSearchDoc.getContent();
             this.placeName = tripSearchDoc.getPlaceName();
@@ -234,6 +237,7 @@ public class TripDto {
         private final String area;
         private final String content;
         private final String placeName;
+        private final String thumbnailUrl;
         private final LocalDate tripStartDate;
         private final LocalDate tripEndDate;
         private final List<String> hashtagList;
@@ -243,6 +247,7 @@ public class TripDto {
             this.tripId = tripSearchDoc.getTripId();
             this.area = tripSearchDoc.getArea();
             this.title = tripSearchDoc.getTitle();
+            this.thumbnailUrl = tripSearchDoc.getThumbnailUrl();
             this.content = tripSearchDoc.getContent().substring(0,15);
             this.placeName = tripSearchDoc.getPlaceName();
             this.tripStartDate = tripSearchDoc.getTripStartDate();
