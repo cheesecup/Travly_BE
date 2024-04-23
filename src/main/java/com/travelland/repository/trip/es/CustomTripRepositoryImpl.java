@@ -3,8 +3,13 @@ package com.travelland.repository.trip.es;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
 import lombok.RequiredArgsConstructor;
+import org.elasticsearch.common.lucene.search.function.CombineFunction;
+import org.elasticsearch.common.lucene.search.function.FunctionScoreQuery;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -66,13 +71,32 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
     }
 
     @Override
-    public List<TripDto.GetList> findRankList(List<Long> keys) {
+    public List<TripDto.Top10> findRankList(List<Long> keys) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
         searchQueryBuilder.withQuery(termsQuery("trip_id", keys));
 
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class)
                 .stream()
-                .map(hit -> new TripDto.GetList(hit.getContent()))
+                .map(hit -> new TripDto.Top10(hit.getContent()))
                 .toList();
+    }
+
+    @Override
+    public List<TripDto.GetList> getRandomList(int size) {
+        FunctionScoreQueryBuilder functionScoreQueryBuilder = QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(),ScoreFunctionBuilders.randomFunction())
+                .boostMode(CombineFunction.REPLACE)
+                .scoreMode(FunctionScoreQuery.ScoreMode.AVG);
+
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
+        searchQueryBuilder.withPageable(PageRequest.of(0, size));
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.must(functionScoreQueryBuilder);
+        boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", true));
+        searchQueryBuilder.withQuery(boolQueryBuilder);
+
+        return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class)
+                .stream()
+                .map(hit -> new TripDto.GetList(hit.getContent())
+                ).toList();
     }
 }

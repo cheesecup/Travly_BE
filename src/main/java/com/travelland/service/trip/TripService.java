@@ -137,7 +137,7 @@ public class TripService {
         redisTemplate.opsForValue().decrement(TRIP_TOTAL_ELEMENTS);
     }
 
-    public List<TripDto.GetList> getRankByViewCount(long size){
+    public List<TripDto.Top10> getRankByViewCount(long size){
         Set<String> ranks = redisTemplate.opsForZSet()
                 .reverseRange(VIEW_RANK,0L,size-1L);
 
@@ -148,7 +148,6 @@ public class TripService {
                 .map(Long::parseLong)
                 .toList());
     }
-
 
     private List<TripHashtag> getHashtags(Trip trip){
         return tripHashtagRepository.findAllByTrip(trip);

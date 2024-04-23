@@ -233,10 +233,12 @@ public class TripController implements TripControllerDocs {
 
     //여행정보 조회수 TOP 10 목록 조회
     @GetMapping("/trips/rank")
-    public ResponseEntity<List<TripDto.GetList>> getTripListTop10() {
+    public ResponseEntity<List<TripDto.Top10>> getTripListTop10() {
         return ResponseEntity.status(HttpStatus.OK).body(tripService.getRankByViewCount(10L));
     }
 
-    //지역 카테고리별 목록 조회
-
+    @GetMapping("/trips/random")
+    public ResponseEntity<List<TripDto.GetList>> getTripListRandom8(){
+        return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRandomTrip());
+    }
 }

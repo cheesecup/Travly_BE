@@ -57,7 +57,7 @@ public class TripSearchService {
                 .map(TripDto.GetList::new).getContent();
     }
 
-    public List<TripDto.GetList> getRankByViewCount(List<Long> keys){
+    public List<TripDto.Top10> getRankByViewCount(List<Long> keys){
         return tripSearchRepository.findRankList(keys);
     }
 
@@ -79,6 +79,10 @@ public class TripSearchService {
                 Sort.by(Sort.Direction.DESC, "createdAt")), email)
                 .map(TripDto.GetList::new)
                 .getContent();
+    }
+
+    public List<TripDto.GetList> getRandomTrip(){
+        return tripSearchRepository.getRandomList(8);
     }
 
     private TripDto.SearchResult searchMapper(String field, String keyword, SearchHits<TripSearchDoc> result){
