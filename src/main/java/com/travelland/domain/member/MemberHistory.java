@@ -6,8 +6,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -18,6 +16,8 @@ public class MemberHistory {
 
     @Column(length = 30)
     private String email;
+
+    private String password;
 
     @Column(length = 15)
     private String nickname;
@@ -30,6 +30,7 @@ public class MemberHistory {
 
     public MemberHistory(Member member) {
         this.email = member.getEmail();
+        this.password = member.getPassword();
         this.nickname = member.getNickname();
         this.role = member.getRole();
         this.profileImage = member.getProfileImage();

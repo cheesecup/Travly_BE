@@ -20,6 +20,8 @@ public class Member {
     @Column(length = 30)
     private String email;
 
+    private String password;
+
     @Column(length = 15)
     private String nickname;
 
@@ -30,8 +32,9 @@ public class Member {
     private String profileImage;
 
     @Builder
-    public Member(String email, String nickname, Role role, String profileImage) {
+    public Member(String email, String password, String nickname, Role role, String profileImage) {
         this.email = email;
+        this.password = password;
         this.nickname = nickname;
         this.role = role;
         this.profileImage = profileImage;
