@@ -75,7 +75,7 @@ public class TripSearchDoc {
         this.hashtag = hashtag;
         this.tripStartDate = trip.getTripStartDate();
         this.tripEndDate = trip.getTripEndDate();
-        this.content = makeShortContent(trip.getContent(),150);
+        this.content = makeShortContent(trip.getContent(),200);
         this.createdAt = LocalDateTime.now();
         this.address = trip.getAddress();
         this.thumbnailUrl = thumbnailUrl;
