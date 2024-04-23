@@ -20,5 +20,7 @@ public interface PlanVoteRepository extends JpaRepository<PlanVote, Long> {
 
     Page<PlanVote> findAllByIsDeleted(Pageable pageable, boolean isDeleted);
 
+    Page<PlanVote> findAllByIsDeletedAndMemberId(Pageable pageable, boolean isDeleted, Long memberId);
+
     List<PlanVote> findAllByPlanAOrPlanB(Plan planA, Plan planB);
 }
