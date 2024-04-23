@@ -70,7 +70,7 @@ public class TripService {
         boolean isScrap = false;
 
         if(email.isEmpty())
-            return new TripDto.Get(trip, hashtagList, imageUrlList, isLike, isScrap);
+            return new TripDto.Get(trip, trip.getMember(), hashtagList, imageUrlList, isLike, isScrap);
 
         //로그인한 경우
         //스크랩/좋아요 여부 확인
@@ -88,7 +88,7 @@ public class TripService {
                 redisTemplate.opsForZSet().add(VIEW_RANK, tripId.toString(), view);
         }
 
-        return new TripDto.Get(trip, hashtagList, imageUrlList, isLike, isScrap);
+        return new TripDto.Get(trip, trip.getMember(), hashtagList, imageUrlList, isLike, isScrap);
     }
 
     @Transactional

@@ -8,12 +8,15 @@ import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.*;
+import io.lettuce.core.GeoArgs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -147,16 +150,29 @@ public class PlanService {
                     .build());
         }
 
-        // 접속유저가 안 본 글만 조회수 증가
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Member member = userDetails.getMember();
-        String email = member.getEmail();
-//        String email = "test@test.com";
-        Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT + planId,email);
-        if(result != null && result == 1L)
-            plan.increaseViewCount(); // 조회수 증가
+        // 접속유저가 안 본 글만 조회수 증가, 비로그인 유저는 null이라서 조회수 증가 안됨
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            Member member = userDetails.getMember();
+            if (member != null) {
+                String email = member.getEmail();
 
+                // Redis를 사용하여 이메일이 저장되어 있는지 확인 후, 없는 경우에만 조회수 증가
+                Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT + planId, email);
+                if (result != null && result == 1L) {
+                    plan.increaseViewCount(); // 조회수 증가
+                }
+            }
+        } else { // 비로그인 유저의 조회수 증가
+            plan.increaseViewCount(); // 조회수 증가
+        }
+
+        // Plan에 담을 PlanVote 준비중
         List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAOrPlanB(plan, plan);
+        for (PlanVote planVote : planVoteList) {
+            planVote.checkTimeOut(); // 투표기간이 종료됐는지 체크
+        }
         List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
 
         // Plan에 DayPlan과 PlanVote 담는중
@@ -752,6 +768,47 @@ public class PlanService {
         planComment.delete();
 
         return new PlanCommentDto.Delete(planComment.getIsDeleted());
+    }
+
+
+
+
+
+
+
+
+
+
+    // Plan->Trip 데이터 변환
+    public PlanToTripDto transferPlanToTrip(Long planId) {
+        StringBuilder contentBuilder = new StringBuilder();
+        Plan plan = planRepository.findByIdAndIsDeletedAndIsPublic(planId, false, true).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
+        for (DayPlan dayPlan : dayPlanList) {
+            contentBuilder.append(dayPlan.getDate());
+            contentBuilder.append("\n");
+            List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanIdAndIsDeleted(dayPlan.getId(), false);
+            for (UnitPlan unitPlan : unitPlanList) {
+                contentBuilder.append(unitPlan.getTime());
+                contentBuilder.append("\n");
+                contentBuilder.append(unitPlan.getAddress());
+//                contentBuilder.append(" ");
+//                String placeName = unitPlan.getPlaceName();
+//                if (placeName == null) placeName = "건물명 필요";
+//                contentBuilder.append(placeName);
+                contentBuilder.append("\n");
+                contentBuilder.append("비용:");
+                contentBuilder.append(unitPlan.getBudget());
+                contentBuilder.append("\n");
+                contentBuilder.append(unitPlan.getTitle());
+                contentBuilder.append("\n");
+                contentBuilder.append(unitPlan.getContent());
+                contentBuilder.append("\n");
+                contentBuilder.append("\n");
+            }
+        }
+        String content = contentBuilder.toString();
+        return new PlanToTripDto(plan, content);
     }
 
 

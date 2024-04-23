@@ -217,6 +217,18 @@ public interface PlanControllerDocs {
 
 
 
+    @Operation(summary = "Plan->Trip 데이터 변환", description = " ")
+    ResponseEntity transferPlanToTrip(@PathVariable Long planId);
+
+
+
+
+
+
+
+
+
+
     @Operation(summary = "(성찬전용) HTTPS 기능", description = "HTTPS 수신상태가 양호함을 AWS 와 통신하는 API")
     String healthcheck();
 }

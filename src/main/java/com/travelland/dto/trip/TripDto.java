@@ -1,6 +1,7 @@
 package com.travelland.dto.trip;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.domain.trip.TripLike;
 import com.travelland.esdoc.TripSearchDoc;
@@ -83,7 +84,10 @@ public class TripDto {
         private Boolean isLike;
         private Boolean isScrap;
 
-        public Get(Trip trip, List<String> hashtagList, List<String> imageUrlList, boolean isLike, boolean isScrap) {
+        private String nickname;
+        private String profileImage;
+
+        public Get(Trip trip, Member member, List<String> hashtagList, List<String> imageUrlList, boolean isLike, boolean isScrap) {
             this.tripId = trip.getId();
             this.title = trip.getTitle();
             this.content = trip.getContent();
@@ -95,6 +99,8 @@ public class TripDto {
             this.imageUrlList = imageUrlList;
             this.isLike = isLike;
             this.isScrap = isScrap;
+            this.nickname = member.getNickname();
+            this.profileImage = member.getProfileImage();
         }
     }
 

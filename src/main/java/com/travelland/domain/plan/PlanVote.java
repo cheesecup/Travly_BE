@@ -23,7 +23,7 @@ public class PlanVote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 30)
+    @Column(length = 100)
     private String planVoteTitle;
 
     @CreatedDate
