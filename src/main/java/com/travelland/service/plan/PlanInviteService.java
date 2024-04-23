@@ -6,7 +6,7 @@ import com.travelland.domain.plan.PlanInvite;
 import com.travelland.dto.plan.PlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.global.notify.DoEvent;
+import com.travelland.global.notification.DoEvent;
 import com.travelland.repository.plan.PlanInviteRepository;
 import com.travelland.repository.plan.PlanRepository;
 import lombok.RequiredArgsConstructor;

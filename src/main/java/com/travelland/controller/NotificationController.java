@@ -1,7 +1,7 @@
 package com.travelland.controller;
 
 import com.travelland.global.security.UserDetailsImpl;
-import com.travelland.service.NotificationService;
+import com.travelland.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

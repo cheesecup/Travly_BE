@@ -1,4 +1,4 @@
-package com.travelland.service;
+package com.travelland.service.notification;
 
 import com.travelland.constant.NotificationType;
 import com.travelland.domain.Notification;

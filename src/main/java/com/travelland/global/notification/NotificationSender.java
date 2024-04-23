@@ -1,4 +1,4 @@
-package com.travelland.global.notify;
+package com.travelland.global.notification;
 
 import com.travelland.constant.NotificationType;
 import com.travelland.domain.member.Member;
@@ -7,14 +7,12 @@ import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.PlanRepository;
-import com.travelland.service.NotificationService;
+import com.travelland.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
-
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -69,7 +67,7 @@ public class NotificationSender {
         String content = "에 투표할 수 있습니다.";
         String url = BASE_FRONT_URL + "/planDetail/" + event.getPlanId();
 
-        Member receiver = memberRepository.findByNickname(event.getInvitee()).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+        Member receiver = memberRepository.findByEmail(event.getInvitee()).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
         notificationService.send(receiver, title, content, url, NotificationType.VOTE);
     }
 }
