@@ -94,7 +94,7 @@ public class PlanDto {
             this.tripStartDate = plan.getTripStartDate();
             this.tripEndDate = plan.getTripEndDate();
             this.viewCount = plan.getViewCount();
-            this.likeCount = plan.getViewCount();
+            this.likeCount = plan.getLikeCount();
             this.isVotable = plan.getIsVotable();
             this.createdAt = plan.getCreatedAt();
             this.memberNickname = plan.getMember().getNickname();

@@ -26,6 +26,7 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
         searchQueryBuilder.withPageable(pageable);
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.minimumShouldMatch(1);
         Arrays.stream(text.split("\\s+"))
                 .forEach(word -> {
                     boolQueryBuilder.should(QueryBuilders.matchQuery("title", word));
@@ -33,7 +34,7 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
                     boolQueryBuilder.should(QueryBuilders.matchQuery("area", word));
                     boolQueryBuilder.should(QueryBuilders.matchQuery("hashtag", word));
                 });
-        boolQueryBuilder.must(QueryBuilders.matchQuery("isPublic", true));
+        boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", true));
         searchQueryBuilder.withQuery(boolQueryBuilder);
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
@@ -45,7 +46,7 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         Arrays.stream(title.split("\\s+"))
                 .forEach(word -> boolQueryBuilder.must(QueryBuilders.matchQuery("title", word)));
-        boolQueryBuilder.must(QueryBuilders.matchQuery("isPublic", true));
+        boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", true));
         searchQueryBuilder.withQuery(boolQueryBuilder);
 
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);

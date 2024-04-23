@@ -27,7 +27,7 @@ public class Trip {
     @Column(length = 100)
     private String title;
 
-    @Column(length = 1000)
+    @Column(length = 2000)
     private String content;
 
     private int cost;

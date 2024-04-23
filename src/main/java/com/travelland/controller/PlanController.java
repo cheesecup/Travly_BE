@@ -1,6 +1,7 @@
 package com.travelland.controller;
 
 import com.travelland.dto.plan.PlanDto;
+import com.travelland.dto.plan.PlanToTripDto;
 import com.travelland.dto.plan.PlanVoteDto;
 import com.travelland.dto.plan.VotePaperDto;
 import com.travelland.global.security.UserDetailsImpl;
@@ -383,6 +384,21 @@ public class PlanController implements PlanControllerDocs {
                                                                   @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(planScrapService.getPlanScrapList(page, size));
+    }
+
+
+
+
+
+
+
+
+
+
+    // Plan->Trip 데이터 변환
+    @GetMapping("/planToTrip/{planId}")
+    public ResponseEntity<PlanToTripDto> transferPlanToTrip(@PathVariable Long planId) {
+        return ResponseEntity.status(HttpStatus.OK).body(planService.transferPlanToTrip(planId));
     }
 
 
