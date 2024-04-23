@@ -227,6 +227,31 @@ public class TripDto {
     }
 
     @Getter
+    public static class Top10 {
+        private final String id;
+        private final Long tripId;
+        private final String title;
+        private final String area;
+        private final String content;
+        private final String placeName;
+        private final LocalDate tripStartDate;
+        private final LocalDate tripEndDate;
+        private final List<String> hashtagList;
+
+        public Top10(TripSearchDoc tripSearchDoc) {
+            this.id = tripSearchDoc.getId();
+            this.tripId = tripSearchDoc.getTripId();
+            this.area = tripSearchDoc.getArea();
+            this.title = tripSearchDoc.getTitle();
+            this.content = tripSearchDoc.getContent().substring(0,15);
+            this.placeName = tripSearchDoc.getPlaceName();
+            this.tripStartDate = tripSearchDoc.getTripStartDate();
+            this.tripEndDate = tripSearchDoc.getTripEndDate();
+            this.hashtagList = tripSearchDoc.getHashtag();
+        }
+    }
+
+    @Getter
     @Builder
     public static class SearchResult {
         private final List<Search> searches;
