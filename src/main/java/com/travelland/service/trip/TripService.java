@@ -146,7 +146,7 @@ public class TripService {
                 .toList());
 
         if(result.size()>=10)
-            return result.subList(0,9);
+            return result.subList(0,10);
 
         return result;
     }

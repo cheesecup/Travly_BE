@@ -33,8 +33,8 @@ public class JwtUtil {
     // Token 식별자
     public static final String BEARER_PREFIX = "Bearer ";
 
-    // 토큰 만료시간 // 1시간
-    private final long TOKEN_TIME = 60 * 60 * 1000L;
+    // 토큰 만료시간 // 1시간 // 15일
+    private final long TOKEN_TIME = 60 * 60 * 24 * 15 * 1000L;
     // 리프레시 토큰 만료시간 // 3일
     private final long REFRESH_TOKEN_TIME = 60 * 60 * 24 * 3 * 1000L;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
