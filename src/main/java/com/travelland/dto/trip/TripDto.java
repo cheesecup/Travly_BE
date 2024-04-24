@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -207,6 +208,7 @@ public class TripDto {
         private final Long tripId;
         private final String title;
         private final String area;
+        private final String thumbnailUrl;
         private final String content;
         private final String placeName;
         private final LocalDate tripStartDate;
@@ -217,12 +219,43 @@ public class TripDto {
             this.id = tripSearchDoc.getId();
             this.tripId = tripSearchDoc.getTripId();
             this.area = tripSearchDoc.getArea();
+            this.thumbnailUrl = tripSearchDoc.getThumbnailUrl();
             this.title = tripSearchDoc.getTitle();
             this.content = tripSearchDoc.getContent();
             this.placeName = tripSearchDoc.getPlaceName();
             this.tripStartDate = tripSearchDoc.getTripStartDate();
             this.tripEndDate = tripSearchDoc.getTripEndDate();
             this.hashtagList = tripSearchDoc.getHashtag();
+        }
+    }
+
+    @Getter
+    public static class Top10 {
+        private final String id;
+        private final Long tripId;
+        private final String title;
+        private final String area;
+        private final String content;
+        private final String placeName;
+        private final String thumbnailUrl;
+        private final LocalDate tripStartDate;
+        private final LocalDate tripEndDate;
+        private final List<String> hashtagList;
+
+        public Top10(TripSearchDoc tripSearchDoc) {
+            this.id = tripSearchDoc.getId();
+            this.tripId = tripSearchDoc.getTripId();
+            this.area = tripSearchDoc.getArea();
+            this.title = tripSearchDoc.getTitle();
+            this.thumbnailUrl = tripSearchDoc.getThumbnailUrl();
+            this.content = subContent(tripSearchDoc.getContent());
+            this.placeName = tripSearchDoc.getPlaceName();
+            this.tripStartDate = tripSearchDoc.getTripStartDate();
+            this.tripEndDate = tripSearchDoc.getTripEndDate();
+            this.hashtagList = tripSearchDoc.getHashtag();
+        }
+        private String subContent(String origin){
+            return origin.length() < 16 ? origin : origin.substring(0,15);
         }
     }
 

@@ -121,6 +121,12 @@ public interface PlanControllerDocs {
                                     @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                                     @RequestParam(required = false, defaultValue = "false") boolean isAsc);
 
+    @Operation(summary = "(마이페이지용) PlanVote(투표장) 전체/목록 조회", description = "page는 1부터")
+    ResponseEntity readPlanVoteListForMember(@RequestParam(defaultValue = "1") int page,
+                                             @RequestParam(defaultValue = "20") int size,
+                                             @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                             @RequestParam(required = false, defaultValue = "false") boolean isAsc);
+
     @Operation(summary = "PlanVote(투표장) 수정", description = " ")
     ResponseEntity updatePlanVote(@PathVariable Long voteId, @Validated(PlanValidationSequence.class) @RequestBody PlanVoteDto.Update request);
 

@@ -49,7 +49,7 @@ public class TripService {
 
 //        redisTemplate.opsForValue().increment(TRIP_TOTAL_ELEMENTS);
 
-        tripSearchService.createTripDocument(trip, requestDto.getHashTag(), email, thumbnailUrl); //ES 저장
+        tripSearchService.createTripDocument(trip, requestDto.getHashTag(), thumbnailUrl); //ES 저장
 
         return new TripDto.Id(trip.getId());
     }
@@ -137,18 +137,25 @@ public class TripService {
         redisTemplate.opsForValue().decrement(TRIP_TOTAL_ELEMENTS);
     }
 
-    public List<TripDto.GetList> getRankByViewCount(long size){
+    public List<TripDto.Top10> getRankByViewCount(long size){
         Set<String> ranks = redisTemplate.opsForZSet()
                 .reverseRange(VIEW_RANK,0L,size-1L);
 
         if (ranks == null)
             return new ArrayList<>();
-
+        System.out.println("Rank -------------------------");
+        System.out.println();
+        System.out.println(
+        ranks.stream()
+                .map(Long::parseLong)
+                .toList());
+        System.out.println();
+        System.out.println();
+        System.out.println();
         return tripSearchService.getRankByViewCount(ranks.stream()
                 .map(Long::parseLong)
                 .toList());
     }
-
 
     private List<TripHashtag> getHashtags(Trip trip){
         return tripHashtagRepository.findAllByTrip(trip);

@@ -104,12 +104,6 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(planService.updatePlanAllInOne(planId, request));
     }
 
-    // Plan 삭제
-    @DeleteMapping("/plans/{planId}")
-    public ResponseEntity<PlanDto.Delete> deletePlan(@PathVariable Long planId) {
-        return ResponseEntity.status(HttpStatus.OK).body(planService.deletePlanAllInOne(planId));
-    }
-
     // Plan 올인원한방 삭제: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     @DeleteMapping("/plans/allInOn/{planId}")
     public ResponseEntity<PlanDto.Delete> deletePlanAllInOne(@PathVariable Long planId) {
@@ -226,6 +220,16 @@ public class PlanController implements PlanControllerDocs {
                                                                   @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                                                                   @RequestParam(required = false, defaultValue = "false") boolean isAsc) {
         Page<PlanVoteDto.Get> response = planService.readPlanVoteList(page, size, sortBy, isAsc);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    // PlanVote 유저별 전체목록 조회
+    @GetMapping("/users/votes")
+    public ResponseEntity<Page<PlanVoteDto.Get>> readPlanVoteListForMember(@RequestParam(defaultValue = "1") int page,
+                                                                           @RequestParam(defaultValue = "10") int size,
+                                                                           @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
+                                                                           @RequestParam(required = false, defaultValue = "false") boolean isAsc) {
+        Page<PlanVoteDto.Get> response = planService.readPlanVoteListForMember(page, size, sortBy, isAsc);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

@@ -515,6 +515,26 @@ public class PlanService {
         return planVotes.map(PlanVoteDto.Get::new);
     }
 
+    // PlanVote 유저별 전체목록 조회
+    public Page<PlanVoteDto.Get> readPlanVoteListForMember(int page, int size, String sortBy, boolean isAsc) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Member member = userDetails.getMember();
+
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page-1, size, sort);
+
+        // 투표기간이 종료됐는지 체크
+        List<PlanVote> notCloseds = planVoteRepository.findAllByIsDeletedAndIsClosed(false, false);
+        for (PlanVote notClosed : notCloseds) {
+            notClosed.checkTimeOut();
+        }
+
+        Page<PlanVote> planVotes = planVoteRepository.findAllByIsDeletedAndMemberId(pageable, false, member.getId());
+
+        return planVotes.map(PlanVoteDto.Get::new);
+    }
+
     // PlanVote 수정
     public PlanVoteDto.Id updatePlanVote(Long planVoteId, PlanVoteDto.Update request) {
 //        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

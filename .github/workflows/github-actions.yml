@@ -7,7 +7,16 @@ on: # 발동조건
 #  push:
 #    branches: [ master, main, origin, dev, features/* ]
 
+
+
+
+
 jobs: # 실제 어떤 작업을 실행할지에 대한 명시
+
+
+
+
+
   deploy-to-server1: # 예약어x, 임의의 사용자지정명칭
     if: github.event.pull_request.merged == true # pull-request 동의완료일때만으로 제한
     runs-on: [ ubuntu-latest ] # 스크립트 실행 환경 (OS), 배열로 선언시 개수 만큼 반복해서 실행

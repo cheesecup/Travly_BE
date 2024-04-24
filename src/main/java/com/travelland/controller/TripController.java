@@ -176,7 +176,7 @@ public class TripController implements TripControllerDocs {
                                                                     @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                                                                     @RequestParam(required = false, defaultValue = "false") Boolean isAsc) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(tripSearchService.searchTripByField("area", area, page, size, sortBy, isAsc));
+                .body(tripSearchService.searchTripByArea(area, page, size, sortBy, isAsc));
     }
 
     //여행정보 해쉬태그 검색량 상위 TOP5
@@ -233,10 +233,18 @@ public class TripController implements TripControllerDocs {
 
     //여행정보 조회수 TOP 10 목록 조회
     @GetMapping("/trips/rank")
-    public ResponseEntity<List<TripDto.GetList>> getTripListTop10() {
+    public ResponseEntity<List<TripDto.Top10>> getTripListTop10() {
         return ResponseEntity.status(HttpStatus.OK).body(tripService.getRankByViewCount(10L));
     }
 
-    //지역 카테고리별 목록 조회
+    @GetMapping("/trips/random")
+    public ResponseEntity<List<TripDto.GetList>> getTripListRandom8(){
+        return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRandomTrip());
+    }
 
+    @GetMapping("/trips/sync/es")
+    public ResponseEntity<Boolean> syncDBtoES(){
+        tripSearchService.syncDBtoES();
+        return ResponseEntity.status(HttpStatus.OK).body(true);
+    }
 }

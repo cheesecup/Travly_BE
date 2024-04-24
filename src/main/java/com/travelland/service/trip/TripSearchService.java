@@ -1,13 +1,18 @@
 package com.travelland.service.trip;
 
 import com.travelland.domain.trip.Trip;
+import com.travelland.domain.trip.TripArea;
+import com.travelland.domain.trip.TripHashtag;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.global.elasticsearch.ElasticsearchLogService;
+import com.travelland.repository.trip.TripHashtagRepository;
+import com.travelland.repository.trip.TripRepository;
 import com.travelland.repository.trip.TripSearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -16,17 +21,19 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.travelland.constant.Constants.SEARCH_RANK_FIELD;
-
 @Slf4j(topic = "ES")
 @Service
 @RequiredArgsConstructor
 public class TripSearchService {
     private final TripSearchRepository tripSearchRepository;
     private final ElasticsearchLogService elasticsearchLogService;
+    private final TripRepository tripRepository;
+    private final TripHashtagRepository tripHashtagRepository;
+    private final TripImageService tripImageService;
+    private final TripArea tripArea;
 
-    public void createTripDocument(Trip trip, List<String> hashtag, String email, String thumbnailUrl){
-        tripSearchRepository.save(new TripSearchDoc(trip, hashtag, email, thumbnailUrl));
+    public void createTripDocument(Trip trip, List<String> hashtag , String thumbnailUrl){
+        tripSearchRepository.save(new TripSearchDoc(trip, hashtag, thumbnailUrl));
     }
 
     public TripDto.SearchResult searchTrip(String text, int page, int size, String sortBy, boolean isAsc) {
@@ -50,6 +57,18 @@ public class TripSearchService {
         return searchMapper(field, value, result);
     }
 
+    public TripDto.SearchResult searchTripByArea(String area, int page, int size, String sortBy, boolean isAsc) {
+        Pageable pageable = PageRequest.of(page-1, size,
+                Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy));
+
+        if(area.equals("전체"))
+            return searchMapper("areaAll", area, tripSearchRepository.searchAllArea(true,pageable));
+
+        List<String> adaptedArea = tripArea.getMappingArea(area);
+        SearchHits<TripSearchDoc> result = tripSearchRepository.searchByArea(adaptedArea,true,pageable);
+        return searchMapper("areaTab", area, result);
+    }
+
     public List<TripDto.GetList> getTripList(int page, int size, String sortBy, boolean isAsc){
         return  tripSearchRepository.findAllByIsPublic(
                 PageRequest.of(page-1, size,
@@ -57,7 +76,7 @@ public class TripSearchService {
                 .map(TripDto.GetList::new).getContent();
     }
 
-    public List<TripDto.GetList> getRankByViewCount(List<Long> keys){
+    public List<TripDto.Top10> getRankByViewCount(List<Long> keys){
         return tripSearchRepository.findRankList(keys);
     }
 
@@ -79,6 +98,17 @@ public class TripSearchService {
                 Sort.by(Sort.Direction.DESC, "createdAt")), email)
                 .map(TripDto.GetList::new)
                 .getContent();
+    }
+
+    public List<TripDto.GetList> getRandomTrip(){
+        return tripSearchRepository.getRandomList(8);
+    }
+
+    public void syncDBtoES() {
+        for(Trip trip : tripRepository.findAll()){
+         tripSearchRepository.save(new TripSearchDoc(trip,tripHashtagRepository.findAllByTrip(trip).stream().map(TripHashtag::getTitle).toList(), tripImageService.getTripThumbnailUrl(trip)
+         ));
+        }
     }
 
     private TripDto.SearchResult searchMapper(String field, String keyword, SearchHits<TripSearchDoc> result){
