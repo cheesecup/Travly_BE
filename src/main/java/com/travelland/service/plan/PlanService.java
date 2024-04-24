@@ -167,7 +167,7 @@ public class PlanService {
                     plan.increaseViewCount(); // 조회수 증가
                 }
             }
-        } else if (authentication == null) { // 비로그인 유저의 조회수 증가
+        } else { // 비로그인 유저의 조회수 증가
             plan.increaseViewCount(); // 조회수 증가
         }
 
