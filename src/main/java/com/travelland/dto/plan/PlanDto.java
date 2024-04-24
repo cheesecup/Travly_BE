@@ -121,9 +121,10 @@ public class PlanDto {
         private List<PlanVoteDto.GetAllInOne> planVotes;
         private final Boolean isLike;
         private final Boolean isScrap;
+        private final Boolean isWriter;
 
         @Builder
-        public GetAllInOne(Plan plan, List<DayPlanDto.GetAllInOne> dayPlans, List<PlanVoteDto.GetAllInOne> planVotes, Boolean isLike, Boolean isScrap) {
+        public GetAllInOne(Plan plan, List<DayPlanDto.GetAllInOne> dayPlans, List<PlanVoteDto.GetAllInOne> planVotes, Boolean isLike, Boolean isScrap, Boolean isWriter) {
             this.planId = plan.getId();
             this.title = plan.getTitle();
 //            this.content = plan.getContent();
@@ -142,6 +143,7 @@ public class PlanDto {
             this.planVotes = planVotes;
             this.isLike = isLike;
             this.isScrap = isScrap;
+            this.isWriter = isWriter;
         }
     }
 
