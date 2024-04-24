@@ -7,12 +7,14 @@ import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.trip.TripImageRepository;
 import com.travelland.global.s3.S3FileService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TripImageService {
@@ -24,9 +26,9 @@ public class TripImageService {
     @Transactional
     public String createTripImage(MultipartFile thumbnail, List<MultipartFile> imageList, Trip trip) {
         TripImage tripImage = tripImageRepository.save(new TripImage(s3FileService.saveResizeImage(thumbnail), true, trip)); //리사이즈된 썸네일 이미지 저장
+        tripImageRepository.save(new TripImage(s3FileService.saveOriginalImage(thumbnail), false, trip)); //리사이즈된 썸네일 이미지 저장
 
-        if (imageList != null) {
-            imageList.add(0, thumbnail);
+        if (imageList != null && !imageList.isEmpty()) {
             imageList.stream()
                     .map(image -> new TripImage(s3FileService.saveOriginalImage(image), false, trip))
                     .forEach(tripImageRepository::save);
