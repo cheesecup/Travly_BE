@@ -10,7 +10,6 @@ import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripHashtagRepository;
 import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,8 +45,6 @@ public class TripService {
         String thumbnailUrl = "";
         if (!thumbnail.isEmpty()) //여행정보 이미지 정보 저장
             thumbnailUrl = tripImageService.createTripImage(thumbnail, imageList, trip);
-
-//        redisTemplate.opsForValue().increment(TRIP_TOTAL_ELEMENTS);
 
         tripSearchService.createTripDocument(trip, requestDto.getHashTag(), thumbnailUrl); //ES 저장
 
@@ -139,22 +136,19 @@ public class TripService {
 
     public List<TripDto.Top10> getRankByViewCount(long size){
         Set<String> ranks = redisTemplate.opsForZSet()
-                .reverseRange(VIEW_RANK,0L,size-1L);
+                .reverseRange(VIEW_RANK,0L,size+5L);
 
         if (ranks == null)
             return new ArrayList<>();
-        System.out.println("Rank -------------------------");
-        System.out.println();
-        System.out.println(
-        ranks.stream()
+
+        List<TripDto.Top10> result =  tripSearchService.getRankByViewCount(ranks.stream()
                 .map(Long::parseLong)
                 .toList());
-        System.out.println();
-        System.out.println();
-        System.out.println();
-        return tripSearchService.getRankByViewCount(ranks.stream()
-                .map(Long::parseLong)
-                .toList());
+
+        if(result.size()>=10)
+            return result.subList(0,9);
+
+        return result;
     }
 
     private List<TripHashtag> getHashtags(Trip trip){

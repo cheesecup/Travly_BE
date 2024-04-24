@@ -7,12 +7,15 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface TripRepository extends JpaRepository<Trip, Long>, CustomTripRepositoryV2 {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<Trip> findByIdAndIsDeleted(Long tripId, boolean isDeleted);
+
+    List<Trip> findAllByIsDeleted(boolean isDeleted);
 
 
 
