@@ -65,7 +65,7 @@ public class TripLikeService {
         if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(TRIP_LIKES_TRIP_ID + tripId, email)))
             return true;
 
-        Optional<TripLike> tripLike = tripLikeRepository.findByMemberAndTrip(getMember(email),getTrip(tripId));
+        Optional<TripLike> tripLike = tripLikeRepository.findByMemberAndTripAndIsDeleted(getMember(email),getTrip(tripId),false);
         if(tripLike.isPresent()) {
             redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, email);
             return true;
