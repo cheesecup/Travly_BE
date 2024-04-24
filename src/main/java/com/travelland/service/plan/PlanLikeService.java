@@ -85,7 +85,7 @@ public class PlanLikeService {
 
         if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(PLAN_LIKES_PLAN_ID + planId, email)))
             return true;
-        Optional<PlanLike> planLike = planLikeRepository.findByMemberAndPlan(getMember(email), getPlan(planId));
+        Optional<PlanLike> planLike = planLikeRepository.findByMemberAndPlanAndIsDeleted(getMember(email), getPlan(planId), false);
         if(planLike.isPresent()){
             redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID+planId,email);
             return true;

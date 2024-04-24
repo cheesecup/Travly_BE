@@ -81,7 +81,7 @@ public class PlanScrapService {
         if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(PLAN_SCRAPS_PLAN_ID + planId, email)))
             return true;
 
-        Optional<PlanScrap> planScrap = planScrapRepository.findByMemberAndPlan(getMember(email), getPlan(planId));
+        Optional<PlanScrap> planScrap = planScrapRepository.findByMemberAndPlanAndIsDeleted(getMember(email), getPlan(planId), false);
         if (planScrap.isPresent()) {
             redisTemplate.opsForSet().add(PLAN_SCRAPS_PLAN_ID+planId,email);
             return true;
