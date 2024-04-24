@@ -154,29 +154,32 @@ public class PlanService {
                     .build());
         }
 
-        // 접속유저가 안 본 글만 조회수 증가, 비로그인 유저는 null이라서 조회수 증가 안됨
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-            if (member != null) {
-                String email = member.getEmail();
-
-                // Redis를 사용하여 이메일이 저장되어 있는지 확인 후, 없는 경우에만 조회수 증가
-                Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT + planId, email);
-                if (result != null && result == 1L) {
-                    plan.increaseViewCount(); // 조회수 증가
-                }
-            }
-        } else { // 비로그인 유저의 조회수 증가
-            plan.increaseViewCount(); // 조회수 증가
-        }
-
         // Plan에 담을 PlanVote 준비중
         List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAOrPlanB(plan, plan);
         for (PlanVote planVote : planVoteList) {
             planVote.checkTimeOut(); // 투표기간이 종료됐는지 체크
         }
         List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
+
+        // 로그인여부 검사
+        Boolean isWriter = false;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+
+            // 로그인유저와 작성유저의 일치여부 검사
+            if(member.getId() == plan.getMember().getId()) {
+                isWriter = true;
+            }
+
+            // 로그인유저가 안 본 글만 조회수 증가, Redis를 사용하여 이메일의 저장여부로 없는 경우에만 조회수 증가
+            Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT + planId, member.getEmail());
+            if (result != null && result == 1L) {
+                plan.increaseViewCount(); // 조회수 증가
+            }
+        } else { // 비로그인 유저의 조회수 증가
+            plan.increaseViewCount(); // 조회수 증가
+        }
 
         // Plan에 DayPlan과 PlanVote 담는중
         return PlanDto.GetAllInOne.builder()
@@ -185,6 +188,7 @@ public class PlanService {
                 .planVotes(planVoteDtos)
                 .isLike(planLikeService.statusPlanLike(planId))
                 .isScrap(planScrapService.statusPlanScrap(planId))
+                .isWriter(isWriter)
                 .build();
     }
 
@@ -245,6 +249,17 @@ public class PlanService {
         List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAOrPlanB(plan, plan);
         List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
 
+        // 로그인여부 검사
+        Boolean isWriter = false;
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            Member member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
+
+            // 로그인유저와 작성유저의 일치여부 검사
+            if (member.getId() == plan.getMember().getId()) {
+                isWriter = true;
+            }
+        }
+
         // Plan에 DayPlan과 PlanVote 담는중
         return PlanDto.GetAllInOne.builder()
                 .plan(plan)
@@ -252,6 +267,7 @@ public class PlanService {
                 .planVotes(planVoteDtos)
                 .isLike(planLikeService.statusPlanLike(planId))
                 .isScrap(planScrapService.statusPlanScrap(planId))
+                .isWriter(isWriter)
                 .build();
     }
 
