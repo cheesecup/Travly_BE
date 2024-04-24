@@ -12,6 +12,9 @@ import com.travelland.repository.plan.PlanLikeRepository;
 import com.travelland.repository.plan.PlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,63 +35,71 @@ public class PlanLikeService {
     // Plan 좋아요 등록
     @Transactional
     public void registerPlanLike(Long planId) {
-//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Member member = userDetails.getMember();
-//        String email = member.getEmail();
-        String email = "test@test.com";
-        Member member = getMember(email);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Plan plan = getPlan(planId);
-        plan.increaseLikeCount(); // 좋아요수 증가 (스크랩은 스크립수 증가 없음)
-        planLikeRepository.findByMemberAndPlan(member, plan)
-                .ifPresentOrElse(
-                        PlanLike::registerLike, // 좋아요를 한번이라도 등록한적이 있을경우
-                        () -> planLikeRepository.save(new PlanLike(member, plan)) // 최초로 좋아요를 등록하는 경우
-                );
-        redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID + planId, email);
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+            String email = member.getEmail();
+
+            Plan plan = getPlan(planId);
+            plan.increaseLikeCount(); // 좋아요수 증가 (스크랩은 스크립수 증가 없음)
+            planLikeRepository.findByMemberAndPlan(member, plan)
+                    .ifPresentOrElse(
+                            PlanLike::registerLike, // 좋아요를 한번이라도 등록한적이 있을경우
+                            () -> planLikeRepository.save(new PlanLike(member, plan)) // 최초로 좋아요를 등록하는 경우
+                    );
+            redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID + planId, email);
+        } else {
+            Plan plan = getPlan(planId);
+            plan.increaseLikeCount(); // 좋아요수 증가 (스크랩은 스크립수 증가 없음)
+        }
     }
 
     // Plan 좋아요 취소
     @Transactional
     public void cancelPlanLike(Long planId) {
-//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Member member = userDetails.getMember();
-//        String email = member.getEmail();
-        String email = "test@test.com";
-        Member member = getMember(email);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Plan plan = getPlan(planId);
-        plan.decreaseLikeCount(); // 좋아요수 감소 (스크랩은 스크립수 감소 없음)
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+            String email = member.getEmail();
 
-        getPlanLike(planId,email).cancelLike();
-        redisTemplate.opsForSet().remove(PLAN_LIKES_PLAN_ID + planId, email);
+            Plan plan = getPlan(planId);
+            plan.decreaseLikeCount(); // 좋아요수 감소 (스크랩은 스크립수 감소 없음)
+
+            getPlanLike(planId,email).cancelLike();
+            redisTemplate.opsForSet().remove(PLAN_LIKES_PLAN_ID + planId, email);
+        } else {
+            Plan plan = getPlan(planId);
+            plan.decreaseLikeCount(); // 좋아요수 감소 (스크랩은 스크립수 감소 없음)
+        }
     }
 
     // Plan 좋아요 유저별 전체목록 조회
     @Transactional(readOnly = true)
     public List<PlanDto.GetList> getPlanLikeList(int page, int size) {
-//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Member member = userDetails.getMember();
-//        String email = member.getEmail();
-        String email = "test@test.com";
-        Member member = getMember(email);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        String email = member.getEmail();
 
         return  planLikeRepository.getLikeListByMember(getMember(email),size,page);
     }
 
+    // Plan 좋아요 여부 확인
     public boolean statusPlanLike(Long planId) {
-//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Member member = userDetails.getMember();
-//        String email = member.getEmail();
-        String email = "test@test.com";
-        Member member = getMember(email);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(PLAN_LIKES_PLAN_ID + planId, email)))
-            return true;
-        Optional<PlanLike> planLike = planLikeRepository.findByMemberAndPlan(getMember(email), getPlan(planId));
-        if(planLike.isPresent()){
-            redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID+planId,email);
-            return true;
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            Member member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
+            String email = member.getEmail();
+
+            if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(PLAN_LIKES_PLAN_ID + planId, email)))
+                return true;
+            Optional<PlanLike> planLike = planLikeRepository.findByMemberAndPlanAndIsDeleted(getMember(email), getPlan(planId), false);
+            if (planLike.isPresent()) {
+                redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID + planId, email);
+                return true;
+            }
         }
         return false;
     }
