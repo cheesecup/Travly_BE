@@ -16,10 +16,10 @@
     "cost": {
       "type": "integer"
     },
-    "nickname": {
+    "area": {
       "type": "keyword"
     },
-    "area": {
+    "place_name": {
       "type": "keyword"
     },
     "hashtag": {
@@ -37,14 +37,9 @@
       "type": "date",
       "format": "yyyy-MM-dd'T'HH:mm:ss"
     },
-    "profile_url": {
-      "type": "keyword"
-    },
     "address": {
-      "type": "keyword"
-    },
-    "view_count": {
-      "type": "integer"
+      "type": "text",
+      "analyzer": "korean"
     },
     "thumbnail_url": {
       "type": "keyword"

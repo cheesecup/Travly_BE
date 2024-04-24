@@ -1,8 +1,9 @@
 package com.travelland.esdoc;
 
-import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.*;
 
@@ -10,9 +11,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@ToString
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+
+@Data
+@NoArgsConstructor
 @Document(indexName = "tripdocs" )
 @Setting(settingPath = "static/es-setting.json")
 @Mapping(mappingPath = "static/es-mapping.json")
@@ -37,9 +38,6 @@ public class TripSearchDoc {
     @Field(name = "area", type = FieldType.Keyword)
     private String area;
 
-    @Field(name = "nickname", type = FieldType.Keyword)
-    private String nickname;
-
     @Field(name = "hashtag", type = FieldType.Keyword)
     private List<String> hashtag;
 
@@ -52,21 +50,11 @@ public class TripSearchDoc {
     @Field(name = "created_at", type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     private LocalDateTime createdAt;
 
-//    @Field(name = "location", type = FieldType.Object)
-//    @GeoPointField
-//    private GeoPoint location;
-
     @Field(name = "address", type = FieldType.Text)
     private String address;
 
-//    @Field(name = "place_name", type = FieldType.Keyword)
-//    private String placeName;
-
-    @Field(name = "profile_url", type = FieldType.Keyword)
-    private String profileUrl;
-
-    @Field(name = "view_count", type = FieldType.Integer)
-    private int viewCount;
+    @Field(name = "place_name", type = FieldType.Keyword)
+    private String placeName;
 
     @Field(name = "thumbnail_url", type = FieldType.Keyword)
     private String thumbnailUrl;
@@ -79,7 +67,7 @@ public class TripSearchDoc {
 
 
     @Builder
-    public TripSearchDoc(Trip trip, List<String> hashtag, Member member, String thumbnailUrl, String profileUrl) {
+    public TripSearchDoc(Trip trip, List<String> hashtag, String thumbnailUrl) {
         this.tripId =trip.getId();
         this.title = trip.getTitle();
         this.cost = trip.getCost();
@@ -87,19 +75,12 @@ public class TripSearchDoc {
         this.hashtag = hashtag;
         this.tripStartDate = trip.getTripStartDate();
         this.tripEndDate = trip.getTripEndDate();
-        this.content = makeShortContent(trip.getContent(),100);
-        this.createdAt = LocalDateTime.now();
+        this.content = makeShortContent(trip.getContent(),200);
+        this.createdAt = trip.getCreatedAt();
         this.address = trip.getAddress();
-        this.nickname = member.getNickname();
-        this.profileUrl = profileUrl;
-        this.viewCount = trip.getViewCount();
         this.thumbnailUrl = thumbnailUrl;
-        this.email = member.getEmail();
+        this.email = trip.getMember().getEmail();
         this.isPublic = trip.isPublic();
-    }
-
-    public void increaseViewCount() {
-        this.viewCount++;
     }
 
     private String makeShortContent(String content, int length){

@@ -94,10 +94,54 @@ public class PlanDto {
             this.tripStartDate = plan.getTripStartDate();
             this.tripEndDate = plan.getTripEndDate();
             this.viewCount = plan.getViewCount();
-            this.likeCount = plan.getViewCount();
+            this.likeCount = plan.getLikeCount();
             this.isVotable = plan.getIsVotable();
             this.createdAt = plan.getCreatedAt();
             this.memberNickname = plan.getMember().getNickname();
+        }
+    }
+
+    @Getter
+    public static class GetAllInOne {
+        private final Long planId;
+        private final String title;
+//        private final String content;
+        private final int budget;
+        private final String area;
+        private final Boolean isPublic;
+        private final LocalDate tripStartDate;
+        private final LocalDate tripEndDate;
+        private final int viewCount;
+        private final int likeCount;
+        private final Boolean isVotable;
+        private final LocalDateTime createdAt;
+        private final String memberNickname;
+        private final String profileUrl;
+        private List<DayPlanDto.GetAllInOne> dayPlans;
+        private List<PlanVoteDto.GetAllInOne> planVotes;
+        private final Boolean isLike;
+        private final Boolean isScrap;
+
+        @Builder
+        public GetAllInOne(Plan plan, List<DayPlanDto.GetAllInOne> dayPlans, List<PlanVoteDto.GetAllInOne> planVotes, Boolean isLike, Boolean isScrap) {
+            this.planId = plan.getId();
+            this.title = plan.getTitle();
+//            this.content = plan.getContent();
+            this.budget = plan.getBudget();
+            this.area = plan.getArea();
+            this.isPublic = plan.getIsPublic();
+            this.tripStartDate = plan.getTripStartDate();
+            this.tripEndDate = plan.getTripEndDate();
+            this.viewCount = plan.getViewCount();
+            this.likeCount = plan.getLikeCount();
+            this.isVotable = plan.getIsVotable();
+            this.createdAt = plan.getCreatedAt();
+            this.memberNickname = plan.getMember().getNickname();
+            this.profileUrl = plan.getMember().getProfileImage();
+            this.dayPlans = dayPlans;
+            this.planVotes = planVotes;
+            this.isLike = isLike;
+            this.isScrap = isScrap;
         }
     }
 
@@ -122,44 +166,6 @@ public class PlanDto {
     public static class GetLists {
         private List<PlanDto.GetList> listList;
         private Long totalCount;
-    }
-
-    @Getter
-    public static class GetAllInOne {
-        private final Long planId;
-        private final String title;
-//        private final String content;
-        private final int budget;
-        private final String area;
-        private final Boolean isPublic;
-        private final LocalDate tripStartDate;
-        private final LocalDate tripEndDate;
-        private final int viewCount;
-        private final int likeCount;
-        private final Boolean isVotable;
-        private final LocalDateTime createdAt;
-        private final String memberNickname;
-        private final String profileUrl;
-        private List<DayPlanDto.GetAllInOne> dayPlans;
-
-        @Builder
-        public GetAllInOne(Get plan, String profileUrl, List<DayPlanDto.GetAllInOne> dayPlans) {
-            this.planId = plan.getPlanId();
-            this.title = plan.getTitle();
-//            this.content = plan.getContent();
-            this.budget = plan.getBudget();
-            this.area = plan.getArea();
-            this.isPublic = plan.getIsPublic();
-            this.tripStartDate = plan.getTripStartDate();
-            this.tripEndDate = plan.getTripEndDate();
-            this.viewCount = plan.getViewCount();
-            this.likeCount = plan.getLikeCount();
-            this.isVotable = plan.getIsVotable();
-            this.createdAt = plan.getCreatedAt();
-            this.memberNickname = plan.getMemberNickname();
-            this.profileUrl = profileUrl;
-            this.dayPlans = dayPlans;
-        }
     }
 
     @Getter

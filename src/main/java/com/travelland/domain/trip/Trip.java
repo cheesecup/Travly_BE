@@ -13,8 +13,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Getter
@@ -29,7 +27,7 @@ public class Trip {
     @Column(length = 100)
     private String title;
 
-    @Column(length = 1000)
+    @Column(length = 2000)
     private String content;
 
     private int cost;
@@ -38,6 +36,8 @@ public class Trip {
     private String area; //여행 지역
 
     private String address; //도로명 주소
+
+    private String placeName; //여행장소
 
     private boolean isPublic;
 
@@ -69,6 +69,7 @@ public class Trip {
         this.address = requestDto.getAddress();
         this.area = splitAddress(requestDto.getAddress());
         this.isPublic = requestDto.getIsPublic();
+        this.placeName = requestDto.getPlaceName();
         this.tripStartDate = requestDto.getTripStartDate();
         this.tripEndDate = requestDto.getTripEndDate();
         this.viewCount = 0;
@@ -81,6 +82,9 @@ public class Trip {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
         this.isPublic = requestDto.getIsPublic();
+    }
+    public void increaseViewCount() {
+        this.viewCount++;
     }
 
     public void delete() {

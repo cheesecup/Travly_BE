@@ -29,6 +29,7 @@ public class VotePaperDto {
 
     @Getter
     public static class Get {
+        private final Long votePaperId;
         private final Long memberId;
         private final Long planVoteId;
         private final Boolean isVotedA;
@@ -37,6 +38,7 @@ public class VotePaperDto {
         private final LocalDateTime modifiedAt;
 
         public Get(VotePaper votePaper) {
+            this.votePaperId = votePaper.getId();
             this.memberId = votePaper.getMemberId();
             this.planVoteId = votePaper.getPlanVoteId();
             this.isVotedA = votePaper.getIsVotedA();

@@ -13,4 +13,8 @@ public interface TripSearchRepository extends ElasticsearchRepository<TripSearch
     Page<TripSearchDoc> findByEmail(Pageable pageable, String email);
 
     TripSearchDoc findByTripId(Long tripId);
+
+    Page<TripSearchDoc> findAllByIsPublic(Pageable pageable, Boolean isPublic);
+
+
 }
