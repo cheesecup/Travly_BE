@@ -143,15 +143,7 @@ public class TripService {
 
         if (ranks == null)
             return new ArrayList<>();
-        System.out.println("Rank -------------------------");
-        System.out.println();
-        System.out.println(
-        ranks.stream()
-                .map(Long::parseLong)
-                .toList());
-        System.out.println();
-        System.out.println();
-        System.out.println();
+
         return tripSearchService.getRankByViewCount(ranks.stream()
                 .map(Long::parseLong)
                 .toList());
