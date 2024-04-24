@@ -619,7 +619,13 @@ public class PlanService {
     // VotePaper 생성
     public VotePaperDto.Id createVotePaper(VotePaperDto.Create request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+
+        Member member;
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
+        } else {
+            member = getMember("test@test.com");
+        }
 
         // 투표기간이 종료됐는지 체크
         PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(request.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
