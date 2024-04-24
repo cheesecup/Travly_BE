@@ -64,9 +64,9 @@ public class TripSearchService {
         if(area.equals("전체"))
             return searchMapper("areaAll", area, tripSearchRepository.searchAllArea(true,pageable));
 
-        List<String> adaptedArea = tripArea.getMappingArea(area);
+        String[] adaptedArea = tripArea.getMappingArea(area);
         SearchHits<TripSearchDoc> result = tripSearchRepository.searchByArea(adaptedArea,true,pageable);
-        return searchMapper("areaTab", area, result);
+        return searchMapper("area", area, result);
     }
 
     public List<TripDto.GetList> getTripList(int page, int size, String sortBy, boolean isAsc){
@@ -105,7 +105,7 @@ public class TripSearchService {
     }
 
     public void syncDBtoES() {
-        for(Trip trip : tripRepository.findAll()){
+        for(Trip trip : tripRepository.findAllByIsDeleted(false)){
          tripSearchRepository.save(new TripSearchDoc(trip,tripHashtagRepository.findAllByTrip(trip).stream().map(TripHashtag::getTitle).toList(), tripImageService.getTripThumbnailUrl(trip)
          ));
         }
