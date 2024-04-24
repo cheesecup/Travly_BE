@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PlanLikeRepository extends JpaRepository<PlanLike, Long>, CustomPlanLikeRepository {
-    void deleteAllByPlan(Plan plan);
-
     Optional<PlanLike> findByMemberAndPlan(Member member, Plan plan);
 
+    Optional<PlanLike> findByMemberAndPlanAndIsDeleted(Member member, Plan plan, boolean isDeleted);
 }

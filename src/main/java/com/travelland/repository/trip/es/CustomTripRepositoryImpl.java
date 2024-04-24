@@ -75,12 +75,12 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
     }
 
     @Override
-    public SearchHits<TripSearchDoc> searchByArea(List<String> area, boolean isPublic, Pageable pageable) {
+    public SearchHits<TripSearchDoc> searchByArea(String[] area, boolean isPublic, Pageable pageable) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
         searchQueryBuilder.withPageable(pageable);
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.minimumShouldMatch(1);
-        area.forEach(word -> boolQueryBuilder.should(QueryBuilders.matchQuery("area", word)));
+        Arrays.stream(area).forEach(word -> boolQueryBuilder.should(QueryBuilders.matchQuery("area", word)));
         boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", isPublic));
         searchQueryBuilder.withQuery(boolQueryBuilder);
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
@@ -93,7 +93,6 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", isPublic));
         searchQueryBuilder.withQuery(boolQueryBuilder);
-
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
 

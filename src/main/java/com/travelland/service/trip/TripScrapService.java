@@ -79,7 +79,7 @@ public class TripScrapService {
         if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(TRIP_SCRAPS_TRIP_ID + tripId, email)))
             return true;
 
-        Optional<TripScrap> tripScrap = tripScrapRepository.findByMemberAndTrip(getMember(email),getTrip(tripId));
+        Optional<TripScrap> tripScrap = tripScrapRepository.findByMemberAndTripAndIsDeleted(getMember(email),getTrip(tripId),false);
         if(tripScrap.isPresent()) {
             redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, email);
             return true;

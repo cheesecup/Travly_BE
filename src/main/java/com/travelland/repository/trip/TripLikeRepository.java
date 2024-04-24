@@ -12,5 +12,7 @@ public interface TripLikeRepository extends JpaRepository<TripLike, Long>, Custo
 
     Optional<TripLike> findByMemberAndTrip(Member member, Trip trip);
 
+    Optional<TripLike> findByMemberAndTripAndIsDeleted(Member member, Trip trip, boolean isDeleted);
+
     boolean existsByMemberAndTripAndIsDeleted(Member member, Trip trip, boolean isDeleted);
 }
