@@ -151,7 +151,7 @@ public interface PlanControllerDocs {
     @Operation(summary = "VotePaper(투표용지) 상세단일 조회", description = " ")
     ResponseEntity readVotePaper(@PathVariable Long votePaperId);
 
-    @Operation(summary = "VotePaper(투표용지) 유저별 전체목록 조회", description = "page는 1부터")
+    @Operation(summary = "(마이페이지용) VotePaper(투표용지) 유저별 전체목록 조회", description = "page는 1부터")
     ResponseEntity readVotePaperList(@RequestParam(defaultValue = "1") int page,
                                      @RequestParam(defaultValue = "20") int size,
                                      @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
