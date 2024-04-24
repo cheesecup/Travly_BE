@@ -53,7 +53,6 @@ public class TripService {
 
     @Transactional
     public TripDto.Get getTrip(Long tripId, String email) {
-
         Trip trip = tripRepository.getTripWithMember(tripId, false).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
 
         if (!trip.isPublic() && !trip.getMember().getEmail().equals(email)) { //비공개 글인 경우
