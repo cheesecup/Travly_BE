@@ -23,11 +23,12 @@ public class TripImageService {
     // 이미지 정보 저장, 썸네일 이미지 URL 반환
     @Transactional
     public String createTripImage(MultipartFile thumbnail, List<MultipartFile> imageList, Trip trip) {
-        TripImage tripImage = tripImageRepository.save(new TripImage(s3FileService.s3Upload(thumbnail), true, trip)); // 썸네일 이미지 저장
+        TripImage tripImage = tripImageRepository.save(new TripImage(s3FileService.saveResizeImage(thumbnail), true, trip)); //리사이즈된 썸네일 이미지 저장
 
         if (imageList != null) {
+            imageList.add(0, thumbnail);
             imageList.stream()
-                    .map(image -> new TripImage(s3FileService.s3Upload(image), false, trip))
+                    .map(image -> new TripImage(s3FileService.saveOriginalImage(image), false, trip))
                     .forEach(tripImageRepository::save);
         }
 
@@ -37,7 +38,7 @@ public class TripImageService {
     // 선택한 게시글 이미지 URL 리스트 가져오기
     @Transactional(readOnly = true)
     public List<String> getTripImageUrl(Trip trip) {
-        return tripImageRepository.findAllByTrip(trip).stream()
+        return tripImageRepository.findAllByTripAndIsThumbnail(trip, false).stream()
                 .map(TripImage::getImageUrl).toList();
     }
 
