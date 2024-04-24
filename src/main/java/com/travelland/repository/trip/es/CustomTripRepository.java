@@ -14,6 +14,10 @@ public interface CustomTripRepository {
 
     SearchHits<TripSearchDoc> searchByField(String field, String keyword, boolean isPublic, Pageable pageable);
 
+    SearchHits<TripSearchDoc> searchByArea(List<String> area, boolean isPublic, Pageable pageable);
+
+    SearchHits<TripSearchDoc> searchAllArea(boolean isPublic, Pageable pageable);
+
     List<TripDto.Top10> findRankList(List<Long> keys);
 
     List<TripDto.GetList> getRandomList(int size);

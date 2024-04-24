@@ -248,11 +248,14 @@ public class TripDto {
             this.area = tripSearchDoc.getArea();
             this.title = tripSearchDoc.getTitle();
             this.thumbnailUrl = tripSearchDoc.getThumbnailUrl();
-            this.content = tripSearchDoc.getContent().substring(0,15);
+            this.content = subContent(tripSearchDoc.getContent());
             this.placeName = tripSearchDoc.getPlaceName();
             this.tripStartDate = tripSearchDoc.getTripStartDate();
             this.tripEndDate = tripSearchDoc.getTripEndDate();
             this.hashtagList = tripSearchDoc.getHashtag();
+        }
+        private String subContent(String origin){
+            return origin.length() < 16 ? origin : origin.substring(0,15);
         }
     }
 

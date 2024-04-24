@@ -75,6 +75,29 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
     }
 
     @Override
+    public SearchHits<TripSearchDoc> searchByArea(List<String> area, boolean isPublic, Pageable pageable) {
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
+        searchQueryBuilder.withPageable(pageable);
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.minimumShouldMatch(1);
+        area.forEach(word -> boolQueryBuilder.should(QueryBuilders.matchQuery("area", word)));
+        boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", isPublic));
+        searchQueryBuilder.withQuery(boolQueryBuilder);
+        return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
+    }
+
+    @Override
+    public SearchHits<TripSearchDoc> searchAllArea(boolean isPublic, Pageable pageable) {
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
+        searchQueryBuilder.withPageable(pageable);
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", isPublic));
+        searchQueryBuilder.withQuery(boolQueryBuilder);
+
+        return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
+    }
+
+    @Override
     public List<TripDto.Top10> findRankList(List<Long> keys) {
 
         List<Query> queries = new ArrayList<>();
