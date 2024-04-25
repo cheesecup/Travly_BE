@@ -139,7 +139,7 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getMyTripList(page, size, userDetails.getUsername()));
     }
 
-    //여행정보 해쉬태그 검색
+    //여행정보 검색
     @GetMapping("/trips/search")
     public ResponseEntity<TripDto.SearchResult> searchTrip(@RequestParam String text,
                                                                   @RequestParam(defaultValue = "1") int page,
@@ -150,7 +150,7 @@ public class TripController implements TripControllerDocs {
                 .body(tripSearchService.searchTrip(text, page, size, sortBy, isAsc));
     }
 
-    //여행정보 해쉬태그 검색
+    //여행정보 타이틀 검색
     @GetMapping("/trips/search/title")
     public ResponseEntity<TripDto.SearchResult> searchTripByTitle(@RequestParam String title,
                                                                     @RequestParam(defaultValue = "1") int page,
@@ -160,6 +160,8 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(tripSearchService.searchTripByTitle(title, page, size, sortBy, isAsc));
     }
+
+    //여행정보 해시태그 검색
     @GetMapping("/trips/search/hashtag")
     public ResponseEntity<TripDto.SearchResult> searchTripByHashtag(@RequestParam String hashtag,
                                                                     @RequestParam(defaultValue = "1") int page,
@@ -169,6 +171,8 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(tripSearchService.searchTripByField("hashtag", hashtag, page, size, sortBy, isAsc));
     }
+
+    //여행정보 지역 검색
     @GetMapping("/trips/search/area")
     public ResponseEntity<TripDto.SearchResult> searchTripByArea(@RequestParam String area,
                                                                     @RequestParam(defaultValue = "1") int page,
@@ -185,6 +189,7 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRecentlyTopSearch("hashtag"));
     }
 
+    //여행정보 지역 검색량 상위 TOP5
     @GetMapping("/trips/rank/area")
     public ResponseEntity<List<String>> getRecentTopArea(){
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRecentlyTopSearch("area"));
@@ -237,6 +242,7 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(tripService.getRankByViewCount(10L));
     }
 
+    //여행정보 랜덤 게시글 목록 조회
     @GetMapping("/trips/random")
     public ResponseEntity<List<TripDto.GetList>> getTripListRandom8(){
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRandomTrip());

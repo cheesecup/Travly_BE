@@ -11,7 +11,6 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -84,11 +83,12 @@ public class TripDto {
 
         private Boolean isLike;
         private Boolean isScrap;
+        private Boolean isWriter;
 
         private String nickname;
         private String profileImage;
 
-        public Get(Trip trip, Member member, List<String> hashtagList, List<String> imageUrlList, boolean isLike, boolean isScrap) {
+        public Get(Trip trip, Member member, List<String> hashtagList, List<String> imageUrlList, boolean isLike, boolean isScrap, boolean isWriter) {
             this.tripId = trip.getId();
             this.title = trip.getTitle();
             this.content = trip.getContent();
@@ -100,6 +100,7 @@ public class TripDto {
             this.imageUrlList = imageUrlList;
             this.isLike = isLike;
             this.isScrap = isScrap;
+            this.isWriter = isWriter;
             this.nickname = member.getNickname();
             this.profileImage = member.getProfileImage();
         }
