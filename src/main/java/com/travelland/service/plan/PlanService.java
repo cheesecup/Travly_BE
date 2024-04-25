@@ -145,7 +145,7 @@ public class PlanService {
         }
 
         // Plan에 담을 PlanVote 준비중
-        List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAOrPlanB(plan, plan);
+        List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAAndIsDeletedOrPlanBAndIsDeleted(plan, false, plan, false);
         for (PlanVote planVote : planVoteList) {
             planVote.checkTimeOut(); // 투표기간이 종료됐는지 체크
         }
