@@ -364,8 +364,7 @@ public class PlanController implements PlanControllerDocs {
     @GetMapping("/plans/like")
     public ResponseEntity<List<PlanDto.GetList>> getPlanLikeList(@RequestParam(defaultValue = "1") int page,
                                                                  @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(planLikeService.getPlanLikeList(page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(planLikeService.getPlanLikeList(page, size));
     }
 
     // Plan 스크랩 등록
@@ -386,8 +385,7 @@ public class PlanController implements PlanControllerDocs {
     @GetMapping("/plans/scrap")
     public ResponseEntity<List<PlanDto.GetList>> getPlanScrapList(@RequestParam(defaultValue = "1") int page,
                                                                   @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(planScrapService.getPlanScrapList(page, size));
+        return ResponseEntity.status(HttpStatus.OK).body(planScrapService.getPlanScrapList(page, size));
     }
 
 

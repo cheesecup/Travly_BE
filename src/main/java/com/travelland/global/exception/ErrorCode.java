@@ -16,6 +16,7 @@ public enum ErrorCode {
     MISMATCH_REFRESH_TOKEN(BAD_REQUEST, "리프레시 토큰의 유저 정보가 일치하지 않습니다"),
     WRONG_MULTIPARTFILE(BAD_REQUEST, "Multipartfile에 문제가 있습니다"),
     WRONG_USERINFO(BAD_REQUEST,"유저 정보를 다시 확인해주세요"),
+    STATUS_NOT_LOGIN(BAD_REQUEST, "로그인 상태가 아닙니다."),
 
     // 401 UNAUTHORIZED: 인증되지 않은 사용자
     INVALID_AUTH_TOKEN(UNAUTHORIZED, "권한 정보가 없는 토큰입니다"),
