@@ -132,6 +132,13 @@ public class TripDto {
 
     @Getter
     @AllArgsConstructor
+    public static class GetMyList {
+        private long totalElements;
+        private List<TripDto.GetList> trips;
+    }
+
+    @Getter
+    @AllArgsConstructor
     public static class Delete {
         private Boolean isDeleted;
     }
@@ -179,6 +186,13 @@ public class TripDto {
             this.hashtagList = trip.getHashtag();
             this.thumbnailUrl = trip.getThumbnailUrl();
         }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    public static class GetMyScraps {
+        private long totalElements;
+        private List<TripDto.Scraps> scraps;
     }
 
     @Getter

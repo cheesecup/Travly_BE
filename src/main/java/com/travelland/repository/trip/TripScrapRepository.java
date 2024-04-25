@@ -22,4 +22,6 @@ public interface TripScrapRepository extends JpaRepository<TripScrap, Long>, Cus
     boolean existsByMemberAndTripAndIsDeleted(Member member,Trip trip, boolean isDeleted);
 
     List<TripScrap> findAllByIsDeleted(boolean isDeleted, Pageable pageable);
+
+    long countByIsDeleted(boolean isDeleted);
 }
