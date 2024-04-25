@@ -54,8 +54,9 @@ public class TripService {
     @Transactional
     public TripDto.Get getTrip(Long tripId, String email) {
         Trip trip = tripRepository.getTripWithMember(tripId, false).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        Member member = trip.getMember();
 
-        if (!trip.isPublic() && !trip.getMember().getEmail().equals(email)) { //비공개 글인 경우
+        if (!trip.isPublic() && member.getEmail().equals(email)) { //비공개 글인 경우
             throw new CustomException(ErrorCode.POST_ACCESS_NOT_PERMISSION);
         }
 
@@ -64,9 +65,10 @@ public class TripService {
 
         boolean isLike = false;
         boolean isScrap = false;
+        boolean isWriter = member.getEmail().equals(email);
 
         if(email.isEmpty())
-            return new TripDto.Get(trip, trip.getMember(), hashtagList, imageUrlList, isLike, isScrap);
+            return new TripDto.Get(trip, member, hashtagList, imageUrlList, isLike, isScrap, isWriter);
 
         //로그인한 경우
         //스크랩/좋아요 여부 확인
@@ -84,7 +86,7 @@ public class TripService {
                 redisTemplate.opsForZSet().add(VIEW_RANK, tripId.toString(), view);
         }
 
-        return new TripDto.Get(trip, trip.getMember(), hashtagList, imageUrlList, isLike, isScrap);
+        return new TripDto.Get(trip, member, hashtagList, imageUrlList, isLike, isScrap, isWriter);
     }
 
     @Transactional

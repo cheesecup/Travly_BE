@@ -1,5 +1,6 @@
 package com.travelland.repository.trip;
 
+import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.repository.trip.querydsl.CustomTripRepositoryV2;
 import jakarta.persistence.LockModeType;
@@ -17,6 +18,5 @@ public interface TripRepository extends JpaRepository<Trip, Long>, CustomTripRep
 
     List<Trip> findAllByIsDeleted(boolean isDeleted);
 
-
-
+    long countByMemberAndIsDeleted(Member member, boolean isDeleted);
 }
