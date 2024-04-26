@@ -104,7 +104,7 @@ public class PlanService {
 
         // 비공개글인 경우, 로그인유저와 작성유저의 일치여부 검사
         if (plan.getIsPublic() == false) {
-            if (getMemberOrThrowError() != plan.getMember()) {
+            if (getMemberOrThrowError().getId() != plan.getMember().getId()) {
                 throw new CustomException(ErrorCode.POST_GET_NOT_PERMISSION);
             }
         }
