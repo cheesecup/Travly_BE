@@ -60,6 +60,7 @@ public class PlanService {
         Member member = getMemberOrThrowError();
 
         Plan plan = new Plan(request, member);
+        plan.checkIsPastDate();
         Plan savedPlan = planRepository.save(plan);
         redisTemplate.opsForValue().increment(PLAN_TOTAL_COUNT);
 

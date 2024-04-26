@@ -9,7 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -106,13 +105,14 @@ public class UnitPlan {
         this.isDeleted = true;
     }
 
+    // 시간 형식이 HH:mm 포맷인지 확인
     public void checkTimeFormat() {
         String timePattern = "([01]?[0-9]|2[0-3]):[0-5][0-9]";
         Pattern pattern = Pattern.compile(timePattern);
         Matcher matcher = pattern.matcher(this.time);
 
         if (matcher.matches() == false) {
-            throw new CustomException(ErrorCode.WRONG_TIMEFORMAT);
+            throw new CustomException(ErrorCode.WRONG_TIME_FORMAT);
         }
     }
 }

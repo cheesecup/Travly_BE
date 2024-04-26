@@ -2,6 +2,8 @@ package com.travelland.domain.plan;
 
 import com.travelland.domain.member.Member;
 import com.travelland.dto.plan.PlanDto;
+import com.travelland.global.exception.CustomException;
+import com.travelland.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -139,5 +141,13 @@ public class Plan {
 
     public void decreaseLikeCount() {
         this.likeCount--;
+    }
+
+    // 입력된기간 (tripStartDate/tripEndDate)가 현재보다 과거시각인지 확인
+    public void checkIsPastDate() {
+        LocalDate now = LocalDate.now();
+        if (this.tripStartDate.isBefore(now)) {
+            throw new CustomException(ErrorCode.WRONG_PLAN_DATE);
+        }
     }
 }
