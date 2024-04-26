@@ -59,11 +59,11 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanAllInOne(planId));
     }
 
-    // Plan 유저별 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
-    @GetMapping("/users/plans/allInOn/{planId}")
-    public ResponseEntity<PlanDto.GetAllInOne> readPlanAllInOneForMember(@PathVariable Long planId) {
-        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanAllInOneForMember(planId));
-    }
+//    // Plan 유저별 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
+//    @GetMapping("/users/plans/allInOn/{planId}")
+//    public ResponseEntity<PlanDto.GetAllInOne> readPlanAllInOneForMember(@PathVariable Long planId) {
+//        return ResponseEntity.status(HttpStatus.OK).body(planService.readPlanAllInOneForMember(planId));
+//    }
 
     // Plan 전체목록 조회
     @GetMapping("/plans") // 예시: /plans?page=1&size=20&sortBy=createdAt&isAsc=false, page 는 1부터

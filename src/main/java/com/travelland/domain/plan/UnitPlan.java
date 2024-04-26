@@ -1,6 +1,8 @@
 package com.travelland.domain.plan;
 
 import com.travelland.dto.plan.UnitPlanDto;
+import com.travelland.global.exception.CustomException;
+import com.travelland.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,6 +10,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Entity
 @Getter
@@ -100,5 +104,15 @@ public class UnitPlan {
 
     public void delete() {
         this.isDeleted = true;
+    }
+
+    public void checkTimeFormat() {
+        String timePattern = "([01]?[0-9]|2[0-3]):[0-5][0-9]";
+        Pattern pattern = Pattern.compile(timePattern);
+        Matcher matcher = pattern.matcher(this.time);
+
+        if (matcher.matches() == false) {
+            throw new CustomException(ErrorCode.WRONG_TIMEFORMAT);
+        }
     }
 }
