@@ -8,7 +8,6 @@ import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.*;
-import io.lettuce.core.GeoArgs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static com.travelland.constant.Constants.PLAN_TOTAL_COUNT;
 import static com.travelland.constant.Constants.PLAN_VIEW_COUNT;
@@ -48,8 +46,7 @@ public class PlanService {
 
     // Plan 작성
     public PlanDto.Id createPlan(PlanDto.Create request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         Plan plan = new Plan(request, member);
         Plan savedPlan = planRepository.save(plan);
@@ -60,8 +57,7 @@ public class PlanService {
 
     // Plan 올인원한방 작성: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     public PlanDto.Id createPlanAllInOne(PlanDto.CreateAllInOne request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         Plan plan = new Plan(request, member);
         Plan savedPlan = planRepository.save(plan);
@@ -93,15 +89,9 @@ public class PlanService {
 
     // Plan 유저별 단일상세 조회
     public PlanDto.Get readPlanForMember(Long planId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Member member = getMemberOrThrowError();
 
-        Plan plan;
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-            plan = planRepository.findByIdAndIsDeletedAndMemberId(planId, false, member.getId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        } else {
-            plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        }
+        Plan plan = planRepository.findByIdAndIsDeletedAndMemberId(planId, false, member.getId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
 
         plan.increaseViewCount(); // 조회수 증가
 
@@ -155,7 +145,7 @@ public class PlanService {
         }
 
         // Plan에 담을 PlanVote 준비중
-        List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAOrPlanB(plan, plan);
+        List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAAndIsDeletedOrPlanBAndIsDeleted(plan, false, plan, false);
         for (PlanVote planVote : planVoteList) {
             planVote.checkTimeOut(); // 투표기간이 종료됐는지 체크
         }
@@ -194,15 +184,9 @@ public class PlanService {
 
     // Plan 유저별 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     public PlanDto.GetAllInOne readPlanAllInOneForMember(Long planId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Member member = getMemberOrThrowError();
 
-        Plan plan;
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-            plan = planRepository.findByIdAndIsDeletedAndMemberId(planId, false, member.getId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        } else {
-            plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        }
+        Plan plan = planRepository.findByIdAndIsDeletedAndMemberId(planId, false, member.getId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
 
         List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
         List<DayPlanDto.Get> dayPlanDtos = dayPlanList.stream().map(DayPlanDto.Get::new).toList();
@@ -249,17 +233,6 @@ public class PlanService {
         List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAOrPlanB(plan, plan);
         List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
 
-        // 로그인여부 검사
-        Boolean isWriter = false;
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
-
-            // 로그인유저와 작성유저의 일치여부 검사
-            if (member.getId() == plan.getMember().getId()) {
-                isWriter = true;
-            }
-        }
-
         // Plan에 DayPlan과 PlanVote 담는중
         return PlanDto.GetAllInOne.builder()
                 .plan(plan)
@@ -267,7 +240,7 @@ public class PlanService {
                 .planVotes(planVoteDtos)
                 .isLike(planLikeService.statusPlanLike(planId))
                 .isScrap(planScrapService.statusPlanScrap(planId))
-                .isWriter(isWriter)
+                .isWriter(true)
                 .build();
     }
 
@@ -288,15 +261,9 @@ public class PlanService {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page-1, size, sort);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Member member = getMemberOrThrowError();
 
-        Page<Plan> plans;
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-            plans = planRepository.findAllByIsDeletedAndMemberId(pageable, false, member.getId());
-        } else {
-            plans = planRepository.findAllByIsDeleted(pageable, false);
-        }
+        Page<Plan> plans = planRepository.findAllByIsDeletedAndMemberId(pageable, false, member.getId());
 
         return plans.map(PlanDto.Get::new);
     }
@@ -310,8 +277,7 @@ public class PlanService {
 
     // Plan 수정
     public PlanDto.Id updatePlan(Long planId, PlanDto.Update request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
 
@@ -326,8 +292,7 @@ public class PlanService {
 
     // Plan 올인원한방 수정: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     public PlanDto.Id updatePlanAllInOne(Long planId, PlanDto.UpdateAllInOne request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
 
@@ -354,8 +319,7 @@ public class PlanService {
 
     // Plan 올인원한방 삭제: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     public PlanDto.Delete deletePlanAllInOne(Long planId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
 
@@ -503,8 +467,7 @@ public class PlanService {
 
     // PlanVote 생성
     public PlanVoteDto.Id createPlanVote(PlanVoteDto.Create request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         // planRepository.find 조건으로 { 작성자 본인여부, 작성글 공개여부, 투표장 종료여부, 투표장 삭제여부 } 가 있을 수 있으나 일단 투표놀이를 위해 제한해제
         Plan planA = planRepository.findById(request.getPlanAId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
@@ -553,23 +516,16 @@ public class PlanService {
             notClosed.checkTimeOut();
         }
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Member member = getMemberOrThrowError();
 
-        Page<PlanVote> planVotes;
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-            planVotes = planVoteRepository.findAllByIsDeletedAndMemberId(pageable, false, member.getId());
-        } else {
-            planVotes = planVoteRepository.findAllByIsDeleted(pageable, false);
-        }
+        Page<PlanVote> planVotes = planVoteRepository.findAllByIsDeletedAndMemberId(pageable, false, member.getId());
 
         return planVotes.map(PlanVoteDto.Get::new);
     }
 
     // PlanVote 수정
     public PlanVoteDto.Id updatePlanVote(Long planVoteId, PlanVoteDto.Update request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         // 투표기간이 종료됐는지 체크
         PlanVote planVote = planVoteRepository.findByIdAndIsDeletedAndIsClosed(planVoteId, false, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
@@ -591,8 +547,7 @@ public class PlanService {
 
     // PlanVote 종료
     public PlanVoteDto.Close closePlanVote(Long planVoteId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(planVoteId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
 
@@ -608,10 +563,9 @@ public class PlanService {
 
     // PlanVote 삭제
     public PlanVoteDto.Delete deletePlanVote(Long planVoteId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
-        PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(planVoteId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
+        PlanVote planVote = planVoteRepository.findById(planVoteId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
 
         // 삭제권한 체크
         if (member.getId() != planVote.getMember().getId()) {
@@ -679,23 +633,16 @@ public class PlanService {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page-1, size, sort);
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Member member = getMemberOrThrowError();
 
-        Page<VotePaper> votePapers;
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-            votePapers = votePaperRepository.findAllByIsDeletedAndMemberId(pageable, false, member.getId());
-        } else {
-            votePapers = votePaperRepository.findAllByIsDeleted(pageable, false);
-        }
+        Page<VotePaper> votePapers = votePaperRepository.findAllByIsDeletedAndMemberId(pageable, false, member.getId());
 
         return votePapers.map(VotePaperDto.Get::new);
     }
 
     // VotePaper 수정
     public VotePaperDto.Id updateVotePaper(Long votePaperId, VotePaperDto.Update request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         // 투표기간이 종료됐는지 체크
         PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(request.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
@@ -726,8 +673,7 @@ public class PlanService {
 
     // VotePaper 삭제
     public VotePaperDto.Delete deleteVotePaper(Long votePaperId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         VotePaper votePaper = votePaperRepository.findByIdAndIsDeleted(votePaperId, false).orElseThrow(() -> new CustomException(ErrorCode.VOTE_PAPER_NOT_FOUND));
         PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(votePaper.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
@@ -762,8 +708,7 @@ public class PlanService {
 
     // Plan 댓글 등록
     public PlanCommentDto.Id createPlanComment(Long planId, PlanCommentDto.Create request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         Plan plan = getPlan(planId);
 
@@ -786,8 +731,7 @@ public class PlanService {
 
     // Plan 댓글 수정
     public PlanCommentDto.Id updatePlanComment(Long commentId, PlanCommentDto.Update request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         PlanComment planComment = planCommentRepository.findByIdAndIsDeleted(commentId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_COMMENT_NOT_FOUND));
 
@@ -802,8 +746,7 @@ public class PlanService {
 
     // Plan 댓글 삭제
     public PlanCommentDto.Delete deletePlanComment(Long commentId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+        Member member = getMemberOrThrowError();
 
         PlanComment planComment = planCommentRepository.findByIdAndIsDeleted(commentId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_COMMENT_NOT_FOUND));
 
@@ -867,7 +810,17 @@ public class PlanService {
 
 
 
-    private Member getMember(String email) {
+    private Member getMemberOrThrowError() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+            return member;
+        } else {
+            throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
+        }
+    }
+
+    private Member getMember (String email) {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }

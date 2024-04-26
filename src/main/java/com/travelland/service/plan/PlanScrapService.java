@@ -47,6 +47,8 @@ public class PlanScrapService {
                             () -> planScrapRepository.save(new PlanScrap(member, plan)) // 최초로 좋아요를 등록하는 경우
                     );
             redisTemplate.opsForSet().add(PLAN_SCRAPS_PLAN_ID + planId, email);
+        } else {
+            throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
         }
     }
 
@@ -61,17 +63,17 @@ public class PlanScrapService {
 
             getPlanScrap(planId,email).cancelScrap();
             redisTemplate.opsForSet().remove(PLAN_SCRAPS_PLAN_ID + planId, email);
+        } else {
+            throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
         }
     }
 
     // Plan 스크랩 유저별 전체목록 조회
     @Transactional(readOnly = true)
     public List<PlanDto.GetList> getPlanScrapList(int page, int size) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-        String email = member.getEmail();
+        Member member = getMemberOrThrowError();
 
-        return planScrapRepository.getScrapListByMember(getMember(email),size,page);
+        return planScrapRepository.getScrapListByMember(member, size, page);
     }
 
     // Plan 스크랩 여부 확인
@@ -93,9 +95,14 @@ public class PlanScrapService {
         return false;
     }
 
-    private PlanScrap getPlanScrap(Long planId, String email) {
-        return planScrapRepository.findByMemberAndPlan(getMember(email), getPlan(planId))
-                .orElseThrow(()-> new CustomException(ErrorCode.POST_LIKE_NOT_FOUND));
+    private Member getMemberOrThrowError() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+            return member;
+        } else {
+            throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
+        }
     }
 
     private Member getMember(String email) {
@@ -106,5 +113,10 @@ public class PlanScrapService {
     private Plan getPlan(Long planId) {
         return planRepository.findById(planId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+    }
+
+    private PlanScrap getPlanScrap(Long planId, String email) {
+        return planScrapRepository.findByMemberAndPlan(getMember(email), getPlan(planId))
+                .orElseThrow(()-> new CustomException(ErrorCode.POST_LIKE_NOT_FOUND));
     }
 }
