@@ -100,7 +100,14 @@ public class PlanService {
 
     // Plan 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
     public PlanDto.GetAllInOne readPlanAllInOne(Long planId) {
-        Plan plan = planRepository.findByIdAndIsDeletedAndIsPublic(planId, false, true).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        Plan plan = planRepository.findByIdAndIsDeleted/*AndIsPublic*/(planId, false/*, true*/).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+
+        // 비공개글인 경우, 로그인유저와 작성유저의 일치여부 검사
+        if (plan.getIsPublic() == false) {
+            if (getMemberOrThrowError() != plan.getMember()) {
+                throw new CustomException(ErrorCode.POST_GET_NOT_PERMISSION);
+            }
+        }
 
         List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
         List<DayPlanDto.Get> dayPlanDtos = dayPlanList.stream().map(DayPlanDto.Get::new).toList();

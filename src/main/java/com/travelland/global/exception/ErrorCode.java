@@ -23,6 +23,7 @@ public enum ErrorCode {
     UNAUTHORIZED_MEMBER(UNAUTHORIZED, "존재하지 않는 회원입니다."),
 
     // 403 FORBIDDEN: 권한이 없는 접근
+    POST_GET_NOT_PERMISSION(FORBIDDEN, "해당 게시물을 조회할 권한이 없습니다."),
     POST_UPDATE_NOT_PERMISSION(FORBIDDEN, "해당 게시물을 수정할 권한이 없습니다."),
     POST_DELETE_NOT_PERMISSION(FORBIDDEN, "해당 게시물을 삭제할 권한이 없습니다."),
     POST_COMMENT_DELETE_NOT_PERMISSION(FORBIDDEN, "해당 댓글을 삭제할 권한이 없습니다."),
