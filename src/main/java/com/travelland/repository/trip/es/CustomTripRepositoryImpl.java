@@ -10,6 +10,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -42,6 +43,38 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
                     boolQueryBuilder.should(QueryBuilders.matchQuery("content", word));
                     boolQueryBuilder.should(QueryBuilders.matchQuery("area", word));
                     boolQueryBuilder.should(QueryBuilders.matchQuery("hashtag", word));
+                });
+        boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", true));
+        searchQueryBuilder.withQuery(boolQueryBuilder);
+        return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
+    }
+    @Override
+    public SearchHits<TripSearchDoc> searchByTextTEST(String text, Pageable pageable) {
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
+        searchQueryBuilder.withPageable(pageable);
+        searchQueryBuilder.withHighlightFields(
+                new HighlightBuilder.Field("hashtag"),
+                new HighlightBuilder.Field("area"),
+                new HighlightBuilder.Field("eng_kor_hashtag_suggest"),
+                new HighlightBuilder.Field("chosung_hashtag"),
+                new HighlightBuilder.Field("chosung_area"),
+                new HighlightBuilder.Field("ng_kor_area_suggest")
+        );
+
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.minimumShouldMatch(1);
+        Arrays.stream(text.split("\\s+"))
+                .forEach(word -> {
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("title", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("content", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("area", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("hashtag", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("eng_kor_hashtag_suggest", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("chosung_hashtag", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("chosung_area", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("eng_kor_area_suggest", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("chosung_title", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("eng_kor_title_suggest", word));
                 });
         boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", true));
         searchQueryBuilder.withQuery(boolQueryBuilder);

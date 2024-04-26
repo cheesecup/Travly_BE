@@ -147,7 +147,7 @@ public class TripController implements TripControllerDocs {
                                                                   @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                                                                   @RequestParam(required = false, defaultValue = "false") Boolean isAsc) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(tripSearchService.searchTrip(text, page, size, sortBy, isAsc));
+                .body(tripSearchService.totalSearchTrip(text, page, size, sortBy, isAsc));
     }
 
     //여행정보 해쉬태그 검색

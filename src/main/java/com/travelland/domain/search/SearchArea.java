@@ -1,19 +1,17 @@
-package com.travelland.domain.trip;
+package com.travelland.domain.search;
 
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.travelland.constant.Constants.TRIP_AREA_MAP;
 
 @Component
-public class TripArea {
+public class SearchArea {
     private final Map<String,String[]> areaMap;
 
-    public TripArea(){
+    public SearchArea(){
         this.areaMap = loadTripArea();
     }
 
