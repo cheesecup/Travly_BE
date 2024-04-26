@@ -60,6 +60,7 @@ public class PlanService {
         Member member = getMemberOrThrowError();
 
         Plan plan = new Plan(request, member);
+        plan.checkIsPastDate();
         Plan savedPlan = planRepository.save(plan);
         redisTemplate.opsForValue().increment(PLAN_TOTAL_COUNT);
 
@@ -71,6 +72,7 @@ public class PlanService {
             List<UnitPlanDto.CreateAllInOne> unitPlanDtos = dayPlanDto.getUnitPlans();
             for (UnitPlanDto.CreateAllInOne unitPlanDto : unitPlanDtos) {
                 UnitPlan unitPlan = new UnitPlan(unitPlanDto, dayPlan);
+                unitPlan.checkTimeFormat();
                 unitPlanRepository.save(unitPlan);
             }
         }
