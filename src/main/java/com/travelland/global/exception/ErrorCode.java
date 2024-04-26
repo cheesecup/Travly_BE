@@ -16,12 +16,16 @@ public enum ErrorCode {
     MISMATCH_REFRESH_TOKEN(BAD_REQUEST, "리프레시 토큰의 유저 정보가 일치하지 않습니다"),
     WRONG_MULTIPARTFILE(BAD_REQUEST, "Multipartfile에 문제가 있습니다"),
     WRONG_USERINFO(BAD_REQUEST,"유저 정보를 다시 확인해주세요"),
+    WRONG_TIME_FORMAT(BAD_REQUEST, "잘못된 시간형식입니다"),
+    WRONG_PLAN_DATE(BAD_REQUEST, "과거날짜로 플랜을 작성할 수는 없습니다"),
 
     // 401 UNAUTHORIZED: 인증되지 않은 사용자
     INVALID_AUTH_TOKEN(UNAUTHORIZED, "권한 정보가 없는 토큰입니다"),
+    STATUS_NOT_LOGIN(UNAUTHORIZED, "로그인 상태가 아닙니다."),
     UNAUTHORIZED_MEMBER(UNAUTHORIZED, "존재하지 않는 회원입니다."),
 
     // 403 FORBIDDEN: 권한이 없는 접근
+    POST_GET_NOT_PERMISSION(FORBIDDEN, "해당 게시물을 조회할 권한이 없습니다."),
     POST_UPDATE_NOT_PERMISSION(FORBIDDEN, "해당 게시물을 수정할 권한이 없습니다."),
     POST_DELETE_NOT_PERMISSION(FORBIDDEN, "해당 게시물을 삭제할 권한이 없습니다."),
     POST_COMMENT_DELETE_NOT_PERMISSION(FORBIDDEN, "해당 댓글을 삭제할 권한이 없습니다."),

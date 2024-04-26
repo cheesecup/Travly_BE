@@ -50,8 +50,9 @@ public class PlanLikeService {
                     );
             redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID + planId, email);
         } else {
-            Plan plan = getPlan(planId);
-            plan.increaseLikeCount(); // 좋아요수 증가 (스크랩은 스크립수 증가 없음)
+//            Plan plan = getPlan(planId);
+//            plan.increaseLikeCount(); // 좋아요수 증가 (스크랩은 스크립수 증가 없음)
+            throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
         }
     }
 
@@ -70,19 +71,18 @@ public class PlanLikeService {
             getPlanLike(planId,email).cancelLike();
             redisTemplate.opsForSet().remove(PLAN_LIKES_PLAN_ID + planId, email);
         } else {
-            Plan plan = getPlan(planId);
-            plan.decreaseLikeCount(); // 좋아요수 감소 (스크랩은 스크립수 감소 없음)
+//            Plan plan = getPlan(planId);
+//            plan.decreaseLikeCount(); // 좋아요수 감소 (스크랩은 스크립수 감소 없음)
+            throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
         }
     }
 
     // Plan 좋아요 유저별 전체목록 조회
     @Transactional(readOnly = true)
     public List<PlanDto.GetList> getPlanLikeList(int page, int size) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-        String email = member.getEmail();
+        Member member = getMemberOrThrowError();
 
-        return  planLikeRepository.getLikeListByMember(getMember(email),size,page);
+        return  planLikeRepository.getLikeListByMember(member, size, page);
     }
 
     // Plan 좋아요 여부 확인
@@ -104,9 +104,14 @@ public class PlanLikeService {
         return false;
     }
 
-    private PlanLike getPlanLike(Long planId, String email) {
-        return planLikeRepository.findByMemberAndPlan(getMember(email), getPlan(planId))
-                .orElseThrow(()-> new CustomException(ErrorCode.POST_LIKE_NOT_FOUND));
+    private Member getMemberOrThrowError() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+            return member;
+        } else {
+            throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
+        }
     }
 
     private Member getMember(String email) {
@@ -117,5 +122,10 @@ public class PlanLikeService {
     private Plan getPlan(Long planId) {
         return planRepository.findById(planId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+    }
+
+    private PlanLike getPlanLike(Long planId, String email) {
+        return planLikeRepository.findByMemberAndPlan(getMember(email), getPlan(planId))
+                .orElseThrow(()-> new CustomException(ErrorCode.POST_LIKE_NOT_FOUND));
     }
 }

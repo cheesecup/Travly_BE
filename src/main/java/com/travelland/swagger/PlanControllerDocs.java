@@ -31,8 +31,8 @@ public interface PlanControllerDocs {
     @Operation(summary = "Plan 한방 상세/단일 조회", description = "Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재")
     ResponseEntity readPlanAllInOne(@PathVariable Long planId);
 
-    @Operation(summary = "(마이페이지용) Plan 유저별 한방 상세/단일 조회", description = "Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재")
-    ResponseEntity readPlanAllInOneForMember(@PathVariable Long planId);
+//    @Operation(summary = "(마이페이지용) Plan 유저별 한방 상세/단일 조회", description = "Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재")
+//    ResponseEntity readPlanAllInOneForMember(@PathVariable Long planId);
 
     @Operation(summary = "Plan 전체목록 조회", description = "page는 1부터")
     ResponseEntity readPlanList(@RequestParam(defaultValue = "1") int page,
@@ -121,7 +121,7 @@ public interface PlanControllerDocs {
                                     @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                                     @RequestParam(required = false, defaultValue = "false") boolean isAsc);
 
-    @Operation(summary = "(마이페이지용) PlanVote(투표장) 전체/목록 조회", description = "page는 1부터")
+    @Operation(summary = "(마이페이지용) PlanVote(투표장) 유저별 전체/목록 조회", description = "page는 1부터")
     ResponseEntity readPlanVoteListForMember(@RequestParam(defaultValue = "1") int page,
                                              @RequestParam(defaultValue = "20") int size,
                                              @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
