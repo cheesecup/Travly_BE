@@ -26,8 +26,8 @@ import static com.travelland.constant.Constants.*;
 public class TripService {
 
     private final TripRepository tripRepository;
-    private final MemberRepository memberRepository;
     private final TripHashtagRepository tripHashtagRepository;
+    private final MemberRepository memberRepository;
     private final RedisTemplate<String,String> redisTemplate;
     private final TripImageService tripImageService;
     private final TripLikeService tripLikeService;
@@ -35,9 +35,8 @@ public class TripService {
     private final TripSearchService tripSearchService;
 
     @Transactional
-    public TripDto.Id createTrip(TripDto.Create requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, String email) {
-        Member member = getMember(email);
-        Trip trip = tripRepository.save(new Trip(requestDto, member));
+    public TripDto.Id createTrip(TripDto.Create requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, Member loginMember) {
+        Trip trip = tripRepository.save(new Trip(requestDto, loginMember));
 
         if (!requestDto.getHashTag().isEmpty()) //해쉬태그 저장
             requestDto.getHashTag().forEach(hashtagTitle -> tripHashtagRepository.save(new TripHashtag(hashtagTitle, trip)));
@@ -52,11 +51,11 @@ public class TripService {
     }
 
     @Transactional
-    public TripDto.Get getTrip(Long tripId, String email) {
+    public TripDto.Get getTrip(Long tripId, String loginMemberEmail) {
         Trip trip = tripRepository.getTripWithMember(tripId, false).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
-        Member member = trip.getMember();
+        Member writer = trip.getMember(); //게시글을 작성한 회원정보
 
-        if (!trip.isPublic() && member.getEmail().equals(email)) { //비공개 글인 경우
+        if (!trip.isPublic() && !writer.getEmail().equals(loginMemberEmail)) { //비공개 글인 경우
             throw new CustomException(ErrorCode.POST_ACCESS_NOT_PERMISSION);
         }
 
@@ -65,18 +64,21 @@ public class TripService {
 
         boolean isLike = false;
         boolean isScrap = false;
-        boolean isWriter = member.getEmail().equals(email);
+        boolean isWriter = writer.getEmail().equals(loginMemberEmail);
 
-        if(email.isEmpty())
-            return new TripDto.Get(trip, member, hashtagList, imageUrlList, isLike, isScrap, isWriter);
+        if(loginMemberEmail.isEmpty())
+            return new TripDto.Get(trip, writer, hashtagList, imageUrlList, isLike, isScrap, isWriter);
 
         //로그인한 경우
         //스크랩/좋아요 여부 확인
-        isLike = tripLikeService.statusTripLike(tripId, email);
-        isScrap = tripScrapService.statusTripScrap(tripId, email);
+        Member loginMember = memberRepository.findByEmail(loginMemberEmail)
+                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+
+        isLike = tripLikeService.statusTripLike(tripId, loginMember);
+        isScrap = tripScrapService.statusTripScrap(tripId, loginMember);
 
         //조회수 증가
-        Long result = redisTemplate.opsForSet().add(TRIP_VIEW_COUNT + tripId, email);
+        Long result = redisTemplate.opsForSet().add(TRIP_VIEW_COUNT + tripId, loginMember.getEmail());
 
         if (result != null && result == 1L) {
             trip.increaseViewCount();
@@ -86,7 +88,7 @@ public class TripService {
                 redisTemplate.opsForZSet().add(VIEW_RANK, tripId.toString(), view);
         }
 
-        return new TripDto.Get(trip, member, hashtagList, imageUrlList, isLike, isScrap, isWriter);
+        return new TripDto.Get(trip, writer, hashtagList, imageUrlList, isLike, isScrap, isWriter);
     }
 
     @Transactional
@@ -154,11 +156,6 @@ public class TripService {
 
     private List<TripHashtag> getHashtags(Trip trip){
         return tripHashtagRepository.findAllByTrip(trip);
-    }
-
-    private Member getMember(String email) {
-        return memberRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     private Trip getTrip(Long tripId) {

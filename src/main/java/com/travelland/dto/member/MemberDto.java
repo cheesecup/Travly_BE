@@ -38,4 +38,21 @@ public class MemberDto {
             this.profileImage = member.getProfileImage();
         }
     }
+
+    @Getter
+    public static class GetMyPage {
+        private String nickname;
+        private String email;
+        private String profileImage;
+        private long tripTotalElements;
+        private long scrapTotalElements;
+
+        public GetMyPage(Member member, long tripTotalElements, long scrapTotalElements) {
+            this.nickname = member.getNickname();
+            this.email = member.getEmail();
+            this.profileImage = member.getProfileImage();
+            this.tripTotalElements = tripTotalElements;
+            this.scrapTotalElements = scrapTotalElements;
+        }
+    }
 }

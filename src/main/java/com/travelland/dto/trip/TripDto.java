@@ -176,6 +176,7 @@ public class TripDto {
         private LocalDate tripEndDate;
         private List<String> hashtagList;
         private String thumbnailUrl;
+        private Boolean isScrap = true;
 
         public Scraps(TripSearchDoc trip) {
             this.tripId = trip.getTripId();
