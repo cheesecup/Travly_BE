@@ -23,13 +23,11 @@ public class VotePaper {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long memberId; // 객체형 연관관계를 맺기엔 memberId만 필요하고 memberId가 바뀔일도 없음
+    private Long memberId;
 
-    private Long planVoteId; // 객체형 연관관계를 맺기엔 planVoteId만 필요하고 planVoteId가 바뀔일도 없음
+    private Long planVoteId;
 
     private Boolean isVotedA; // true면 A에 투표, false면 B에 투표
-
-    private Boolean isDeleted = false;
 
     @Column(length = 20)
     private String content; // 투표 추가기능: 예를들어 투표사유를 적는다던가, MBTI를 적는다던가
@@ -41,6 +39,8 @@ public class VotePaper {
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime modifiedAt;
+
+    private Boolean isDeleted = false;
 
     public VotePaper(VotePaperDto.Create request, Long memberId) {
         this.memberId = memberId;
@@ -69,9 +69,7 @@ public class VotePaper {
 
         if(now.isAfter(reVoteAbleTime)) {
             return true;
-        }
-        else {
-//            throw new RuntimeException("재투표는 " + term +"초 후에 가능합니다.");
+        } else {
             throw new CustomException(ErrorCode.RE_VOTE_NOT_ENOUGH_TIME);
         }
     }

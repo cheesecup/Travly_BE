@@ -6,7 +6,6 @@ import com.travelland.dto.plan.*;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.security.UserDetailsImpl;
-import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.plan.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,319 +21,121 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
-import static com.travelland.constant.Constants.PLAN_TOTAL_COUNT;
 import static com.travelland.constant.Constants.PLAN_VIEW_COUNT;
-
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class PlanService {
 
-    private final MemberRepository memberRepository;
     private final PlanRepository planRepository;
     private final DayPlanRepository dayPlanRepository;
     private final UnitPlanRepository unitPlanRepository;
     private final PlanVoteRepository planVoteRepository;
-    private final VotePaperRepository votePaperRepository;
     private final PlanCommentRepository planCommentRepository;
     private final PlanLikeService planLikeService;
     private final PlanScrapService planScrapService;
     private final RedisTemplate<String,String> redisTemplate;
 
-
-    // Plan 작성
-    public PlanDto.Id createPlan(PlanDto.Create request) {
-        Member member = getMemberOrThrowError();
-
-        Plan plan = new Plan(request, member);
-        Plan savedPlan = planRepository.save(plan);
-        redisTemplate.opsForValue().increment(PLAN_TOTAL_COUNT);
-
-        return new PlanDto.Id(savedPlan);
-    }
-
-    // Plan 올인원한방 작성: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
+    // Plan 한방 작성: 3계층구조, Plan 1개 ⊃ DayPlan N개 ⊃ UnitPlan M개
     public PlanDto.Id createPlanAllInOne(PlanDto.CreateAllInOne request) {
-        Member member = getMemberOrThrowError();
+        Member member = getLoginMember();
+        Plan savedPlan = planRepository.save(new Plan(request, member));
 
-        Plan plan = new Plan(request, member);
-        plan.checkIsPastDate();
-        Plan savedPlan = planRepository.save(plan);
-        redisTemplate.opsForValue().increment(PLAN_TOTAL_COUNT);
+        for (DayPlanDto.CreateAllInOne dayPlanDto : request.getDayPlans()) {
+            DayPlan savedDayPlan = dayPlanRepository.save(new DayPlan(dayPlanDto, savedPlan));
 
-        List<DayPlanDto.CreateAllInOne> dayPlanDtos = request.getDayPlans();
-        for (DayPlanDto.CreateAllInOne dayPlanDto : dayPlanDtos) {
-            DayPlan dayPlan = new DayPlan(dayPlanDto, plan);
-            dayPlanRepository.save(dayPlan);
-
-            List<UnitPlanDto.CreateAllInOne> unitPlanDtos = dayPlanDto.getUnitPlans();
-            for (UnitPlanDto.CreateAllInOne unitPlanDto : unitPlanDtos) {
-                UnitPlan unitPlan = new UnitPlan(unitPlanDto, dayPlan);
-                unitPlan.checkTimeFormat();
-                unitPlanRepository.save(unitPlan);
+            for (UnitPlanDto.CreateAllInOne unitPlanDto : dayPlanDto.getUnitPlans()) {
+                UnitPlan savedUnitPlan = unitPlanRepository.save(new UnitPlan(unitPlanDto, savedDayPlan));
             }
         }
 
         return new PlanDto.Id(savedPlan);
     }
 
-    // Plan 상세단일 조회
-    public PlanDto.Get readPlan(Long planId) {
-        Plan plan = planRepository.findByIdAndIsDeletedAndIsPublic(planId, false, true).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-
-        plan.increaseViewCount(); // 조회수 증가
-
-        return new PlanDto.Get(plan);
-    }
-
-    // Plan 유저별 단일상세 조회
-    public PlanDto.Get readPlanForMember(Long planId) {
-        Member member = getMemberOrThrowError();
-
-        Plan plan = planRepository.findByIdAndIsDeletedAndMemberId(planId, false, member.getId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-
-        plan.increaseViewCount(); // 조회수 증가
-
-        return new PlanDto.Get(plan);
-    }
-
-    // Plan 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
+    // Plan 한방 단일상세 조회
     public PlanDto.GetAllInOne readPlanAllInOne(Long planId) {
-        Plan plan = planRepository.findByIdAndIsDeleted/*AndIsPublic*/(planId, false/*, true*/).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
 
         // 비공개글인 경우, 로그인유저와 작성유저의 일치여부 검사
         if (plan.getIsPublic() == false) {
-            if (getMemberOrThrowError().getId() != plan.getMember().getId()) {
-                throw new CustomException(ErrorCode.POST_GET_NOT_PERMISSION);
-            }
+            checkAuth(getLoginMember().getId(), plan.getMember().getId(), ErrorCode.POST_GET_NOT_PERMISSION);
         }
 
         List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
-        List<DayPlanDto.Get> dayPlanDtos = dayPlanList.stream().map(DayPlanDto.Get::new).toList();
-
-        List<DayPlanDto.GetAllInOne> ones = new ArrayList<>();
+        List<DayPlanDto.GetAllInOne> dayPlanDtos = new ArrayList<>();
 
         // DayPlan에 UnitPlan 담는중
-        for (DayPlanDto.Get dayPlan : dayPlanDtos) {
-            List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanIdAndIsDeleted(dayPlan.getDayPlanId(), false);
+        for (DayPlan dayPlan : dayPlanList) {
+            List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanIdAndIsDeleted(dayPlan.getId(), false);
             if (unitPlanList == null)
                 break;
-            List<UnitPlanDto.GetAllInOne> unitPlanDtos = unitPlanList.stream().map(UnitPlanDto.GetAllInOne::new).toList();
 
-            // 첫번째/마지막 unitPlanList 의 address 를 가져옴
-            String startAddress = unitPlanList.get(0).getAddress();
-            String endAddress = unitPlanList.get(unitPlanList.size() - 1).getAddress();
-
-            // Path 변수를 저장할 StringBuilder 생성
-            StringBuilder path = new StringBuilder();
-            boolean isFirst = true;
-
-            // unitPlanList의 각 요소인 unitPlan의 address를 StringBuilder에 추가
-            for (UnitPlan unitPlan : unitPlanList) {
-                // 만약 현재 unitPlan이 마지막 요소가 아니라면 " >> "를 추가
-                if (!isFirst) {
-                    path.append(" >> ");
-                }
-                isFirst = false;
-                path.append(unitPlan.getAddress());
-            }
-
-            // path 변수에 저장된 값을 가져옴
-            String pathString = path.toString();
-
-            ones.add(DayPlanDto.GetAllInOne.builder()
+            dayPlanDtos.add(DayPlanDto.GetAllInOne.builder()
                     .dayPlan(dayPlan)
-                    .unitPlans(unitPlanDtos)
-                    .startAddress(startAddress)
-                    .endAddress(endAddress)
-                    .path(pathString)
+                    .unitPlans(unitPlanList.stream().map(UnitPlanDto.GetAllInOne::new).toList())
+                    .startAddress(unitPlanList.get(0).getAddress())
+                    .endAddress(unitPlanList.get(unitPlanList.size()-1).getAddress())
+                    .path(getPath(unitPlanList))
                     .build());
         }
 
         // Plan에 담을 PlanVote 준비중
         List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAAndIsDeletedOrPlanBAndIsDeleted(plan, false, plan, false);
-        for (PlanVote planVote : planVoteList) {
-            planVote.checkTimeOut(); // 투표기간이 종료됐는지 체크
-        }
-        List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
-
-        // 로그인여부 검사
-        Boolean isWriter = false;
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-
-            // 로그인유저와 작성유저의 일치여부 검사
-            if(member.getId() == plan.getMember().getId()) {
-                isWriter = true;
-            }
-
-            // 로그인유저가 안 본 글만 조회수 증가, Redis를 사용하여 이메일의 저장여부로 없는 경우에만 조회수 증가
-            Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT + planId, member.getEmail());
-            if (result != null && result == 1L) {
-                plan.increaseViewCount(); // 조회수 증가
-            }
-        } else { // 비로그인 유저의 조회수 증가
-            plan.increaseViewCount(); // 조회수 증가
-        }
+        planVoteList.forEach(PlanVote::checkTimeOut); // 투표기간이 종료됐는지 체크
 
         // Plan에 DayPlan과 PlanVote 담는중
         return PlanDto.GetAllInOne.builder()
                 .plan(plan)
-                .dayPlans(ones)
-                .planVotes(planVoteDtos)
+                .dayPlans(dayPlanDtos)
+                .planVotes(planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList())
                 .isLike(planLikeService.statusPlanLike(planId))
                 .isScrap(planScrapService.statusPlanScrap(planId))
-                .isWriter(isWriter)
+                .isWriter(getIsWriterAndIncreaseViewCount(plan))
                 .build();
     }
 
-    // Plan 유저별 올인원한방 조회: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
-    public PlanDto.GetAllInOne readPlanAllInOneForMember(Long planId) {
-        Member member = getMemberOrThrowError();
-
-        Plan plan = planRepository.findByIdAndIsDeletedAndMemberId(planId, false, member.getId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-
-        List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
-        List<DayPlanDto.Get> dayPlanDtos = dayPlanList.stream().map(DayPlanDto.Get::new).toList();
-
-        List<DayPlanDto.GetAllInOne> ones = new ArrayList<>();
-
-        // DayPlan에 UnitPlan 담는중
-        for (DayPlanDto.Get dayPlan : dayPlanDtos) {
-            List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanIdAndIsDeleted(dayPlan.getDayPlanId(), false);
-            if (unitPlanList == null)
-                break;
-            List<UnitPlanDto.GetAllInOne> unitPlanDtos = unitPlanList.stream().map(UnitPlanDto.GetAllInOne::new).toList();
-
-            // 첫번째/마지막 unitPlanList 의 address 를 가져옴
-            String startAddress = unitPlanList.get(0).getAddress();
-            String endAddress = unitPlanList.get(unitPlanList.size() - 1).getAddress();
-
-            // Path 변수를 저장할 StringBuilder 생성
-            StringBuilder path = new StringBuilder();
-            boolean isFirst = true;
-
-            // unitPlanList의 각 요소인 unitPlan의 address를 StringBuilder에 추가
-            for (UnitPlan unitPlan : unitPlanList) {
-                // 만약 현재 unitPlan이 마지막 요소가 아니라면 " >> "를 추가
-                if (!isFirst) {
-                    path.append(" >> ");
-                }
-                isFirst = false;
-                path.append(unitPlan.getAddress());
-            }
-
-            // path 변수에 저장된 값을 가져옴
-            String pathString = path.toString();
-
-            ones.add(DayPlanDto.GetAllInOne.builder()
-                    .dayPlan(dayPlan)
-                    .unitPlans(unitPlanDtos)
-                    .startAddress(startAddress)
-                    .endAddress(endAddress)
-                    .path(pathString)
-                    .build());
-        }
-
-        List<PlanVote> planVoteList = planVoteRepository.findAllByPlanAOrPlanB(plan, plan);
-        List<PlanVoteDto.GetAllInOne> planVoteDtos = planVoteList.stream().map(PlanVoteDto.GetAllInOne::new).toList();
-
-        // Plan에 DayPlan과 PlanVote 담는중
-        return PlanDto.GetAllInOne.builder()
-                .plan(plan)
-                .dayPlans(ones)
-                .planVotes(planVoteDtos)
-                .isLike(planLikeService.statusPlanLike(planId))
-                .isScrap(planScrapService.statusPlanScrap(planId))
-                .isWriter(true)
-                .build();
-    }
-
-    // Plan 전체목록 조회
+    // Plan 전체목록 조회: page는 1부터
     public Page<PlanDto.Get> readPlanList(int page, int size, String sortBy, boolean isAsc) {
-        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
-
-        Page<Plan> plans = planRepository.findAllByIsDeletedAndIsPublic(pageable, false, true);
-
+        Page<Plan> plans = planRepository.findAllByIsDeletedAndIsPublic(getPageable(page, size, sortBy, isAsc), false, true);
         return plans.map(PlanDto.Get::new);
     }
 
-    // Plan 유저별 전체목록 조회
+    // (마이페이지용) Plan 유저별 전체목록 조회: page는 1부터
     public Page<PlanDto.Get> readPlanListForMember(int page, int size, String sortBy, boolean isAsc) {
-        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
-
-        Member member = getMemberOrThrowError();
-
-        Page<Plan> plans = planRepository.findAllByIsDeletedAndMemberId(pageable, false, member.getId());
-
+        Member member = getLoginMember();
+        Page<Plan> plans = planRepository.findAllByIsDeletedAndMemberId(getPageable(page, size, sortBy, isAsc), false, member.getId());
         return plans.map(PlanDto.Get::new);
     }
 
-    // Plan 전체목록 조회 (Redis)
-    public PlanDto.GetLists readPlanListRedis(Long lastId, int size, String sortBy, boolean isASC) {
-        List<PlanDto.GetList> list = planRepository.getPlanList(lastId, size, sortBy, isASC);
-
-        return new PlanDto.GetLists(list, Long.parseLong(redisTemplate.opsForValue().get(PLAN_TOTAL_COUNT)));
-    }
-
-    // Plan 수정
-    public PlanDto.Id updatePlan(Long planId, PlanDto.Update request) {
-        Member member = getMemberOrThrowError();
-
-        Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-
-        if (member.getId() != plan.getMember().getId()) {
-            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
-        }
-
-        Plan updatedPlan = plan.update(request);
-
-        return new PlanDto.Id(updatedPlan);
-    }
-
-    // Plan 올인원한방 수정: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
+    // Plan 한방 수정
     public PlanDto.Id updatePlanAllInOne(Long planId, PlanDto.UpdateAllInOne request) {
-        Member member = getMemberOrThrowError();
-
+        // Plan 수정
         Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        checkAuth(getLoginMember().getId(), plan.getMember().getId(), ErrorCode.POST_UPDATE_NOT_PERMISSION);
+        plan.update(request);
 
-        if (member.getId() != plan.getMember().getId()) {
-            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
-        }
-
-        Plan updatedPlan = plan.update(request);
-
-        List<DayPlanDto.UpdateAllInOne> dayPlanDtos = request.getDayPlans();
-        for (DayPlanDto.UpdateAllInOne dayPlanDto : dayPlanDtos) {
+        // DayPlan 수정
+        for (DayPlanDto.UpdateAllInOne dayPlanDto : request.getDayPlans()) {
             DayPlan dayPlan = dayPlanRepository.findByIdAndIsDeleted(dayPlanDto.getDayPlanId(), false).orElseThrow(() -> new CustomException(ErrorCode.DAY_PLAN_NOT_FOUND));
             dayPlan.update(dayPlanDto);
 
-            List<UnitPlanDto.UpdateAllInOne> unitPlanDtos = dayPlanDto.getUnitPlans();
-            for (UnitPlanDto.UpdateAllInOne unitPlanDto : unitPlanDtos) {
+            // UnitPlan 수정
+            for (UnitPlanDto.UpdateAllInOne unitPlanDto : dayPlanDto.getUnitPlans()) {
                 UnitPlan unitPlan = unitPlanRepository.findByIdAndIsDeleted(unitPlanDto.getUnitPlanId(), false).orElseThrow(() -> new CustomException(ErrorCode.UNIT_PLAN_NOT_FOUND));
                 unitPlan.update(unitPlanDto);
             }
         }
 
-        return new PlanDto.Id(updatedPlan);
+        return new PlanDto.Id(plan);
     }
 
-    // Plan 올인원한방 삭제: Plan 안에 DayPlan N개, DayPlan 안에 UnitPlan M개, 3계층구조로 올인원 탑재
+    // Plan 한방 삭제
     public PlanDto.Delete deletePlanAllInOne(Long planId) {
-        Member member = getMemberOrThrowError();
-
         Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-
-        if (member.getId() != plan.getMember().getId()) {
-            throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
-        }
+        checkAuth(getLoginMember().getId(), plan.getMember().getId(), ErrorCode.POST_DELETE_NOT_PERMISSION);
 
         // 연관된 DayPlan 과 UnitPlan 을 먼저 삭제
         List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId,false);
@@ -351,11 +152,11 @@ public class PlanService {
         // 연관된 PlanComment 먼저 삭제
         List<PlanComment> planCommentList = planCommentRepository.findAllByPlanIdAndIsDeleted(planId, false);
         for (PlanComment planComment : planCommentList) {
-            deletePlanComment(planComment.getId());
+            planComment.delete();
         }
 
+        // 마지막에서야 Plan 삭제
         plan.delete();
-
         return new PlanDto.Delete(plan.getIsDeleted());
     }
 
@@ -368,458 +169,7 @@ public class PlanService {
 
 
 
-    // DayPlan 작성
-    public DayPlanDto.Id createDayPlan(Long planId, DayPlanDto.Create request) {
-        Plan plan = planRepository.findByIdAndIsDeleted(planId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-
-        DayPlan dayPlan = new DayPlan(request, plan);
-        DayPlan savedDayPlan = dayPlanRepository.save(dayPlan);
-
-        return new DayPlanDto.Id(savedDayPlan);
-    }
-
-    // DayPlan 조회 (planId)
-    public List<DayPlanDto.Get> readDayPlan(Long planId) {
-        List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
-
-        if (dayPlanList.isEmpty()) {
-            throw new CustomException(ErrorCode.DAY_PLAN_NOT_FOUND);
-        }
-
-        return dayPlanList.stream()
-                .map(DayPlanDto.Get::new)
-                .toList();
-    }
-
-    // DayPlan 수정
-    public DayPlanDto.Id updateDayPlan(Long dayPlanId, DayPlanDto.Update request) {
-        DayPlan dayPlan = dayPlanRepository.findByIdAndIsDeleted(dayPlanId, false).orElseThrow(() -> new CustomException(ErrorCode.DAY_PLAN_NOT_FOUND));
-
-        DayPlan updatedDayPlan = dayPlan.update(request);
-
-        return new DayPlanDto.Id(updatedDayPlan);
-    }
-
-    // DayPlan 삭제
-    public DayPlanDto.Delete deleteDayPlan(Long dayPlanId) {
-        DayPlan dayPlan = dayPlanRepository.findByIdAndIsDeleted(dayPlanId, false).orElseThrow(() -> new CustomException(ErrorCode.DAY_PLAN_NOT_FOUND));
-
-        // 연관된 UnitPlan 을 먼저 삭제
-        List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanIdAndIsDeleted(dayPlan.getId(), false);
-        for (UnitPlan unitPlan : unitPlanList) {
-            unitPlan.delete();
-        }
-
-        dayPlan.delete();
-
-        return new DayPlanDto.Delete(dayPlan.getIsDeleted());
-    }
-
-
-
-
-
-
-
-
-
-
-    // UnitPlan 작성
-    public UnitPlanDto.Id createUnitPlan(Long dayPlanId, UnitPlanDto.Create request) {
-        DayPlan dayPlan = dayPlanRepository.findByIdAndIsDeleted(dayPlanId, false).orElseThrow(() -> new CustomException(ErrorCode.DAY_PLAN_NOT_FOUND));
-
-        UnitPlan unitPlan = new UnitPlan(request, dayPlan);
-        UnitPlan savedUnitPlan = unitPlanRepository.save(unitPlan);
-
-        return new UnitPlanDto.Id(savedUnitPlan);
-    }
-
-    // UnitPlan 조회 (dayPlanId)
-    public List<UnitPlanDto.Get> readUnitPlan(Long dayPlanId) {
-        List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanIdAndIsDeleted(dayPlanId, false);
-
-        if (unitPlanList.isEmpty()) {
-            throw new CustomException(ErrorCode.UNIT_PLAN_NOT_FOUND);
-        }
-
-        return unitPlanList.stream()
-                .map(UnitPlanDto.Get::new)
-                .toList();
-    }
-
-    // UnitPlan 수정
-    public UnitPlanDto.Id updateUnitPlan(Long unitPlanId, UnitPlanDto.Update request) {
-        UnitPlan unitPlan = unitPlanRepository.findByIdAndIsDeleted(unitPlanId, false).orElseThrow(() -> new CustomException(ErrorCode.UNIT_PLAN_NOT_FOUND));
-
-        UnitPlan updatedUnitPlan = unitPlan.update(request);
-
-        return new UnitPlanDto.Id(updatedUnitPlan);
-    }
-
-    // UnitPlan 삭제
-    public UnitPlanDto.Delete deleteUnitPlan(Long unitPlanId) {
-        UnitPlan unitPlan = unitPlanRepository.findByIdAndIsDeleted(unitPlanId, false).orElseThrow(() -> new CustomException(ErrorCode.UNIT_PLAN_NOT_FOUND));
-
-        unitPlan.delete();
-
-        return new UnitPlanDto.Delete(unitPlan.getIsDeleted());
-    }
-
-
-
-
-
-
-
-
-
-
-    // PlanVote 생성
-    public PlanVoteDto.Id createPlanVote(PlanVoteDto.Create request) {
-        Member member = getMemberOrThrowError();
-
-        // planRepository.find 조건으로 { 작성자 본인여부, 작성글 공개여부, 투표장 종료여부, 투표장 삭제여부 } 가 있을 수 있으나 일단 투표놀이를 위해 제한해제
-        Plan planA = planRepository.findById(request.getPlanAId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        Plan planB = planRepository.findById(request.getPlanBId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        PlanVote planVote = new PlanVote(request, planA, planB, member);
-        PlanVote savedPlanVote = planVoteRepository.save(planVote);
-
-        return new PlanVoteDto.Id(savedPlanVote);
-    }
-
-    // PlanVote 상세단일 조회
-    public PlanVoteDto.Get readPlanVote(Long planVoteId) {
-        PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(planVoteId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-
-        planVote.checkTimeOut(); // 투표기간이 종료됐는지 체크
-
-        return new PlanVoteDto.Get(planVote);
-    }
-
-    // PlanVote 전체목록 조회
-    public Page<PlanVoteDto.Get> readPlanVoteList(int page, int size, String sortBy, boolean isAsc) {
-        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
-
-        // 투표기간이 종료됐는지 체크
-        List<PlanVote> notCloseds = planVoteRepository.findAllByIsDeletedAndIsClosed(false, false);
-        for (PlanVote notClosed : notCloseds) {
-            notClosed.checkTimeOut();
-        }
-
-        Page<PlanVote> planVotes = planVoteRepository.findAllByIsDeleted(pageable, false);
-
-        return planVotes.map(PlanVoteDto.Get::new);
-    }
-
-    // PlanVote 유저별 전체목록 조회
-    public Page<PlanVoteDto.Get> readPlanVoteListForMember(int page, int size, String sortBy, boolean isAsc) {
-        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
-
-        // 투표기간이 종료됐는지 체크
-        List<PlanVote> notCloseds = planVoteRepository.findAllByIsDeletedAndIsClosed(false, false);
-        for (PlanVote notClosed : notCloseds) {
-            notClosed.checkTimeOut();
-        }
-
-        Member member = getMemberOrThrowError();
-
-        Page<PlanVote> planVotes = planVoteRepository.findAllByIsDeletedAndMemberId(pageable, false, member.getId());
-
-        return planVotes.map(PlanVoteDto.Get::new);
-    }
-
-    // PlanVote 수정
-    public PlanVoteDto.Id updatePlanVote(Long planVoteId, PlanVoteDto.Update request) {
-        Member member = getMemberOrThrowError();
-
-        // 투표기간이 종료됐는지 체크
-        PlanVote planVote = planVoteRepository.findByIdAndIsDeletedAndIsClosed(planVoteId, false, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-        if (planVote.checkTimeOut()) {
-            throw new CustomException(ErrorCode.PLAN_VOTE_IS_CLOSED);
-        }
-
-        // 수정권한 체크
-        if (member.getId() != planVote.getMember().getId()) {
-            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
-        }
-
-        Plan planA = planRepository.findById(request.getPlanAId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        Plan planB = planRepository.findById(request.getPlanBId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        PlanVote updatedPlanVote = planVote.update(request, planA, planB);
-
-        return new PlanVoteDto.Id(updatedPlanVote);
-    }
-
-    // PlanVote 종료
-    public PlanVoteDto.Close closePlanVote(Long planVoteId) {
-        Member member = getMemberOrThrowError();
-
-        PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(planVoteId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-
-        // 종료권한 체크
-        if (member.getId() != planVote.getMember().getId()) {
-            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
-        }
-
-        planVote.close();
-
-        return new PlanVoteDto.Close(planVote.getIsClosed());
-    }
-
-    // PlanVote 삭제
-    public PlanVoteDto.Delete deletePlanVote(Long planVoteId) {
-        Member member = getMemberOrThrowError();
-
-        PlanVote planVote = planVoteRepository.findById(planVoteId).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-
-        // 삭제권한 체크
-        if (member.getId() != planVote.getMember().getId()) {
-            throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
-        }
-
-        planVote.delete();
-
-        return new PlanVoteDto.Delete(planVote.getIsDeleted());
-    }
-
-
-
-
-
-
-
-
-
-
-    // VotePaper 생성
-    public VotePaperDto.Id createVotePaper(VotePaperDto.Create request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        Member member;
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
-        } else {
-            member = getMember("test@test.com");
-        }
-
-        // 투표기간이 종료됐는지 체크
-        PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(request.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-        if (planVote.checkTimeOut()) {
-            throw new CustomException(ErrorCode.PLAN_VOTE_IS_CLOSED);
-        }
-
-        // 이미 투표한적이 있는지 불러옴, 투표한적이 없으면 Null, 있다면 createdAt 기준 가장최근 투표용지를 불러옴
-//        Optional<VotePaper> recentVotePaper = votePaperRepository.findFirstByMemberIdAndPlanVoteIdOrderByCreatedAtDesc(member.getId(), request.getPlanVoteId());
-//        recentVotePaper.ifPresent(VotePaper::checkReVoteAble);
-
-        VotePaper votePaper = new VotePaper(request, member.getId());
-
-        // 생성된 투표내용에 따라 투표 Count 증가 반영
-        if (request.getIsVotedA() == true) {
-            planVote.increaseAVoteCount();
-        } else if (request.getIsVotedA() == false) {
-            planVote.increaseBVoteCount();
-        }
-
-        VotePaper savedVotePaper = votePaperRepository.save(votePaper);
-
-        return new VotePaperDto.Id(savedVotePaper);
-    }
-
-    // VotePaper 상세단일 조회
-    public VotePaperDto.Get readVotePaper(Long votePaperId) {
-        VotePaper votePaper = votePaperRepository.findByIdAndIsDeleted(votePaperId, false).orElseThrow(() -> new CustomException(ErrorCode.VOTE_PAPER_NOT_FOUND));
-        return new VotePaperDto.Get(votePaper);
-    }
-
-    // VotePaper 유저별 전체목록 조회: 전체유저 전체목록 조회는 관리자 외에 필요가 없음
-    public Page<VotePaperDto.Get> readVotePaperList(int page, int size, String sortBy, boolean isAsc) {
-        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
-
-        Member member = getMemberOrThrowError();
-
-        Page<VotePaper> votePapers = votePaperRepository.findAllByIsDeletedAndMemberId(pageable, false, member.getId());
-
-        return votePapers.map(VotePaperDto.Get::new);
-    }
-
-    // VotePaper 수정
-    public VotePaperDto.Id updateVotePaper(Long votePaperId, VotePaperDto.Update request) {
-        Member member = getMemberOrThrowError();
-
-        // 투표기간이 종료됐는지 체크
-        PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(request.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-        if (planVote.checkTimeOut()) {
-            throw new CustomException(ErrorCode.PLAN_VOTE_IS_CLOSED);
-        }
-
-        VotePaper votePaper = votePaperRepository.findByIdAndIsDeleted(votePaperId, false).orElseThrow(() -> new CustomException(ErrorCode.VOTE_PAPER_NOT_FOUND));
-
-        // 수정권한 체크
-        if (member.getId() != votePaper.getMemberId()) {
-            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
-        }
-
-        // 수정된 투표내용에 따라 투표 Count 증/감 반영
-        if (request.getIsVotedA() != votePaper.getIsVotedA()) {
-            if (request.getIsVotedA() == true) {
-                planVote.changeBtoAVoteCount();
-            } else if (request.getIsVotedA() == false) {
-                planVote.changeAtoBVoteCount();
-            }
-        }
-
-        VotePaper updatedVotePaper = votePaper.update(request);
-
-        return new VotePaperDto.Id(updatedVotePaper);
-    }
-
-    // VotePaper 삭제
-    public VotePaperDto.Delete deleteVotePaper(Long votePaperId) {
-        Member member = getMemberOrThrowError();
-
-        VotePaper votePaper = votePaperRepository.findByIdAndIsDeleted(votePaperId, false).orElseThrow(() -> new CustomException(ErrorCode.VOTE_PAPER_NOT_FOUND));
-        PlanVote planVote = planVoteRepository.findByIdAndIsDeleted(votePaper.getPlanVoteId(), false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_VOTE_NOT_FOUND));
-
-        // 삭제권한 체크
-        if (member.getId() != votePaper.getMemberId()) {
-            throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
-        }
-
-        // 삭제된 투표내용에 따라 투표 Count 감소 반영
-        if (votePaper.getIsDeleted() == false) { // 이미 삭제된 경우 재반영 않도록 조치
-            if (votePaper.getIsVotedA() == true) {
-                planVote.decreaseAVoteCount();
-            } else if (votePaper.getIsVotedA() == false) {
-                planVote.decreaseBVoteCount();
-            }
-        }
-
-        votePaper.delete();
-
-        return new VotePaperDto.Delete(votePaper.getIsDeleted());
-    }
-
-
-
-
-
-
-
-
-
-
-    // Plan 댓글 등록
-    public PlanCommentDto.Id createPlanComment(Long planId, PlanCommentDto.Create request) {
-        Member member = getMemberOrThrowError();
-
-        Plan plan = getPlan(planId);
-
-        PlanComment planComment = new PlanComment(request, member, plan);
-        PlanComment savedPlanComment = planCommentRepository.save(planComment);
-
-        return new PlanCommentDto.Id(savedPlanComment);
-    }
-
-    // Plan 댓글 전체목록 조회 (planId)
-    public Page<PlanCommentDto.Get> readPlanCommentList(Long planId, int page, int size, String sortBy, boolean isAsc) {
-        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, sortBy);
-        Pageable pageable = PageRequest.of(page-1, size, sort);
-
-        Page<PlanComment> planComments = planCommentRepository.findAllByPlanIdAndIsDeleted(pageable, planId, false);
-
-        return planComments.map(PlanCommentDto.Get::new);
-    }
-
-    // Plan 댓글 수정
-    public PlanCommentDto.Id updatePlanComment(Long commentId, PlanCommentDto.Update request) {
-        Member member = getMemberOrThrowError();
-
-        PlanComment planComment = planCommentRepository.findByIdAndIsDeleted(commentId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_COMMENT_NOT_FOUND));
-
-        if (member.getId() != planComment.getMember().getId()) {
-            throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
-        }
-
-        PlanComment updatedPlanComment = planComment.update(request);
-
-        return new PlanCommentDto.Id(updatedPlanComment);
-    }
-
-    // Plan 댓글 삭제
-    public PlanCommentDto.Delete deletePlanComment(Long commentId) {
-        Member member = getMemberOrThrowError();
-
-        PlanComment planComment = planCommentRepository.findByIdAndIsDeleted(commentId, false).orElseThrow(() -> new CustomException(ErrorCode.PLAN_COMMENT_NOT_FOUND));
-
-        if (member.getId() != planComment.getMember().getId()) {
-            throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
-        }
-
-        planComment.delete();
-
-        return new PlanCommentDto.Delete(planComment.getIsDeleted());
-    }
-
-
-
-
-
-
-
-
-
-
-    // Plan->Trip 데이터 변환
-    public PlanToTripDto transferPlanToTrip(Long planId) {
-        StringBuilder contentBuilder = new StringBuilder();
-        Plan plan = planRepository.findByIdAndIsDeletedAndIsPublic(planId, false, true).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
-        List<DayPlan> dayPlanList = dayPlanRepository.findAllByPlanIdAndIsDeleted(planId, false);
-        for (DayPlan dayPlan : dayPlanList) {
-            contentBuilder.append(dayPlan.getDate());
-            contentBuilder.append("\n");
-            List<UnitPlan> unitPlanList = unitPlanRepository.findAllByDayPlanIdAndIsDeleted(dayPlan.getId(), false);
-            for (UnitPlan unitPlan : unitPlanList) {
-                contentBuilder.append(unitPlan.getTime());
-                contentBuilder.append("\n");
-                contentBuilder.append(unitPlan.getAddress());
-                String placeName = unitPlan.getPlaceName();
-                if (placeName != null) {
-                    contentBuilder.append(" ");
-                    contentBuilder.append(placeName);
-                }
-                contentBuilder.append("\n");
-                contentBuilder.append("비용:");
-                contentBuilder.append(unitPlan.getBudget());
-                contentBuilder.append("\n");
-                contentBuilder.append(unitPlan.getTitle());
-                contentBuilder.append("\n");
-                contentBuilder.append(unitPlan.getContent());
-                contentBuilder.append("\n");
-                contentBuilder.append("\n");
-            }
-        }
-        String content = contentBuilder.toString();
-        return new PlanToTripDto(plan, content);
-    }
-
-
-
-
-
-
-
-
-
-
-    private Member getMemberOrThrowError() {
+    private Member getLoginMember() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
             Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
@@ -829,13 +179,48 @@ public class PlanService {
         }
     }
 
-    private Member getMember (String email) {
-        return memberRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+    private void checkAuth(Long loginMemberId, Long writerId, ErrorCode errorCode) {
+        if (loginMemberId != writerId) {
+            throw new CustomException(errorCode);
+        }
     }
 
-    private Plan getPlan(Long planId) {
-        return planRepository.findById(planId)
-                .orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+    private Boolean getIsWriterAndIncreaseViewCount(Plan plan) {
+        Boolean isWriter = false;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
+            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
+
+            // 로그인유저와 작성유저의 일치여부 검사, FE에서 수정삭제버튼 숨기기 위한 변수 isWriter 셋팅
+            if(member.getId() == plan.getMember().getId()) {
+                isWriter = true;
+            }
+
+            // 로그인유저가 안 본 글만 조회수 증가, Redis를 사용하여 이메일의 저장여부로 없는 경우에만 조회수 증가
+            Long result = redisTemplate.opsForSet().add(PLAN_VIEW_COUNT + plan.getId(), member.getEmail());
+            if (result != null && result == 1L) {
+                plan.increaseViewCount();
+            }
+        } else { // 유저테스트 한정, 비로그인 시에도 조회수가 증가하도록 기획
+            plan.increaseViewCount();
+        }
+
+        return isWriter;
+    }
+
+    private String getPath(List<UnitPlan> unitPlanList) {
+        StringJoiner joiner = new StringJoiner(" >> ");
+        for (UnitPlan unitPlan : unitPlanList) {
+            joiner.add(unitPlan.getAddress());
+        }
+        return joiner.toString();
+    }
+
+    private Pageable getPageable(int page, int size, String sortBy, boolean isAsc) {
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page-1, size, sort);
+        return pageable;
     }
 }
