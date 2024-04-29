@@ -17,7 +17,13 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 import static com.travelland.constant.Constants.TRIP_RECOMMEND_JOB_NAME;
-
+/**
+ * 좋아요 기반 추천 컨텐츠를 위한 batch 작업
+ *
+ * @author     kjw
+ * @version    1.0.0
+ * @since      1.0.0
+ */
 @Slf4j(topic = "Scheduler Start : ")
 @Component
 @RequiredArgsConstructor
@@ -25,16 +31,18 @@ public class BatchScheduler {
 
     private final JobLauncher jobLauncher;
     private final JobRegistry jobRegistry;
-
+    /**
+     * 배치 작업을 해당 프로그램에서 실행할지 선택
+     */
     @Value("${batchsync.isUpdate}")
     private boolean isUpdate;
-
+    /**
+     * 특정 시간마다 좋아요 기반 추천 컨텐츠를 위한 batch 작업 실행
+     */
     @Scheduled(cron = "0 0 18 * * *") // 매일 3시마다 실행
-//    @Scheduled(fixedRate = 3600000)
     public void runJob() {
         if (!isUpdate) return;
 
-        log.info("start Job");
         try {
             jobLauncher.run(jobRegistry.getJob(TRIP_RECOMMEND_JOB_NAME), new JobParametersBuilder()
                             .addString("time", LocalDateTime.now().toString())
