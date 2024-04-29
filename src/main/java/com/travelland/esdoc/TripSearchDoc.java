@@ -96,6 +96,7 @@ public class TripSearchDoc {
         this.content = makeShortContent(trip.getContent(),200);
         this.createdAt = trip.getCreatedAt();
         this.address = trip.getAddress();
+        this.placeName = trip.getPlaceName();
         this.thumbnailUrl = thumbnailUrl;
         this.email = trip.getMember().getEmail();
         this.isPublic = trip.isPublic();
