@@ -1,5 +1,6 @@
 package com.travelland.dto.plan;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.travelland.valid.plan.PlanValidationGroups;
 import com.travelland.domain.plan.UnitPlan;
 import jakarta.validation.constraints.NotBlank;
@@ -23,6 +24,7 @@ public class UnitPlanDto {
         private BigDecimal y;
         @Size(max = 30)
         private String address;
+        @JsonProperty(value="place_name")
         private String placeName;
         private int budget;
         @Size(max = 300)
@@ -66,6 +68,7 @@ public class UnitPlanDto {
         private BigDecimal y;
         @Size(max = 30)
         private String address;
+        @JsonProperty(value="place_name")
         private String placeName;
         private int budget;
         @Size(max = 300)
