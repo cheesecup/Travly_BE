@@ -1,10 +1,13 @@
 package com.travelland.swagger;
 
+import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.valid.plan.PlanValidationSequence;
 import com.travelland.dto.plan.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -160,6 +163,30 @@ public interface PlanControllerDocs {
 
     @Operation(summary = "(여행후기용) Plan->Trip 데이터 변환", description = " ")
     ResponseEntity transferPlanToTrip(@PathVariable Long planId);
+
+
+
+
+
+
+
+
+
+
+    @Operation(summary = "Plan 초대", description = "Plan에 초대할 사용자에게 초대 알림 발송하는 API")
+    ResponseEntity invitePlan(@PathVariable Long planId, @RequestBody PlanDto.Invitee invitee);
+
+    @Operation(summary = "Plan 초대 수락", description = "Plan에 대한 초대 승인 API")
+    ResponseEntity agreeInvitedPlan(@PathVariable Long planId, @AuthenticationPrincipal UserDetailsImpl userDetails);
+
+    @Operation(summary = "Plan 초대 거절", description = "Plan에 대한 초대 거절 API")
+    ResponseEntity disagreeInvitedPlan(@PathVariable Long planId, @AuthenticationPrincipal UserDetailsImpl userDetails);
+
+    @Operation(summary = "Plan 초대멤버 삭제", description = "Plan에 초대된 사용자 삭제하는 API")
+    ResponseEntity deleteInvitedMember(@PathVariable Long planId, @RequestBody PlanDto.Invitee invitee);
+
+    @Operation(summary = "(마이페이지용) 초대된 Plan 조회", description = "초대된 Plan을 페이지별로 조회하는 API")
+    ResponseEntity readPlanListForInvitee(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal UserDetailsImpl userDetails);
 
 
 
