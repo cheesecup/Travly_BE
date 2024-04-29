@@ -70,7 +70,7 @@ class TripSearchServiceTest {
     @DisplayName("통합 검색 기능 TEST")
     void totalSearchTrip() {
         TripDto.SearchResult result =
-                tripSearchService.totalSearchTrip("ㅅㅇ",1,8,"createdAt",false);
+                tripSearchService.totalSearchTrip("ㅎ",1,8,"createdAt",false);
         Assertions.assertEquals("ㅅㅇ", result.getResultKeyword());
         Assertions.assertNotNull(result.getSearches());
         Assertions.assertNotEquals(0, result.getTotalCount());
