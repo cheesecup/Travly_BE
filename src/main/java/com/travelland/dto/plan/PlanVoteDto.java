@@ -12,108 +12,94 @@ public class PlanVoteDto {
 
     @Getter
     public static class Create {
-        //@NotBlank(message = "대상 플랜A를 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
-        private Long planAId;
-        //@NotBlank(message = "대상 플랜B를 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
-        private Long planBId;
+        private PlanVoteDuration planVoteDuration;
         @Size(max = 100)
         private String title;
-        //@NotBlank(message = "투표기간을 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
-        private PlanVoteDuration planVoteDuration;
-    }
-
-    @Getter
-    public static class Id {
-        private final Long planVoteId;
-        public Id(PlanVote savedPlanVote) {
-            this.planVoteId = savedPlanVote.getId();
-        }
+        private Long planAId;
+        private Long planBId;
     }
 
     @Getter
     public static class Get {
         private final Long planVoteId;
-        private final String title;
-        private final LocalDateTime createdAt;
-        private final LocalDateTime modifiedAt;
-        private final PlanVoteDuration planVoteDuration;
-        private final Boolean isClosed;
         private final Long memberId;
         private final String nickname;
         private final String profileImage;
+        private final LocalDateTime createdAt;
+        private final LocalDateTime modifiedAt;
+        private final String title;
+        private final PlanVoteDuration planVoteDuration;
         private final Long planAId;
         private final Long planBId;
         private final String planATitle;
         private final String planBTitle;
         private final int planACount;
         private final int planBCount;
+        private final Boolean isClosed;
 
         public Get(PlanVote planVote) {
             this.planVoteId = planVote.getId();
-            this.title = planVote.getPlanVoteTitle();
-            this.createdAt = planVote.getCreatedAt();
-            this.modifiedAt = planVote.getModifiedAt();
-            this.isClosed = planVote.getIsClosed();
-            this.planVoteDuration = planVote.getPlanVoteDuration();
             this.memberId = planVote.getMember().getId();
             this.nickname = planVote.getMember().getNickname();
             this.profileImage = planVote.getMember().getProfileImage();
+            this.createdAt = planVote.getCreatedAt();
+            this.modifiedAt = planVote.getModifiedAt();
+            this.title = planVote.getPlanVoteTitle();
+            this.planVoteDuration = planVote.getPlanVoteDuration();
             this.planAId = planVote.getPlanA().getId();
             this.planBId = planVote.getPlanB().getId();
             this.planATitle = planVote.getPlanA().getTitle();
             this.planBTitle = planVote.getPlanB().getTitle();
             this.planACount = planVote.getPlanACount();
             this.planBCount = planVote.getPlanBCount();
+            this.isClosed = planVote.getIsClosed();
         }
     }
 
     @Getter
     public static class GetAllInOne {
         private final Long planVoteId;
-        private final String title;
-        private final LocalDateTime createdAt;
-        private final LocalDateTime modifiedAt;
-        private final PlanVoteDuration planVoteDuration;
-        private final Boolean isClosed;
         private final Long memberId;
         private final String nickname;
         private final String profileImage;
+        private final LocalDateTime createdAt;
+        private final LocalDateTime modifiedAt;
+        private final String title;
+        private final PlanVoteDuration planVoteDuration;
         private final Long planAId;
         private final Long planBId;
         private final String planATitle;
         private final String planBTitle;
         private final int planACount;
         private final int planBCount;
+        private final Boolean isClosed;
 
         public GetAllInOne(PlanVote planVote) {
             this.planVoteId = planVote.getId();
-            this.title = planVote.getPlanVoteTitle();
-            this.createdAt = planVote.getCreatedAt();
-            this.modifiedAt = planVote.getModifiedAt();
-            this.isClosed = planVote.getIsClosed();
-            this.planVoteDuration = planVote.getPlanVoteDuration();
             this.memberId = planVote.getMember().getId();
             this.nickname = planVote.getMember().getNickname();
             this.profileImage = planVote.getMember().getProfileImage();
+            this.createdAt = planVote.getCreatedAt();
+            this.modifiedAt = planVote.getModifiedAt();
+            this.title = planVote.getPlanVoteTitle();
+            this.planVoteDuration = planVote.getPlanVoteDuration();
             this.planAId = planVote.getPlanA().getId();
             this.planBId = planVote.getPlanB().getId();
             this.planATitle = planVote.getPlanA().getTitle();
             this.planBTitle = planVote.getPlanB().getTitle();
             this.planACount = planVote.getPlanACount();
             this.planBCount = planVote.getPlanBCount();
+            this.isClosed = planVote.getIsClosed();
         }
     }
 
     @Getter
     public static class Update {
-        //@NotBlank(message = "대상 플랜A를 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
-        private Long planAId;
-        //@NotBlank(message = "대상 플랜B를 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
-        private Long planBId;
         @Size(max = 100)
         private String title;
-        //@NotBlank(message = "투표기간을 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private PlanVoteDuration planVoteDuration;
+        private Long planAId;
+        private Long planBId;
     }
 
     @Getter
@@ -126,5 +112,13 @@ public class PlanVoteDto {
     @RequiredArgsConstructor
     public static class Delete {
         private final Boolean isDeleted;
+    }
+
+    @Getter
+    public static class Id {
+        private final Long planVoteId;
+        public Id(PlanVote savedPlanVote) {
+            this.planVoteId = savedPlanVote.getId();
+        }
     }
 }

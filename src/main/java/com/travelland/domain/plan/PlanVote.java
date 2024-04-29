@@ -23,8 +23,9 @@ public class PlanVote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 100)
-    private String planVoteTitle;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
@@ -38,19 +39,8 @@ public class PlanVote {
     @Enumerated(EnumType.STRING)
     private PlanVoteDuration planVoteDuration;
 
-    private Boolean isClosed = false;
-
-    private Boolean isDeleted = false;
-
-//    private Long memberId;
-//    private String nickname;
-//    private String profileImage;
-//    private Long planAId;
-//    private Long planBId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+    @Column(length = 100)
+    private String planVoteTitle;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_a_id")
@@ -64,26 +54,23 @@ public class PlanVote {
 
     private int planBCount = 0;
 
+    private Boolean isClosed = false;
+
+    private Boolean isDeleted = false;
+
     public PlanVote(PlanVoteDto.Create request, Plan planA, Plan planB, Member member) {
         this.member = member;
+        this.planVoteDuration = request.getPlanVoteDuration();
+        this.planVoteTitle = request.getTitle();
         this.planA = planA;
         this.planB = planB;
-//        this.memberId = member.getId();
-//        this.nickname = member.getNickname();
-//        this.profileImage = member.getProfileImage();
-//        this.planAId = request.getPlanAId();
-//        this.planBId = request.getPlanBId();
-        this.planVoteTitle = request.getTitle();
-        this.planVoteDuration = request.getPlanVoteDuration();
     }
 
     public PlanVote update(PlanVoteDto.Update request, Plan planA, Plan planB) {
+        this.planVoteDuration = request.getPlanVoteDuration();
+        this.planVoteTitle = request.getTitle();
         this.planA = planA;
         this.planB = planB;
-//        this.planAId = request.getPlanAId();
-//        this.planBId = request.getPlanBId();
-        this.planVoteTitle = request.getTitle();
-        this.planVoteDuration = request.getPlanVoteDuration();
 
         return this;
     }
@@ -109,17 +96,17 @@ public class PlanVote {
         this.planACount++;
     }
 
-    public void delete() {
-        this.isDeleted = true;
-    }
     public void close() {
         this.isClosed = true;
     }
+    public void delete() {
+        this.isDeleted = true;
+    }
 
-    // 종료예정시각을 경과했는지 검사
+    // 종료예정시각을 경과했는지 체크
     public boolean checkTimeOut() {
         // 이미 종료되어 있는 경우, 바로 종료상태(true) 반환
-        if (isClosed == true) {
+        if (isClosed) {
             return true;
         }
 
@@ -128,8 +115,9 @@ public class PlanVote {
         LocalDateTime closingTime = createdAt.plus(planVoteDuration.getNumberDuration());
         if (now.isAfter(closingTime)) {
             isClosed = true;
+            return true;
         }
 
-        return isClosed;
+        return false;
     }
 }

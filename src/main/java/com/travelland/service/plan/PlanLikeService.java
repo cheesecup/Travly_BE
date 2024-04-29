@@ -3,7 +3,7 @@ package com.travelland.service.plan;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanLike;
-import com.travelland.dto.plan.PlanDto;
+import com.travelland.dto.plan.PlanLikeScrapDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.security.UserDetailsImpl;
@@ -35,54 +35,34 @@ public class PlanLikeService {
     // Plan 좋아요 등록
     @Transactional
     public void registerPlanLike(Long planId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Member member = getLoginMember();
+        String email = member.getEmail();
+        Plan plan = getPlan(planId);
 
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-            String email = member.getEmail();
-
-            Plan plan = getPlan(planId);
-            plan.increaseLikeCount(); // 좋아요수 증가 (스크랩은 스크립수 증가 없음)
-            planLikeRepository.findByMemberAndPlan(member, plan)
-                    .ifPresentOrElse(
-                            PlanLike::registerLike, // 좋아요를 한번이라도 등록한적이 있을경우
-                            () -> planLikeRepository.save(new PlanLike(member, plan)) // 최초로 좋아요를 등록하는 경우
-                    );
-            redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID + planId, email);
-        } else {
-//            Plan plan = getPlan(planId);
-//            plan.increaseLikeCount(); // 좋아요수 증가 (스크랩은 스크립수 증가 없음)
-            throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
-        }
+        plan.increaseLikeCount(); // 좋아요수 증가 (스크랩은 스크립수 증가 없음)
+        planLikeRepository.findByMemberAndPlan(member, plan)
+                .ifPresentOrElse(
+                        PlanLike::registerLike, // 좋아요를 한번이라도 등록한적이 있을경우
+                        () -> planLikeRepository.save(new PlanLike(member, plan)) // 최초로 좋아요를 등록하는 경우
+                );
+        redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID + planId, email);
     }
 
     // Plan 좋아요 취소
     @Transactional
     public void cancelPlanLike(Long planId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = getLoginMember().getEmail();
+        Plan plan = getPlan(planId);
 
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-            String email = member.getEmail();
-
-            Plan plan = getPlan(planId);
-            plan.decreaseLikeCount(); // 좋아요수 감소 (스크랩은 스크립수 감소 없음)
-
-            getPlanLike(planId,email).cancelLike();
-            redisTemplate.opsForSet().remove(PLAN_LIKES_PLAN_ID + planId, email);
-        } else {
-//            Plan plan = getPlan(planId);
-//            plan.decreaseLikeCount(); // 좋아요수 감소 (스크랩은 스크립수 감소 없음)
-            throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
-        }
+        plan.decreaseLikeCount(); // 좋아요수 감소 (스크랩은 스크립수 감소 없음)
+        getPlanLike(planId, email).cancelLike();
+        redisTemplate.opsForSet().remove(PLAN_LIKES_PLAN_ID + planId, email);
     }
 
     // Plan 좋아요 유저별 전체목록 조회
     @Transactional(readOnly = true)
-    public List<PlanDto.GetList> getPlanLikeList(int page, int size) {
-        Member member = getMemberOrThrowError();
-
-        return  planLikeRepository.getLikeListByMember(member, size, page);
+    public List<PlanLikeScrapDto.GetList> getPlanLikeList(int page, int size) {
+        return  planLikeRepository.getLikeListByMember(getLoginMember(), size, page);
     }
 
     // Plan 좋아요 여부 확인
@@ -90,21 +70,34 @@ public class PlanLikeService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
+            Member member = getLoginMember();
             String email = member.getEmail();
 
+            // Redis 에서 확인
             if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(PLAN_LIKES_PLAN_ID + planId, email)))
                 return true;
+
+            // Redis 에 없는 경우, DB에서 한번 더 확인
             Optional<PlanLike> planLike = planLikeRepository.findByMemberAndPlanAndIsDeleted(getMember(email), getPlan(planId), false);
             if (planLike.isPresent()) {
                 redisTemplate.opsForSet().add(PLAN_LIKES_PLAN_ID + planId, email);
                 return true;
             }
         }
+
         return false;
     }
 
-    private Member getMemberOrThrowError() {
+
+
+
+
+
+
+
+
+
+    private Member getLoginMember() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
             Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();

@@ -29,16 +29,16 @@ public class PlanCommentDto {
     public static class Get {
         private final Long commentId;
         private final String content;
+        private final String memberNickname;
         private final LocalDateTime createdAt;
         private final LocalDateTime modifiedAt;
-        private final String memberNickname;
 
         public Get(PlanComment planComment) {
             this.commentId = planComment.getId();
             this.content = planComment.getContent();
+            this.memberNickname = planComment.getMember().getNickname();
             this.createdAt = planComment.getCreatedAt();
             this.modifiedAt = planComment.getModifiedAt();
-            this.memberNickname = planComment.getMember().getNickname();
         }
     }
 

@@ -11,20 +11,10 @@ public class VotePaperDto {
 
     @Getter
     public static class Create {
-        //@NotBlank(message = "대상 투표장을 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private Long planVoteId;
-        //@NotBlank(message = "둘 중 하나를 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private Boolean isVotedA;
         @Size(max = 20)
         private String content;
-    }
-
-    @Getter
-    public static class Id {
-        private final Long votePaperId;
-        public Id(VotePaper savedVotePaper) {
-            this.votePaperId = savedVotePaper.getId();
-        }
     }
 
     @Getter
@@ -50,9 +40,7 @@ public class VotePaperDto {
 
     @Getter
     public static class Update {
-        //@NotBlank(message = "대상 투표장을 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private Long planVoteId;
-        //@NotBlank(message = "둘 중 하나를 선택해주세요.", groups = PlanValidationGroups.VoteBlankGroup.class)
         private Boolean isVotedA;
         @Size(max = 20)
         private String content;
@@ -62,5 +50,13 @@ public class VotePaperDto {
     @RequiredArgsConstructor
     public static class Delete {
         private final Boolean isDeleted;
+    }
+
+    @Getter
+    public static class Id {
+        private final Long votePaperId;
+        public Id(VotePaper savedVotePaper) {
+            this.votePaperId = savedVotePaper.getId();
+        }
     }
 }
