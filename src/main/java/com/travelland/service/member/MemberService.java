@@ -9,17 +9,16 @@ import com.travelland.global.security.JwtUtil;
 import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.member.RefreshTokenRepository;
-import com.travelland.repository.trip.TripLikeRepository;
 import com.travelland.repository.trip.TripRepository;
 import com.travelland.repository.trip.TripScrapRepository;
-import com.travelland.service.trip.TripLikeService;
-import com.travelland.service.trip.TripScrapService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -71,7 +70,12 @@ public class MemberService {
 
         return true;
     }
-    
+
+    @Transactional(readOnly = true)
+    public List<MemberDto.MemberInfo> searchNickname(String nickname) {
+        return memberRepository.findAllByNicknameContainsOrderByNicknameAsc(nickname).stream().map(MemberDto.MemberInfo::new).toList();
+    }
+
     //회원 프로필 조회
     @Transactional
     public MemberDto.MemberInfo getMemberInfo() {
@@ -92,7 +96,7 @@ public class MemberService {
 
         long tripTotalElements = tripRepository.countByMemberAndIsDeleted(member, false);
         long scrapTotalElements = tripScrapRepository.countByMemberAndIsDeleted(member, false);
-        
+
         return new MemberDto.GetMyPage(member, tripTotalElements, scrapTotalElements);
     }
 }

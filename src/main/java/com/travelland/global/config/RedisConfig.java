@@ -1,5 +1,7 @@
 package com.travelland.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.travelland.dto.NotificationDto;
 import io.lettuce.core.ClientOptions;
 import io.lettuce.core.SocketOptions;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,8 +11,12 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
@@ -53,5 +59,27 @@ public class RedisConfig {
         redisTemplate.setValueSerializer(new StringRedisSerializer());
         redisTemplate.setConnectionFactory(redisConnectionFactory());
         return redisTemplate;
+    }
+
+    @Bean
+    public RedisOperations<String, NotificationDto.NotificationResponse> eventRedisOperations(RedisConnectionFactory redisConnectionFactory,
+                                                                                              ObjectMapper objectMapper) {
+        final Jackson2JsonRedisSerializer<NotificationDto.NotificationResponse> jsonRedisSerializer = new Jackson2JsonRedisSerializer<>(
+                                                                                                    objectMapper,
+                                                                                                    NotificationDto.NotificationResponse.class);
+        final RedisTemplate<String, NotificationDto.NotificationResponse> eventRedisTemplate = new RedisTemplate<>();
+        eventRedisTemplate.setConnectionFactory(redisConnectionFactory);
+        eventRedisTemplate.setKeySerializer(RedisSerializer.string());
+        eventRedisTemplate.setValueSerializer(jsonRedisSerializer);
+        eventRedisTemplate.setHashKeySerializer(RedisSerializer.string());
+        eventRedisTemplate.setHashValueSerializer(jsonRedisSerializer);
+        return eventRedisTemplate;
+    }
+
+    @Bean
+    public RedisMessageListenerContainer redisMessageListenerContainer() {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(redisConnectionFactory());
+        return container;
     }
 }
