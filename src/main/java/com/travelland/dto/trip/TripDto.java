@@ -102,9 +102,11 @@ public class TripDto {
         private String title;
         private String content;
         private int cost;
+        private String address;
         private String area;
         private LocalDate tripStartDate;
         private LocalDate tripEndDate;
+        private String placeName;
 
         private List<String> hashtagList;
         private List<String> imageUrlList;
@@ -121,7 +123,9 @@ public class TripDto {
             this.title = trip.getTitle();
             this.content = trip.getContent();
             this.cost = trip.getCost();
+            this.address = trip.getAddress();
             this.area = trip.getArea();
+            this.placeName = trip.getPlaceName();
             this.tripStartDate = trip.getTripStartDate();
             this.tripEndDate = trip.getTripEndDate();
             this.hashtagList = hashtagList;
