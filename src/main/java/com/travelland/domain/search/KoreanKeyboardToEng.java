@@ -86,6 +86,8 @@ public class KoreanKeyboardToEng {
      * @param sb 결과 반환을 위한 스트링빌더
      */
     private void separateKey(String target, StringBuilder sb) {
+        if(target.isEmpty())
+            return;
         log.info("");
         log.info(target);
         log.info("");
