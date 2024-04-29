@@ -35,7 +35,7 @@ class EmitterRepositoryImplTest {
         //given
         Long memberId = 1L;
         String eventCacheId =  memberId + "_" + System.currentTimeMillis();
-        Notification notification = new Notification("플랜 제목", "플랜 초대가 왔습니다.", "url", false, NotificationType.INVITE, new Member(null,null,null,null,null,null,null,null,null));
+        Notification notification = new Notification("플랜 제목", "플랜 초대가 왔습니다.", "url", false, NotificationType.INVITE, new Member(null,null,null,null,null));
 
         //when, then
         Assertions.assertDoesNotThrow(() -> emitterRepository.saveEventCache(eventCacheId, notification));
@@ -71,17 +71,17 @@ class EmitterRepositoryImplTest {
         //given
         Long memberId = 1L;
         String eventCacheId1 =  memberId + "_" + System.currentTimeMillis();
-        Notification notification1 = new Notification("플랜 제목", "플랜 초대가 왔습니다.", "url", false, NotificationType.INVITE, new Member(null,null,null,null,null,null,null,null,null));
+        Notification notification1 = new Notification("플랜 제목", "플랜 초대가 왔습니다.", "url", false, NotificationType.INVITE, new Member(null,null,null,null,null));
         emitterRepository.saveEventCache(eventCacheId1, notification1);
 
         Thread.sleep(100);
         String eventCacheId2 =  memberId + "_" + System.currentTimeMillis();
-        Notification notification2 = new Notification("플랜 제목", "플랜 초대가 승인되었습니다.", "url", false, NotificationType.AGREE, new Member(null,null,null,null,null,null,null,null,null));
+        Notification notification2 = new Notification("플랜 제목", "플랜 초대가 승인되었습니다.", "url", false, NotificationType.AGREE, new Member(null,null,null,null,null));
         emitterRepository.saveEventCache(eventCacheId2, notification2);
 
         Thread.sleep(100);
         String eventCacheId3 =  memberId + "_" + System.currentTimeMillis();
-        Notification notification3 = new Notification("플랜 제목", "플랜 초대가 거절되었습니다.", "url", false, NotificationType.DISAGREE, new Member(null,null,null,null,null,null,null,null,null));
+        Notification notification3 = new Notification("플랜 제목", "플랜 초대가 거절되었습니다.", "url", false, NotificationType.DISAGREE, new Member(null,null,null,null,null));
         emitterRepository.saveEventCache(eventCacheId3, notification3);
 
         //when
@@ -132,12 +132,12 @@ class EmitterRepositoryImplTest {
         //given
         Long memberId = 1L;
         String eventCacheId1 =  memberId + "_" + System.currentTimeMillis();
-        Notification notification1 = new Notification("플랜 제목", "플랜 초대가 왔습니다.", "url", false, NotificationType.INVITE, new Member(null,null,null,null,null,null,null,null,null));
+        Notification notification1 = new Notification("플랜 제목", "플랜 초대가 왔습니다.", "url", false, NotificationType.INVITE, new Member(null,null,null,null,null));
         emitterRepository.saveEventCache(eventCacheId1, notification1);
 
         Thread.sleep(100);
         String eventCacheId2 =  memberId + "_" + System.currentTimeMillis();
-        Notification notification2 = new Notification("플랜 제목", "플랜 초대가 승인되었습니다.", "url", false, NotificationType.AGREE, new Member(null,null,null,null,null,null,null,null,null));
+        Notification notification2 = new Notification("플랜 제목", "플랜 초대가 승인되었습니다.", "url", false, NotificationType.AGREE, new Member(null,null,null,null,null));
         emitterRepository.saveEventCache(eventCacheId2, notification2);
 
         //when
