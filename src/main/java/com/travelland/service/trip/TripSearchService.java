@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j(topic = "ES")
 @Service
@@ -63,17 +65,18 @@ public class TripSearchService {
      * @return 검색 결과
      */
     public TripDto.SearchResult totalSearchTrip(String text, int page, int size, String sortBy, boolean isAsc) {
-
-        if(text.split(" ").length == 1 && text.matches("^[ㄱ-ㅎ가-힣]*$"))
-            text += " " + koreanKeyboardToEng.korToEng(text);
+        String newText = changeKeyboardKorToAlphabet(text);
 
         SearchHits<TripSearchDoc> result =
-                tripSearchRepository.searchByTextTEST(text, this.toPageable(page, size, sortBy, isAsc));
+                tripSearchRepository.searchByTextTEST(newText, this.toPageable(page, size, sortBy, isAsc));
 
         if (result.getTotalHits() == 0)
             return TripDto.SearchResult.builder().build();
 
         List<TripDto.Search> searches = new ArrayList<>();
+
+        String areaLog = "";
+        String hashtagLog = "";
 
         for(SearchHit<TripSearchDoc> search : result.getSearchHits()){
             searches.add(new TripDto.Search(search.getContent()));
@@ -81,17 +84,22 @@ public class TripSearchService {
             if(search.getHighlightFields().isEmpty())
                 continue;
 
-            search.getHighlightFields().forEach((key, value) -> {
-                String lowerKey = key.toLowerCase();
-                String subValue = value.get(0).substring(4,value.get(0).length()-5);
+            for(Map.Entry<String,List<String>> res : search.getHighlightFields().entrySet()){
+                String lowerKey = res.getKey().toLowerCase();
+                String subValue = res.getValue().get(0).substring(4,res.getValue().get(0).length()-5);
 
                 if(lowerKey.contains("area"))
-                    elasticsearchLogService.putSearchLog("area", subValue);
+                    areaLog = subValue;
 
                 if(lowerKey.contains("hashtag"))
-                    elasticsearchLogService.putSearchLog("hashtag", subValue);
-            });
+                   hashtagLog = subValue;
+            }
         }
+        if(!areaLog.isEmpty())
+            elasticsearchLogService.putSearchLog("area", areaLog);
+
+        if(!hashtagLog.isEmpty())
+            elasticsearchLogService.putSearchLog("hashtagLog", hashtagLog);
 
         return TripDto.SearchResult.builder()
                 .searches(searches)
@@ -194,6 +202,7 @@ public class TripSearchService {
      */
     public void deleteTrip(Long tripId) {
         tripSearchRepository.deleteByTripId(tripId);
+        tripRecommendRepository.deleteById(tripId);
     }
     /**
      * 내가 쓴 여행 정보 목록
@@ -222,17 +231,6 @@ public class TripSearchService {
         }
     }
 
-//    private void saveLog(SearchHits<TripSearchDoc> searchHits){
-//        for(SearchHit<TripSearchDoc> searchHit : searchHits.getSearchHits()){
-//            Map<String, List<String>> highlightFields = searchHit.getHighlightFields();
-//
-//            if(highlightFields.containsKey("area") || highlightFields.containsKey("eng_area"))
-//                elasticsearchLogService.putSearchLog("area", highlightFields.get("area").get(0));
-//
-//            if(highlightFields.containsKey("hashtag"))
-//                elasticsearchLogService.putSearchLog("hashtag", highlightFields.get("hashtag").get(0));
-//        }
-//    }
     /**
      * 페이징 처리
      * @param page page : 1부터 시작
@@ -281,5 +279,12 @@ public class TripSearchService {
                 .map(SearchHit::getContent)
                 .map(TripSearchDoc::getPlaceName)
                 .toList();
+    }
+    private String changeKeyboardKorToAlphabet(String text){
+        String newText = text;
+        if(text.split(" ").length == 1 && text.matches("^[ㄱ-ㅎ가-힣]*$")){
+            newText += " " + koreanKeyboardToEng.korToEng(text);
+        }
+        return newText;
     }
 }
