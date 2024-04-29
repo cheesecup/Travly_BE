@@ -67,6 +67,9 @@ public class ElasticsearchLogService {
      * @param query 로그에 해당하는 data 값 입력
      */
     public void putSearchLog(String field, String query) {
+        log.info("field : " + field);
+        log.info("query : " + query);
+
         String indexName = "query-log";
         Map<String,Object> doc = new HashMap<>();
         doc.put("field", field);
@@ -74,6 +77,7 @@ public class ElasticsearchLogService {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         doc.put("@timestamp", sdf.format(new Date(System.currentTimeMillis())));
+        log.info("time : " + sdf.format(new Date(System.currentTimeMillis())));
         indexDocument(indexName, doc);
     }
     /**
@@ -120,4 +124,3 @@ public class ElasticsearchLogService {
         return keywordEntry;
     }
 }
-

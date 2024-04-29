@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j(topic = "ES")
 @Service
@@ -84,13 +85,12 @@ public class TripSearchService {
                 continue;
 
             for(Map.Entry<String,List<String>> res : search.getHighlightFields().entrySet()){
-                String lowerKey = res.getKey().toLowerCase();
                 String subValue = res.getValue().get(0).substring(4,res.getValue().get(0).length()-5);
 
-                if(lowerKey.contains("area"))
+                if(res.getKey().equals("area"))
                     areaLog = subValue;
 
-                if(lowerKey.contains("hashtag"))
+                if(res.getKey().equals("hashtag"))
                    hashtagLog = subValue;
             }
         }
@@ -189,11 +189,15 @@ public class TripSearchService {
      */
     public List<String> getRecentlyTopSearch(String field) {
         LocalDateTime now = LocalDateTime.now();
-        return elasticsearchLogService.
-                getRankInRange(field, now.minusWeeks(1), now)
+        List<String> resultList = elasticsearchLogService
+                .getRankInRange(field, now.minusWeeks(1), now)
                 .stream()
                 .map(recentKeyword -> recentKeyword.get("key").toString())
                 .toList();
+        if (resultList.size() > 8) {
+            resultList = resultList.subList(0, 8);
+        }
+        return resultList;
     }
     /**
      * Elasticsearch 내 문서 삭제
@@ -272,7 +276,8 @@ public class TripSearchService {
      * @return 주변 여행지 검색 결과
      */
     private List<String> getNearPlaceNames(String area){
-        return tripSearchRepository.searchByField("area", area, true,
+        log.info(area);
+        return tripSearchRepository.searchByArea(area.split(" "), true,
                         PageRequest.of(0, 7))
                 .stream()
                 .map(SearchHit::getContent)
