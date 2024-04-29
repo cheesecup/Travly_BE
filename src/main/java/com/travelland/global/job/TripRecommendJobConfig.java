@@ -1,6 +1,10 @@
 package com.travelland.global.job;
 
+import com.travelland.global.exception.CustomException;
+import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.trip.TripLikeRepository;
+import com.travelland.repository.trip.TripRecommendRepository;
+import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -50,11 +54,13 @@ public class TripRecommendJobConfig {
     private final PlatformTransactionManager platformTransactionManager;
     private final DataSource dataSource;
     private final TripLikeRepository tripLikeRepository;
+    private final TripRepository tripRepository;
     private final RedisTemplate<String, String> redisTemplate;
-
-    private static final String TRIP_RECOMMEND_STEP = "trip_recommend_step";
+    private final TripRecommendRepository tripRecommendRepository;
+    private static final String TRIP_LIKE_RECOMMEND_STEP = "trip_like_recommend_step";
     private static final String TRIP_RECOMMEND = "trip_recommend:";
     private static final int WORKER_SIZE = 2;
+    private static final int RECOMMEND_SIZE = 5;
 
     @Value("${spring.batch.chunk-size}")
     private int chunkSize;
@@ -63,14 +69,14 @@ public class TripRecommendJobConfig {
     public Job jdbcJob() {
         return new JobBuilder(TRIP_RECOMMEND_JOB_NAME, jobRepository)
                 .incrementer(new RunIdIncrementer())
-                .start(jpaStep())
+                .start(tripLikeRecommendStep())
                 .build();
     }
 
     @JobScope
     @Bean
-    public Step jpaStep(){
-        return new StepBuilder(TRIP_RECOMMEND_STEP, jobRepository)
+    public Step tripLikeRecommendStep(){
+        return new StepBuilder(TRIP_LIKE_RECOMMEND_STEP, jobRepository)
                 .<Long, DataSet>chunk(completionPolicy(), new DataSourceTransactionManager(dataSource))
                 .reader(jdbcPagingItemReader())
                 .processor(itemProcessor())
@@ -124,16 +130,28 @@ public class TripRecommendJobConfig {
                     .map(Map.Entry::getKey)
                     .toList());
 
-            if(res.size() < 6) {
-                res.remove(id);
+            if(res.size() > RECOMMEND_SIZE) {
+                List<Long> subRes =  res.subList(0, RECOMMEND_SIZE+1);
+                subRes.remove(id);
+                return new DataSet(id, subRes.stream().limit(RECOMMEND_SIZE).map(Object::toString).toList());
+            }
+
+            res.remove(id);
+
+            if(res.size() == RECOMMEND_SIZE){
                 return new DataSet(id, res.stream().map(Object::toString).toList());
             }
 
-            List<Long> subRes =  res.subList(0,6);
-            subRes.remove(id);
-            return new DataSet(id, subRes.stream().limit(5).map(Object::toString).toList());
+            String content =
+            tripRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND)).getContent();
+
+            tripRecommendRepository.recommendByContent(content,RECOMMEND_SIZE - res.size())
+                    .getSearchHits().forEach(data -> res.add(data.getContent().getId()));
+
+            return new DataSet(id, res.stream().map(Object::toString).toList());
         };
     }
+
 
     private void writeChunkDataToRedis(Chunk<? extends DataSet> chunkData) {
         redisTemplate.executePipelined((RedisCallback<Object>) redisConnection -> {
