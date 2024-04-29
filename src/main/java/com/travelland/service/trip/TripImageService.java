@@ -7,28 +7,35 @@ import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.trip.TripImageRepository;
 import com.travelland.global.s3.S3FileService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TripImageService {
 
     private final TripImageRepository tripImageRepository;
     private final S3FileService s3FileService;
+    private final Executor asyncTaskExecutor;
 
     // 이미지 정보 저장, 썸네일 이미지 URL 반환
     @Transactional
     public String createTripImage(MultipartFile thumbnail, List<MultipartFile> imageList, Trip trip) {
-        TripImage tripImage = tripImageRepository.save(new TripImage(s3FileService.s3Upload(thumbnail), true, trip)); // 썸네일 이미지 저장
+        TripImage tripImage = tripImageRepository.save(new TripImage(s3FileService.saveResizeImage(thumbnail), true, trip)); //리사이즈된 썸네일 이미지 저장
+        tripImageRepository.save(new TripImage(s3FileService.saveOriginalImage(thumbnail), false, trip));
 
-        if (imageList != null) {
+        if (imageList != null && !imageList.isEmpty()) {
             imageList.stream()
-                    .map(image -> new TripImage(s3FileService.s3Upload(image), false, trip))
-                    .forEach(tripImageRepository::save);
+                    .map(image -> CompletableFuture.supplyAsync(() -> s3FileService.saveOriginalImage(image), asyncTaskExecutor))
+                    .toList()
+                    .forEach(request -> tripImageRepository.save(new TripImage(request.join(), false, trip)));
         }
 
         return tripImage.getImageUrl();
@@ -37,7 +44,7 @@ public class TripImageService {
     // 선택한 게시글 이미지 URL 리스트 가져오기
     @Transactional(readOnly = true)
     public List<String> getTripImageUrl(Trip trip) {
-        return tripImageRepository.findAllByTrip(trip).stream()
+        return tripImageRepository.findAllByTripAndIsThumbnail(trip, false).stream()
                 .map(TripImage::getImageUrl).toList();
     }
 

@@ -2,6 +2,8 @@ package com.travelland.domain.plan;
 
 import com.travelland.domain.member.Member;
 import com.travelland.dto.plan.PlanDto;
+import com.travelland.global.exception.CustomException;
+import com.travelland.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -12,8 +14,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -28,25 +28,22 @@ public class Plan {
     @Column(length = 100)
     private String title;
 
-//    @Column(length = 1000)
-//    private String content;
-
-    private int budget;
-
-    @Column(length = 30)
-    private String area;
-
-    private Boolean isPublic;
-
     private LocalDate tripStartDate;
 
     private LocalDate tripEndDate;
 
-    private int viewCount = 0;
+    @Column(length = 30)
+    private String area;
 
-    private int likeCount = 0;
+    private int budget;
+
+    private Boolean isPublic;
 
     private Boolean isVotable;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
@@ -56,71 +53,35 @@ public class Plan {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime modifiedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    private Member member;
+    private int viewCount = 0;
+
+    private int likeCount = 0;
 
     private Boolean isDeleted = false;
 
-//    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<DayPlan> dayPlans = new ArrayList<>();
-//
-//    public void addDayPlan(DayPlan dayPlan) {
-//        dayPlans.add(dayPlan);
-//        dayPlan.setPlan(this);
-//    }
-//
-//    public void removeDayPlan(DayPlan dayPlan) {
-//        dayPlans.remove(dayPlan);
-//        dayPlan.setPlan(null);
-//    }
-
-    public Plan(PlanDto.Create request, Member member) {
-        this.title = request.getTitle();
-//        this.content = request.getContent();
-        this.budget = request.getBudget();
-        this.area = request.getArea();
-        this.isPublic = request.getIsPublic();
-        this.tripStartDate = request.getTripStartDate();
-        this.tripEndDate = request.getTripEndDate();
-        this.isVotable = request.getIsVotable();
-        this.member = member;
-    }
-
     public Plan(PlanDto.CreateAllInOne request, Member member) {
         this.title = request.getTitle();
-//        this.content = request.getContent();
-        this.budget = request.getBudget();
-        this.area = request.getArea();
-        this.isPublic = request.getIsPublic();
         this.tripStartDate = request.getTripStartDate();
         this.tripEndDate = request.getTripEndDate();
+        this.area = request.getArea();
+        this.budget = request.getBudget();
+        this.isPublic = request.getIsPublic();
         this.isVotable = request.getIsVotable();
         this.member = member;
-    }
 
-    public Plan update(PlanDto.Update request) {
-        this.title = request.getTitle();
-//        this.content = request.getContent();
-        this.budget = request.getBudget();
-        this.area = request.getArea();
-        this.isPublic = request.getIsPublic();
-        this.tripStartDate = request.getTripStartDate();
-        this.tripEndDate = request.getTripEndDate();
-        this.isVotable = request.getIsVotable();
-
-        return this;
+        checkIsPastDate();
     }
 
     public Plan update(PlanDto.UpdateAllInOne request) {
         this.title = request.getTitle();
-//        this.content = request.getContent();
-        this.budget = request.getBudget();
-        this.area = request.getArea();
-        this.isPublic = request.getIsPublic();
         this.tripStartDate = request.getTripStartDate();
         this.tripEndDate = request.getTripEndDate();
+        this.area = request.getArea();
+        this.budget = request.getBudget();
+        this.isPublic = request.getIsPublic();
         this.isVotable = request.getIsVotable();
+
+        checkIsPastDate();
 
         return this;
     }
@@ -139,5 +100,13 @@ public class Plan {
 
     public void decreaseLikeCount() {
         this.likeCount--;
+    }
+
+    // 입력된기간 (tripStartDate/tripEndDate)가 현재보다 과거시각인지 확인
+    public void checkIsPastDate() {
+        LocalDate now = LocalDate.now();
+        if (tripStartDate.isBefore(now)) {
+            throw new CustomException(ErrorCode.WRONG_PLAN_DATE);
+        }
     }
 }

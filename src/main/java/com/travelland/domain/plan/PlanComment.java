@@ -25,14 +25,6 @@ public class PlanComment {
     @Column(length = 200)
     private String content;
 
-    @CreatedDate
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime modifiedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
@@ -40,6 +32,14 @@ public class PlanComment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
+
+    @CreatedDate
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime modifiedAt;
 
     private Boolean isDeleted = false;
 

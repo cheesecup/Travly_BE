@@ -47,7 +47,13 @@ public class MemberController implements MemberControllerDocs {
     }
 
     @GetMapping("/memberInfo")
-    public ResponseEntity<MemberDto.MemberInfo> getMemberInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return ResponseEntity.status(HttpStatus.OK).body(memberService.getMemberInfo(userDetails.getMember()));
+    public ResponseEntity<MemberDto.MemberInfo> getMemberInfo() {
+        return ResponseEntity.status(HttpStatus.OK).body(memberService.getMemberInfo());
+    }
+
+    //마이페이지 정보 조회
+    @GetMapping("/myInfo")
+    public ResponseEntity<MemberDto.GetMyPage> getMyInfo() {
+        return ResponseEntity.status(HttpStatus.OK).body(memberService.getMyInfo());
     }
 }

@@ -26,43 +26,41 @@ import static com.travelland.constant.Constants.TRIP_SCRAPS_TRIP_ID;
 public class TripScrapService {
 
     private final TripScrapRepository tripScrapRepository;
-    private final MemberRepository memberRepository;
     private final TripRepository tripRepository;
     private final TripSearchRepository tripSearchESRepository;
     private final RedisTemplate<String, String> redisTemplate;
+    private final MemberRepository memberRepository;
 
     //여행정보 스크랩 등록
     @Transactional
-    public void registerTripScrap(Long tripId, String email) {
-        Member member = getMember(email);
+    public void registerTripScrap(Long tripId, Member loginMember) {
         Trip trip = getTrip(tripId);
 
-        tripScrapRepository.findByMemberAndTrip(member, trip)
+        tripScrapRepository.findByMemberAndTrip(loginMember, trip)
                 .ifPresentOrElse(
                         TripScrap::registerScrap,
-                        () -> tripScrapRepository.save(new TripScrap(member, trip))
+                        () -> tripScrapRepository.save(new TripScrap(loginMember, trip))
                 );
 
-        redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, email);
+        redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, loginMember.getEmail());
     }
 
     //여행정보 스크랩 취소
     @Transactional
-    public void cancelTripScrap(Long tripId, String email) {
-        Member member = getMember(email);
+    public void cancelTripScrap(Long tripId, Member loginMember) {
         Trip trip = getTrip(tripId);
 
-        TripScrap tripScrap = tripScrapRepository.findByMemberAndTrip(member, trip)
+        TripScrap tripScrap = tripScrapRepository.findByMemberAndTrip(loginMember, trip)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_SCRAP_NOT_FOUND));
         tripScrap.cancelScrap();
 
-        redisTemplate.opsForSet().remove(TRIP_SCRAPS_TRIP_ID + tripId, email);
+        redisTemplate.opsForSet().remove(TRIP_SCRAPS_TRIP_ID + tripId, loginMember.getEmail());
     }
     
     //스크랩한 여행정보 목록 조회
     @Transactional(readOnly = true)
-    public List<TripDto.Scraps> getTripScrapList(int page, int size, String email) {
-        List<TripSearchDoc> scrapList = tripScrapRepository.getScrapListByMember(getMember(email), size, page).stream()
+    public List<TripDto.Scraps> getTripScrapList(int page, int size, Member loginMember) {
+        List<TripSearchDoc> scrapList = tripScrapRepository.getScrapListByMember(loginMember, size, page).stream()
                 .map(tripScrap -> tripSearchESRepository.findByTripId(tripScrap.getTrip().getId())).toList();
 
         return scrapList.stream().map(TripDto.Scraps::new).toList();
@@ -75,21 +73,16 @@ public class TripScrapService {
     }
     
     //게시글 스크랩 여부 확인
-    public boolean statusTripScrap(Long tripId, String email) {
-        if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(TRIP_SCRAPS_TRIP_ID + tripId, email)))
+    public boolean statusTripScrap(Long tripId, Member loginMember) {
+        if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(TRIP_SCRAPS_TRIP_ID + tripId, loginMember.getEmail())))
             return true;
 
-        Optional<TripScrap> tripScrap = tripScrapRepository.findByMemberAndTrip(getMember(email),getTrip(tripId));
+        Optional<TripScrap> tripScrap = tripScrapRepository.findByMemberAndTripAndIsDeleted(loginMember,getTrip(tripId),false);
         if(tripScrap.isPresent()) {
-            redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, email);
+            redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, loginMember.getEmail());
             return true;
         }
         return false;
-    }
-
-    private Member getMember(String email) {
-        return memberRepository.findByEmail(email)
-                .orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     private Trip getTrip(Long tripId) {

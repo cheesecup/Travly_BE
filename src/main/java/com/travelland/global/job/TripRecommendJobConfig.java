@@ -1,6 +1,10 @@
 package com.travelland.global.job;
 
+import com.travelland.global.exception.CustomException;
+import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.trip.TripLikeRepository;
+import com.travelland.repository.trip.TripRecommendRepository;
+import com.travelland.repository.trip.TripRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -40,7 +44,13 @@ import java.util.List;
 import java.util.Map;
 
 import static com.travelland.constant.Constants.TRIP_RECOMMEND_JOB_NAME;
-
+/**
+ * 좋아요 기반 추천 컨텐츠를 위한 batch 작업
+ *
+ * @author     kjw
+ * @version    1.0.0
+ * @since      1.0.0
+ */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -50,27 +60,33 @@ public class TripRecommendJobConfig {
     private final PlatformTransactionManager platformTransactionManager;
     private final DataSource dataSource;
     private final TripLikeRepository tripLikeRepository;
+    private final TripRepository tripRepository;
     private final RedisTemplate<String, String> redisTemplate;
-
-    private static final String TRIP_RECOMMEND_STEP = "trip_recommend_step";
+    private final TripRecommendRepository tripRecommendRepository;
+    private static final String TRIP_LIKE_RECOMMEND_STEP = "trip_like_recommend_step";
     private static final String TRIP_RECOMMEND = "trip_recommend:";
     private static final int WORKER_SIZE = 2;
+    private static final int RECOMMEND_SIZE = 5;
 
     @Value("${spring.batch.chunk-size}")
     private int chunkSize;
-
+    /**
+     * DB 에서 tripId를 꺼내온 후 해당하는 id의 추천 list를 분석해 Redis에 저장
+     */
     @Bean
     public Job jdbcJob() {
         return new JobBuilder(TRIP_RECOMMEND_JOB_NAME, jobRepository)
                 .incrementer(new RunIdIncrementer())
-                .start(jpaStep())
+                .start(tripLikeRecommendStep())
                 .build();
     }
-
+    /**
+     * DB 에서 tripId를 꺼내온 후 해당하는 id의 추천 list를 분석해 Redis에 저장
+     */
     @JobScope
     @Bean
-    public Step jpaStep(){
-        return new StepBuilder(TRIP_RECOMMEND_STEP, jobRepository)
+    public Step tripLikeRecommendStep(){
+        return new StepBuilder(TRIP_LIKE_RECOMMEND_STEP, jobRepository)
                 .<Long, DataSet>chunk(completionPolicy(), new DataSourceTransactionManager(dataSource))
                 .reader(jdbcPagingItemReader())
                 .processor(itemProcessor())
@@ -80,7 +96,10 @@ public class TripRecommendJobConfig {
                 .listener(jobExecutionListener(taskExecutor()))
                 .build();
     }
-
+    /**
+     * DB 에서 tripId를 Paging 형식으로 가져오기
+     * Paging: multi - thread 에 대해 안전
+     */
     @Bean
     public JdbcPagingItemReader<Long> jdbcPagingItemReader() {
         return new JdbcPagingItemReaderBuilder<Long>()
@@ -91,7 +110,9 @@ public class TripRecommendJobConfig {
                 .rowMapper(((rs, rowNum) -> rs.getLong(1)))
                 .build();
     }
-
+    /**
+     * DB 에서 사용할 SQL 문
+     */
     private PagingQueryProvider createQueryProvider() {
         SqlPagingQueryProviderFactoryBean providerFactoryBean = new SqlPagingQueryProviderFactoryBean();
         providerFactoryBean.setDataSource(dataSource);
@@ -107,7 +128,9 @@ public class TripRecommendJobConfig {
         }
         return null;
     }
-
+    /**
+     * DB 에서 가져온 id 에 대한 추천 여행 정보 list 분석
+     */
     @Bean
     public ItemProcessor<Long, DataSet> itemProcessor(){
         return id ->{
@@ -124,17 +147,31 @@ public class TripRecommendJobConfig {
                     .map(Map.Entry::getKey)
                     .toList());
 
-            if(res.size() < 6) {
-                res.remove(id);
+            if(res.size() > RECOMMEND_SIZE) {
+                List<Long> subRes =  res.subList(0, RECOMMEND_SIZE+1);
+                subRes.remove(id);
+                return new DataSet(id, subRes.stream().limit(RECOMMEND_SIZE).map(Object::toString).toList());
+            }
+
+            res.remove(id);
+
+            if(res.size() == RECOMMEND_SIZE){
                 return new DataSet(id, res.stream().map(Object::toString).toList());
             }
 
-            List<Long> subRes =  res.subList(0,6);
-            subRes.remove(id);
-            return new DataSet(id, subRes.stream().limit(5).map(Object::toString).toList());
+            String content =
+            tripRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND)).getContent();
+
+            tripRecommendRepository.recommendByContent(content,RECOMMEND_SIZE - res.size())
+                    .getSearchHits().forEach(data -> res.add(data.getContent().getId()));
+
+            return new DataSet(id, res.stream().map(Object::toString).toList());
         };
     }
 
+    /**
+     * 여행 정보 id 에 대한 추천 여행 정보 list Redis에 저장
+     */
     private void writeChunkDataToRedis(Chunk<? extends DataSet> chunkData) {
         redisTemplate.executePipelined((RedisCallback<Object>) redisConnection -> {
             chunkData.forEach(data -> {
@@ -150,7 +187,9 @@ public class TripRecommendJobConfig {
             return null;
         });
     }
-
+    /**
+     * chunk 단위 멀티스레드 설정
+     */
 @Bean
 public TaskExecutor taskExecutor(){
     ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
@@ -163,7 +202,9 @@ public TaskExecutor taskExecutor(){
     threadPoolTaskExecutor.initialize();
     return threadPoolTaskExecutor;
 }
-
+    /**
+     *  작업 종료시 ThreadPool 닫기
+     */
 public JobExecutionListener jobExecutionListener(TaskExecutor taskExecutor){
         return new JobExecutionListener() {
             @Override
@@ -176,7 +217,9 @@ public JobExecutionListener jobExecutionListener(TaskExecutor taskExecutor){
             }
         };
 }
-
+    /**
+     *  작업이 완료되었는지 여부를 판단하는 데 사용되는 규칙
+     */
     private CompletionPolicy completionPolicy() {
         CompositeCompletionPolicy policy =
                 new CompositeCompletionPolicy();

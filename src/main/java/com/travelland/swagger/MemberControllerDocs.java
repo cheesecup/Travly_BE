@@ -36,5 +36,8 @@ public interface MemberControllerDocs {
     ResponseEntity searchNickname(@RequestParam String nickname);
 
     @Operation(summary = "회원정보", description = "닉네임 / 이메일 / 프로필이미지 API")
-    ResponseEntity getMemberInfo(@AuthenticationPrincipal UserDetailsImpl userDetails);
+    ResponseEntity getMemberInfo();
+
+    @Operation(summary = "마이페이지 조회", description = "마이페이지 조회 API")
+    ResponseEntity getMyInfo();
 }

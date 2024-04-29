@@ -5,6 +5,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.plan.PlanLike;
 import com.travelland.dto.plan.PlanDto;
+import com.travelland.dto.plan.PlanLikeScrapDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -19,10 +20,10 @@ import static com.travelland.domain.plan.QPlanScrap.planScrap;
 public class CustomPlanLikeRepositoryImpl implements CustomPlanLikeRepository{
     private final JPAQueryFactory jpaQueryFactory;
     @Override
-    public List<PlanDto.GetList> getLikeListByMember(Member member, int size, int page){
+    public List<PlanLikeScrapDto.GetList> getLikeListByMember(Member member, int size, int page){
         return  jpaQueryFactory
                 .select(  Projections.constructor(
-                        PlanDto.GetList.class,
+                        PlanLikeScrapDto.GetList.class,
                         plan.id,
                         plan.title,
                         plan.viewCount,

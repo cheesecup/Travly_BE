@@ -74,7 +74,7 @@ jobs: # 실제 어떤 작업을 실행할지에 대한 명시
     steps: # 일정시간 대기 후 특정API가 상태코드200을 주는지로 배포코드의 정상동작을 확인
       - name: Wait and check healthcheck
         run: |
-          sleep 30
+          sleep 60
           status=$( curl -o /dev/null -s -w "%{http_code}" http://43.201.5.206:8080/v1/healthcheck )
           echo "status=$status" >> $GITHUB_ENV
       - name: Print status from $GITHUB_ENV
