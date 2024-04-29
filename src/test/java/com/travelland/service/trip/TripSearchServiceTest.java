@@ -160,10 +160,10 @@ class TripSearchServiceTest {
     @DisplayName(" 내용 기반 여행 후기 추천 기능 TEST")
     void getRecommendTrip(){
         SearchHits<TripRecommendDoc> result = tripRecommendRepository.recommendByContent("여행 관련",5);
-        result.forEach(trip ->{
-            System.out.println(trip.getContent());
-        });
-        System.out.println(result.getTotalHits());
+//        result.forEach(trip ->{
+//            System.out.println(trip.getContent());
+//        });
+//        System.out.println(result.getTotalHits());
     }
 
 }
