@@ -3,7 +3,6 @@ package com.travelland.repository.trip.es;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
 import lombok.RequiredArgsConstructor;
-import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.lucene.search.function.FunctionScoreQuery;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -22,13 +21,10 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
 
 @RequiredArgsConstructor
 @Component
-public class CustomTripRepositoryImpl implements CustomTripRepository {
+public class CustomTripSearchRepositoryImpl implements CustomTripSearchRepository {
     private final ElasticsearchOperations elasticsearchOperations;
 
     @Override
@@ -48,6 +44,12 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
         searchQueryBuilder.withQuery(boolQueryBuilder);
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
+    /**
+     * 통합 검색기능, hashtag, area, title, content 기준으로 검색
+     * @param text 검색할 문자열 입력
+     * @param pageable 페이징 처리 입력
+     * @return 검색 결과
+     */
     @Override
     public SearchHits<TripSearchDoc> searchByTextTEST(String text, Pageable pageable) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
@@ -80,7 +82,12 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
         searchQueryBuilder.withQuery(boolQueryBuilder);
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
-
+    /**
+     * 제목 검색기능
+     * @param title 검색할 문자열 입력
+     * @param pageable 페이징 처리 입력
+     * @return 검색 결과
+     */
     @Override
     public SearchHits<TripSearchDoc> searchByTitle(String title, Pageable pageable) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
@@ -93,7 +100,14 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
 
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
-
+    /**
+     * 필드 기준 검색기능
+     * @param field 검색할 필드명 입력
+     * @param keyword 검색할 필드값 입력
+     * @param isPublic 검색 공개글 여부
+     * @param pageable 페이징 처리 입력
+     * @return 검색 결과
+     */
     @Override
     public SearchHits<TripSearchDoc> searchByField(String field, String keyword, boolean isPublic, Pageable pageable) {
 
@@ -106,7 +120,13 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
 
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
-
+    /**
+     * 지역 검색 기능
+     * @param area 검색할 지역명 배열 입력
+     * @param isPublic 검색 공개글 여부
+     * @param pageable 페이징 처리 입력
+     * @return 검색 결과
+     */
     @Override
     public SearchHits<TripSearchDoc> searchByArea(String[] area, boolean isPublic, Pageable pageable) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
@@ -118,7 +138,12 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
         searchQueryBuilder.withQuery(boolQueryBuilder);
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
-
+    /**
+     * 전체 여행 지역 대상 결과 반환
+     * @param isPublic 검색 공개글 여부
+     * @param pageable 페이징 처리 입력
+     * @return 검색 결과
+     */
     @Override
     public SearchHits<TripSearchDoc> searchAllArea(boolean isPublic, Pageable pageable) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
@@ -128,7 +153,11 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
         searchQueryBuilder.withQuery(boolQueryBuilder);
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
-
+    /**
+     * Top 10 에 해당하는 tripId 리스트를 받아서 순서를 유지한 상태로 Elasticsearch에서 조회하는 기능
+     * @param keys 정렬된 tripId 리스트
+     * @return Top 10 여행 정보
+     */
     @Override
     public List<TripDto.Top10> findRankList(List<Long> keys) {
 
@@ -149,7 +178,11 @@ public class CustomTripRepositoryImpl implements CustomTripRepository {
                 .map(element -> new TripDto.Top10(element.getSearchHit(0).getContent()))
                 .toList());
     }
-
+    /**
+     * Random 추천 기능
+     * @param size 랜덤으로 받을 갯수
+     * @return Random 추천 결과
+     */
     @Override
     public List<TripDto.GetList> getRandomList(int size) {
         FunctionScoreQueryBuilder functionScoreQueryBuilder = QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(),ScoreFunctionBuilders.randomFunction())
