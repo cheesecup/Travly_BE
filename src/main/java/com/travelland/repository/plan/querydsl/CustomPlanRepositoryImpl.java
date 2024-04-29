@@ -6,7 +6,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.travelland.domain.plan.Plan;
-import com.travelland.dto.plan.PlanDto;
+import com.travelland.dto.plan.PlanLikeScrapDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -21,10 +21,10 @@ public class CustomPlanRepositoryImpl implements CustomPlanRepository {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<PlanDto.GetList> getPlanList(Long lastId, int size, String sortBy, boolean isAsc) {
+    public List<PlanLikeScrapDto.GetList> getPlanList(Long lastId, int size, String sortBy, boolean isAsc) {
         return jpaQueryFactory.select(
                         Projections.constructor(
-                                PlanDto.GetList.class,
+                                PlanLikeScrapDto.GetList.class,
                                 plan.id,
                                 plan.title,
                                 plan.viewCount,
@@ -39,10 +39,10 @@ public class CustomPlanRepositoryImpl implements CustomPlanRepository {
     }
 
     @Override
-    public List<PlanDto.GetList> getPlanListByIds(List<Long> ids) {
+    public List<PlanLikeScrapDto.GetList> getPlanListByIds(List<Long> ids) {
         return jpaQueryFactory
                 .select(Projections.constructor(
-                        PlanDto.GetList.class,
+                        PlanLikeScrapDto.GetList.class,
                         plan.id,
                         plan.title,
                         plan.viewCount,

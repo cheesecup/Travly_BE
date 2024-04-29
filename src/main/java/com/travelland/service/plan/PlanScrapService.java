@@ -3,7 +3,7 @@ package com.travelland.service.plan;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanScrap;
-import com.travelland.dto.plan.PlanDto;
+import com.travelland.dto.plan.PlanLikeScrapDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.security.UserDetailsImpl;
@@ -30,50 +30,35 @@ public class PlanScrapService {
     private final PlanRepository planRepository;
     private final PlanScrapRepository planScrapRepository;
     private final MemberRepository memberRepository;
-    private final  RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Transactional
     public void registerPlanScrap(Long planId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Member member = getLoginMember();
+        String email = member.getEmail();
+        Plan plan = getPlan(planId);
 
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-            String email = member.getEmail();
-
-            Plan plan = getPlan(planId);
-            planScrapRepository.findByMemberAndPlan(member, plan)
-                    .ifPresentOrElse(
-                            PlanScrap::registerScrap, // 스크랩을 한번이라도 등록한적이 있을경우
-                            () -> planScrapRepository.save(new PlanScrap(member, plan)) // 최초로 좋아요를 등록하는 경우
-                    );
-            redisTemplate.opsForSet().add(PLAN_SCRAPS_PLAN_ID + planId, email);
-        } else {
-            throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
-        }
+        planScrapRepository.findByMemberAndPlan(member, plan)
+                .ifPresentOrElse(
+                        PlanScrap::registerScrap, // 스크랩을 한번이라도 등록한적이 있을경우
+                        () -> planScrapRepository.save(new PlanScrap(member, plan)) // 최초로 좋아요를 등록하는 경우
+                );
+        redisTemplate.opsForSet().add(PLAN_SCRAPS_PLAN_ID + planId, email);
     }
 
     // Plan 스크랩 취소
     @Transactional
     public void cancelPlanScrap(Long planId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = getLoginMember().getEmail();
 
-        if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-            Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();
-            String email = member.getEmail();
-
-            getPlanScrap(planId,email).cancelScrap();
-            redisTemplate.opsForSet().remove(PLAN_SCRAPS_PLAN_ID + planId, email);
-        } else {
-            throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
-        }
+        getPlanScrap(planId, email).cancelScrap();
+        redisTemplate.opsForSet().remove(PLAN_SCRAPS_PLAN_ID + planId, email);
     }
 
     // Plan 스크랩 유저별 전체목록 조회
     @Transactional(readOnly = true)
-    public List<PlanDto.GetList> getPlanScrapList(int page, int size) {
-        Member member = getMemberOrThrowError();
-
-        return planScrapRepository.getScrapListByMember(member, size, page);
+    public List<PlanLikeScrapDto.GetList> getPlanScrapList(int page, int size) {
+        return planScrapRepository.getScrapListByMember(getLoginMember(), size, page);
     }
 
     // Plan 스크랩 여부 확인
@@ -84,18 +69,31 @@ public class PlanScrapService {
             Member member = ((UserDetailsImpl) authentication.getPrincipal()).getMember();
             String email = member.getEmail();
 
+            // Redis 에서 확인
             if (Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(PLAN_SCRAPS_PLAN_ID + planId, email)))
                 return true;
+
+            // Redis 에 없는 경우, DB에서 한번 더 확인
             Optional<PlanScrap> planScrap = planScrapRepository.findByMemberAndPlanAndIsDeleted(getMember(email), getPlan(planId), false);
             if (planScrap.isPresent()) {
                 redisTemplate.opsForSet().add(PLAN_SCRAPS_PLAN_ID + planId, email);
                 return true;
             }
         }
+
         return false;
     }
 
-    private Member getMemberOrThrowError() {
+
+
+
+
+
+
+
+
+
+    private Member getLoginMember() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
             Member member = ((UserDetailsImpl)authentication.getPrincipal()).getMember();

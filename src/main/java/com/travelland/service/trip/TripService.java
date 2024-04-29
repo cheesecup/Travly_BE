@@ -34,6 +34,14 @@ public class TripService {
     private final TripScrapService tripScrapService;
     private final TripSearchService tripSearchService;
 
+    /**
+     * 회원이 입력한 여행후기 게시글 생성
+     * @param requestDto 회원이 입력한 여행후기 정보
+     * @param thumbnail 여행후기 게시글 썸네일 이미지
+     * @param imageList 여행후기 게시글 추가 이미지
+     * @param loginMember 로그인한 회원 정보
+     * @return 생성된 여행후기 게시글 id
+     */
     @Transactional
     public TripDto.Id createTrip(TripDto.Create requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, Member loginMember) {
         Trip trip = tripRepository.save(new Trip(requestDto, loginMember));
@@ -50,6 +58,12 @@ public class TripService {
         return new TripDto.Id(trip.getId());
     }
 
+    /**
+     * 여행후기의 상세 내용 조회
+     * @param tripId 조회하려는 게시글 id
+     * @param loginMemberEmail 조회 요청한 회원 이메일
+     * @return 여행후기의 상세 내용
+     */
     @Transactional
     public TripDto.Get getTrip(Long tripId, String loginMemberEmail) {
         Trip trip = tripRepository.getTripWithMember(tripId, false).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
@@ -91,6 +105,15 @@ public class TripService {
         return new TripDto.Get(trip, writer, hashtagList, imageUrlList, isLike, isScrap, isWriter);
     }
 
+    /**
+     * 여행후기 게시글 내용 수정
+     * @param tripId 수정하고자 하는 게시글 id
+     * @param requestDto 회원이 수정한 여행후기 정보
+     * @param thumbnail 여행후기 게시글 썸네일 이미지
+     * @param imageList 여행후기 게시글 추가 이미지
+     * @param email 수정 요청한 회원 이메일
+     * @return 수정된 여행후기 게시글 id
+     */
     @Transactional
     public TripDto.Id updateTrip(Long tripId, TripDto.Update requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, String email) {
         Trip trip = getTrip(tripId);
@@ -116,6 +139,11 @@ public class TripService {
         return new TripDto.Id(trip.getId());
     }
 
+    /**
+     * 여행후기 게시글 삭제
+     * @param tripId 삭제하고자 하는 게시글 id
+     * @param email 삭제 요청한 회원 이메일
+     */
     @Transactional
     public void deleteTrip(Long tripId, String email) {
         Trip trip = getTrip(tripId);
@@ -137,6 +165,11 @@ public class TripService {
         redisTemplate.opsForValue().decrement(TRIP_TOTAL_ELEMENTS);
     }
 
+    /**
+     * 조회수가 가장 많은 여행후기 게시글 목록 조회
+     * @param size 노출되는 게시글 수
+     * @return `size` 개수 만큼의 여행후기 게시글 목록
+     */
     public List<TripDto.Top10> getRankByViewCount(long size){
         Set<String> ranks = redisTemplate.opsForZSet()
                 .reverseRange(VIEW_RANK,0L,size+5L);
@@ -154,10 +187,20 @@ public class TripService {
         return result;
     }
 
+    /**
+     * DB에 있는 여행후기 게시글의 해시태그 목록 조회
+     * @param trip 조회하고자 하는 여행후기
+     * @return 여행후기 게시글과 연관관계인 해시태그 목록
+     */
     private List<TripHashtag> getHashtags(Trip trip){
         return tripHashtagRepository.findAllByTrip(trip);
     }
 
+    /**
+     * DB에 있는 여행후기 정보 조회
+     * @param tripId 조회하고자 하는 여행후기 id
+     * @return 조회된 여행후기 정보
+     */
     private Trip getTrip(Long tripId) {
         return tripRepository.findById(tripId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
