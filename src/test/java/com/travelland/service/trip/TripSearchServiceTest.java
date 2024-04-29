@@ -7,7 +7,7 @@ import com.travelland.repository.trip.TripSearchRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-//
+
 //@SpringBootTest
 //class TripSearchServiceTest {
 //    @Autowired
@@ -83,6 +83,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 ////        tripSearchService.totalSearchTrip("ㅂㅅㄱㅇㅅ",1,5,"createdAt",true)
 ////                .getSearches().forEach(System.out::println);
 ////    }
+//    @Test
+//    void totalSearchTest(){
+//        tripSearchService.totalSearchTrip("",1,6,"createdAt",true);
+//    }
 //
 //    @Test
 //    void jamoTest() {

@@ -218,12 +218,7 @@ public class TripSearchService {
     public void syncDBtoES() {
         for(Trip trip : tripRepository.findAllByIsDeleted(false)){
             List<String> hashtags = tripHashtagRepository.findAllByTrip(trip).stream().map(TripHashtag::getTitle).toList();
-
-            tripSearchRepository.save(TripSearchDoc.builder()
-                 .trip(trip)
-                 .hashtag(hashtags)
-                 .thumbnailUrl(tripImageService.getTripThumbnailUrl(trip))
-                 .build());
+            this.createTripDocument(trip,hashtags,tripImageService.getTripThumbnailUrl(trip));
         }
     }
 

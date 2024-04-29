@@ -1,5 +1,6 @@
 package com.travelland.domain.search;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import java.util.Map;
  * @version    1.0.0
  * @since      1.0.0
  */
+@Slf4j(topic = "korToEng")
 @Component
 public class KoreanKeyboardToEng {
     /**
@@ -84,6 +86,11 @@ public class KoreanKeyboardToEng {
      * @param sb 결과 반환을 위한 스트링빌더
      */
     private void separateKey(String target, StringBuilder sb) {
+        if(target.isEmpty())
+            return;
+        log.info("");
+        log.info(target);
+        log.info("");
         int codePoint = Character.codePointAt(target, 0);
 
         if(codePoint < 0xAC00 || codePoint > 0xD79D){
