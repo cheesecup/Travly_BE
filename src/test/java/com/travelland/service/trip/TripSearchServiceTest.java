@@ -4,13 +4,16 @@ import com.travelland.constant.Role;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.dto.trip.TripDto;
+import com.travelland.esdoc.TripRecommendDoc;
 import com.travelland.repository.member.MemberRepository;
+import com.travelland.repository.trip.TripRecommendRepository;
 import com.travelland.repository.trip.TripRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -26,6 +29,8 @@ import java.util.List;
 class TripSearchServiceTest {
     @Autowired
     TripSearchService tripSearchService;
+    @Autowired
+    TripRecommendRepository tripRecommendRepository;
     @Autowired
     TripRepository tripRepository;
     @Autowired
@@ -151,4 +156,14 @@ class TripSearchServiceTest {
         List<TripDto.GetList> result = tripSearchService.getRandomTrip();
         Assertions.assertFalse(result.isEmpty());
     }
+    @Test
+    @DisplayName(" 내용 기반 여행 후기 추천 기능 TEST")
+    void getRecommendTrip(){
+        SearchHits<TripRecommendDoc> result = tripRecommendRepository.recommendByContent("여행 관련",5);
+        result.forEach(trip ->{
+            System.out.println(trip.getContent());
+        });
+        System.out.println(result.getTotalHits());
+    }
+
 }

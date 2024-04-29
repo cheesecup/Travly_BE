@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Slf4j(topic = "ES")
 @Service
@@ -280,6 +279,13 @@ public class TripSearchService {
                 .map(TripSearchDoc::getPlaceName)
                 .toList();
     }
+    /**
+     * 한글 키보드 상태에서 입력된 영어 단어 변환 기능<br>
+     * 잘못 변환될 가능성이 있으므로 변환 전 후를 공백으로 구분하여 검색<br>
+     * Ex> ㅑㅔㅙㅜㄷ -> ㅑㅔㅙㅜㄷ iphone
+     * @param text 입력 text
+     * @return 변환후 text
+     */
     private String changeKeyboardKorToAlphabet(String text){
         String newText = text;
         if(text.split(" ").length == 1 && text.matches("^[ㄱ-ㅎ가-힣]*$")){
