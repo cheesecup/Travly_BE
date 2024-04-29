@@ -50,7 +50,7 @@ public class NotificationSender {
 
     @TransactionalEventListener
     @Async
-    public void handleDoDisagree(DoEvent.DoAgreeEvent event) {
+    public void handleDoDisagree(DoEvent.DoDisagreeEvent event) {
         Plan plan = planRepository.findById(event.getPlanId()).orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
         String title = plan.getTitle();
         String content = event.getInviteeNickname() + "님이 플랜 초대를 거절하였습니다.";

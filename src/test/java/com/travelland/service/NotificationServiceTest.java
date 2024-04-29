@@ -29,7 +29,7 @@ class NotificationServiceTest {
         String lastEventId = "";
 
         //when, then
-        Assertions.assertDoesNotThrow(() -> notificationService.subscribe(member.getId(), lastEventId));
+        Assertions.assertDoesNotThrow(() -> notificationService.subscribe(member.getId()));
     }
 
     @Test
@@ -38,7 +38,7 @@ class NotificationServiceTest {
         //given
         Member member = memberRepository.findById(1L).orElseThrow();
         String lastEventId = "";
-        notificationService.subscribe(member.getId(), lastEventId);
+        notificationService.subscribe(member.getId());
 
         //when, then
         Assertions.assertDoesNotThrow(() -> notificationService.send(member, "코딩 스터디", "스터디 신청에 지원하셨습니다.", "localhost:8080/study/1", NotificationType.INVITE));

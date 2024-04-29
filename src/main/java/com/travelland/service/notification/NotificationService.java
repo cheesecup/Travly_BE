@@ -4,8 +4,11 @@ import com.travelland.constant.NotificationType;
 import com.travelland.domain.Notification;
 import com.travelland.domain.member.Member;
 import com.travelland.dto.NotificationDto;
+import com.travelland.global.notification.Publisher;
 import com.travelland.repository.notification.EmitterRepositoryImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -20,21 +23,31 @@ public class NotificationService {
 
     private final EmitterRepositoryImpl emitterRepository;
 
-    public SseEmitter subscribe(Long memberId, String lastEventId) {
+    private final RedisMessageListenerContainer redisMessageListenerContainer;
+    private final Publisher redisPublisher;
+    private final Subscriber redisSubscriber;
+
+    public SseEmitter subscribe(Long memberId) {
         String emitterId = makeTimeIncludeId(memberId);
         SseEmitter emitter = emitterRepository.save(emitterId, new SseEmitter(TIMEOUT));
+
+        // 503 에러를 방지하기 위한 더미 이벤트 전송
+        String eventId = makeTimeIncludeId(memberId);
+        try {
+            emitter.send(SseEmitter.event()
+                    .id(eventId)
+                    .name("sse")
+                    .data("EventStream Created. [memberId=" + memberId + "]"));
+        } catch (IOException exception) {
+            emitterRepository.deleteById(emitterId);
+        }
+
         emitter.onCompletion(() -> emitterRepository.deleteById(emitterId));
         emitter.onTimeout(() -> emitterRepository.deleteById(emitterId));
         emitter.onError((e) -> emitterRepository.deleteById(emitterId));
 
-        // 503 에러를 방지하기 위한 더미 이벤트 전송
-        String eventId = makeTimeIncludeId(memberId);
-        sendNotification(emitter, eventId, emitterId, "EventStream Created. [memberId=" + memberId + "]");
-
-        // 클라이언트가 미수신한 Event 목록이 존재할 경우 전송하여 Event 유실을 예방
-        if (hasLostData(lastEventId)) {
-            sendLostData(emitter, lastEventId, emitterId, memberId);
-        }
+        ChannelTopic topic = new ChannelTopic(emitterId);
+        redisMessageListenerContainer.addMessageListener(redisSubscriber, topic);
 
         return emitter;
     }
@@ -43,26 +56,15 @@ public class NotificationService {
         return memberId + "_" + System.currentTimeMillis();
     }
 
-    private void sendNotification(SseEmitter emitter, String eventId, String emitterId, Object data) {
-        try {
-            emitter.send(SseEmitter.event()
-                    .id(eventId)
-                    .name("sse")
-                    .data(data));
-        } catch (IOException exception) {
-            emitterRepository.deleteById(emitterId);
-        }
-    }
-
-    private boolean hasLostData(String lastEventId) {
-        return !lastEventId.isEmpty();
-    }
-
-    private void sendLostData(SseEmitter emitter, String lastEventId, String emitterId, Long memberId) {
+    public void sendLostData(String lastEventId, Long memberId) {
+        Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByMemberId(String.valueOf(memberId));
         Map<String, Object> eventCaches = emitterRepository.findAllEventCacheStartWithByMemberId(String.valueOf(memberId));
         eventCaches.entrySet().stream()
                 .filter(entry -> lastEventId.compareTo(entry.getKey()) < 0)
-                .forEach(entry -> sendNotification(emitter, entry.getKey(), emitterId, entry.getValue()));
+                .forEach(entry -> emitters.forEach(
+                        (key, emitter) -> {
+                            publish(key, new NotificationDto.NotificationResponse((Notification) entry.getValue()));
+                        }));
     }
 
     // 알림 보내기(sender -> receiver)
@@ -71,13 +73,18 @@ public class NotificationService {
 
         String receiverId = String.valueOf(receiver.getId());
         String eventId = receiverId + "_" + System.currentTimeMillis();
+        emitterRepository.saveEventCache(eventId, notification);
+
         Map<String, SseEmitter> emitters = emitterRepository.findAllEmitterStartWithByMemberId(receiverId);
         emitters.forEach(
                 (key, emitter) -> {
-                    emitterRepository.saveEventCache(key, notification);
-                    sendNotification(emitter, eventId, key, new NotificationDto.NotificationResponse(notification));
+                    publish(key, new NotificationDto.NotificationResponse(notification));
                 }
         );
+    }
+
+    public void publish(String emitterId, NotificationDto.NotificationResponse response) {
+        redisPublisher.publish(emitterId, response);
     }
 
     private Notification createNotification(Member receiver, String title, String content, String url, NotificationType notificationType) {
