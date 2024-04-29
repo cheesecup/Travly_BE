@@ -23,12 +23,26 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
+/**
+ * 인기 검색어를 집계하기 위한 로그
+ * @author     kjw
+ * @version    1.0.0
+ * @since      1.0.0
+ */
 @Slf4j(topic = "ESLog")
 @Component
 @RequiredArgsConstructor
 public class ElasticsearchLogService {
+    /**
+     * Elasticsearch 통신 관련 method
+     */
     private final RestHighLevelClient client;
+
+    /**
+     * 로그를 남기기 위한 Elasticsearch index 설정
+     * @param indexName 로그를 남길 index 명
+     * @param doc index 안 mapping 설정
+     */
     public void indexDocument(String indexName, Map<String,Object> doc) {
         IndexRequest request = new IndexRequest(indexName).source(doc);
         try {
@@ -47,6 +61,11 @@ public class ElasticsearchLogService {
         }
     }
 
+    /**
+     * 로그 기록 하는 기능
+     * @param field 로그를 남길 field 값 설정
+     * @param query 로그에 해당하는 data 값 입력
+     */
     public void putSearchLog(String field, String query) {
         String indexName = "query-log";
         Map<String,Object> doc = new HashMap<>();
@@ -57,7 +76,13 @@ public class ElasticsearchLogService {
         doc.put("@timestamp", sdf.format(new Date(System.currentTimeMillis())));
         indexDocument(indexName, doc);
     }
-
+    /**
+     * 로그를 집계하여 상의 10개 데이터를 출력
+     * @param field 집계할 field 값 설정
+     * @param startTime 집계를 시작할 날짜 입력
+     * @param endTime 집계를 종료할 날짜 입력
+     * @return 집계결과 상위 10개 map 리스트 반환
+     */
     public List<Map<String, Object>> getRankInRange(String field, LocalDateTime startTime, LocalDateTime endTime){
         SearchRequest searchRequest = new SearchRequest("query-log");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -83,7 +108,11 @@ public class ElasticsearchLogService {
             return new ArrayList<>();
         }
     }
-
+    /**
+     * 집계결과를 mapping 하기 위한 메서드
+     * @param entry 집계 결과
+     * @return map - key: id, value: 키워드값, 검색 횟수
+     */
     private Map<String, Object> keywordEntryMapper(Terms.Bucket entry){
         Map<String, Object> keywordEntry = new HashMap<>();
         keywordEntry.put("key", entry.getKeyAsString());

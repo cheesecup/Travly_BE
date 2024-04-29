@@ -44,7 +44,13 @@ import java.util.List;
 import java.util.Map;
 
 import static com.travelland.constant.Constants.TRIP_RECOMMEND_JOB_NAME;
-
+/**
+ * 좋아요 기반 추천 컨텐츠를 위한 batch 작업
+ *
+ * @author     kjw
+ * @version    1.0.0
+ * @since      1.0.0
+ */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -64,7 +70,9 @@ public class TripRecommendJobConfig {
 
     @Value("${spring.batch.chunk-size}")
     private int chunkSize;
-
+    /**
+     * DB 에서 tripId를 꺼내온 후 해당하는 id의 추천 list를 분석해 Redis에 저장
+     */
     @Bean
     public Job jdbcJob() {
         return new JobBuilder(TRIP_RECOMMEND_JOB_NAME, jobRepository)
@@ -72,7 +80,9 @@ public class TripRecommendJobConfig {
                 .start(tripLikeRecommendStep())
                 .build();
     }
-
+    /**
+     * DB 에서 tripId를 꺼내온 후 해당하는 id의 추천 list를 분석해 Redis에 저장
+     */
     @JobScope
     @Bean
     public Step tripLikeRecommendStep(){
@@ -86,7 +96,10 @@ public class TripRecommendJobConfig {
                 .listener(jobExecutionListener(taskExecutor()))
                 .build();
     }
-
+    /**
+     * DB 에서 tripId를 Paging 형식으로 가져오기
+     * Paging: multi - thread 에 대해 안전
+     */
     @Bean
     public JdbcPagingItemReader<Long> jdbcPagingItemReader() {
         return new JdbcPagingItemReaderBuilder<Long>()
@@ -97,7 +110,9 @@ public class TripRecommendJobConfig {
                 .rowMapper(((rs, rowNum) -> rs.getLong(1)))
                 .build();
     }
-
+    /**
+     * DB 에서 사용할 SQL 문
+     */
     private PagingQueryProvider createQueryProvider() {
         SqlPagingQueryProviderFactoryBean providerFactoryBean = new SqlPagingQueryProviderFactoryBean();
         providerFactoryBean.setDataSource(dataSource);
@@ -113,7 +128,9 @@ public class TripRecommendJobConfig {
         }
         return null;
     }
-
+    /**
+     * DB 에서 가져온 id 에 대한 추천 여행 정보 list 분석
+     */
     @Bean
     public ItemProcessor<Long, DataSet> itemProcessor(){
         return id ->{
@@ -152,7 +169,9 @@ public class TripRecommendJobConfig {
         };
     }
 
-
+    /**
+     * 여행 정보 id 에 대한 추천 여행 정보 list Redis에 저장
+     */
     private void writeChunkDataToRedis(Chunk<? extends DataSet> chunkData) {
         redisTemplate.executePipelined((RedisCallback<Object>) redisConnection -> {
             chunkData.forEach(data -> {
@@ -168,7 +187,9 @@ public class TripRecommendJobConfig {
             return null;
         });
     }
-
+    /**
+     * chunk 단위 멀티스레드 설정
+     */
 @Bean
 public TaskExecutor taskExecutor(){
     ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
@@ -181,7 +202,9 @@ public TaskExecutor taskExecutor(){
     threadPoolTaskExecutor.initialize();
     return threadPoolTaskExecutor;
 }
-
+    /**
+     *  작업 종료시 ThreadPool 닫기
+     */
 public JobExecutionListener jobExecutionListener(TaskExecutor taskExecutor){
         return new JobExecutionListener() {
             @Override
@@ -194,7 +217,9 @@ public JobExecutionListener jobExecutionListener(TaskExecutor taskExecutor){
             }
         };
 }
-
+    /**
+     *  작업이 완료되었는지 여부를 판단하는 데 사용되는 규칙
+     */
     private CompletionPolicy completionPolicy() {
         CompositeCompletionPolicy policy =
                 new CompositeCompletionPolicy();

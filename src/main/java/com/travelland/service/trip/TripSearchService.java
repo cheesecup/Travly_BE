@@ -203,7 +203,7 @@ public class TripSearchService {
      * @return 입력된 조건으로 목록 출력
      */
     public List<TripDto.GetList> getMyTripList(int page, int size, String email) {
-        return tripSearchRepository.findByEmail(this.toPageable(page, size, "createAt", false), email)
+        return tripSearchRepository.findByEmail(this.toPageable(page, size, "createdAt", false), email)
                 .map(TripDto.GetList::new)
                 .getContent();
     }
