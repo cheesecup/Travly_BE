@@ -2,6 +2,7 @@ package com.travelland.controller;
 
 import com.travelland.global.security.UserDetailsImpl;
 import com.travelland.service.notification.NotificationService;
+import com.travelland.swagger.NotificationControllerDocs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,7 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 @RequestMapping("/v1")
 @RequiredArgsConstructor
-public class NotificationController {
+public class NotificationController implements NotificationControllerDocs {
     private final NotificationService notificationService;
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
