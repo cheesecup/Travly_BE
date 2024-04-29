@@ -324,7 +324,7 @@ public class PlanController implements PlanControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    // Plan 초대 목록 조회(마이페이지)
+    // (마이페이지용) Plan 초대 목록 조회
     @GetMapping("/users/plans/invite")
     public ResponseEntity<Page<PlanDto.Get>> readPlanListForInvitee(@RequestParam int page,
                                                     @RequestParam int size,
