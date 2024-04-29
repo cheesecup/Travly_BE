@@ -75,6 +75,7 @@ class TripSearchServiceTest {
         Assertions.assertNotNull(result.getSearches());
         Assertions.assertNotEquals(0, result.getTotalCount());
         Assertions.assertFalse(result.getSearches().isEmpty());
+        result.getNearPlaces().forEach(System.out::println);
     }
 
     @Test
@@ -160,10 +161,8 @@ class TripSearchServiceTest {
     @DisplayName(" 내용 기반 여행 후기 추천 기능 TEST")
     void getRecommendTrip(){
         SearchHits<TripRecommendDoc> result = tripRecommendRepository.recommendByContent("여행 관련",5);
-//        result.forEach(trip ->{
-//            System.out.println(trip.getContent());
-//        });
-//        System.out.println(result.getTotalHits());
+        Assertions.assertEquals(0, result.getTotalHits());
+        Assertions.assertFalse(result.getSearchHits().isEmpty());
     }
 
 }
