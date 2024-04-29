@@ -142,6 +142,7 @@ public class TripController implements TripControllerDocs {
     public ResponseEntity<List<TripDto.GetList>> getMyTripList(@RequestParam(defaultValue = "1") int page,
                                                                @RequestParam(defaultValue = "9") int size,
                                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        checkLogin(userDetails);
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getMyTripList(page, size, userDetails.getUsername()));
     }
 
@@ -153,7 +154,7 @@ public class TripController implements TripControllerDocs {
                                                                   @RequestParam(required = false, defaultValue = "createdAt") String sortBy,
                                                                   @RequestParam(required = false, defaultValue = "false") Boolean isAsc) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(tripSearchService.searchTrip(text, page, size, sortBy, isAsc));
+                .body(tripSearchService.totalSearchTrip(text, page, size, sortBy, isAsc));
     }
 
     //여행정보 타이틀 검색

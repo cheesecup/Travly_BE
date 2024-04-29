@@ -7,9 +7,9 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 
 import java.util.List;
 
-public interface CustomTripRepository {
+public interface CustomTripSearchRepository {
     SearchHits<TripSearchDoc> searchByText(String text, Pageable pageable);
-
+    SearchHits<TripSearchDoc> searchByTextTEST(String text, Pageable pageable);
     SearchHits<TripSearchDoc> searchByTitle(String title, Pageable pageable);
 
     SearchHits<TripSearchDoc> searchByField(String field, String keyword, boolean isPublic, Pageable pageable);
