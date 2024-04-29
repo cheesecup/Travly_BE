@@ -4,11 +4,13 @@ import com.travelland.domain.member.Member;
 import com.travelland.domain.trip.Trip;
 import com.travelland.domain.trip.TripHashtag;
 import com.travelland.dto.trip.TripDto;
+import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripHashtagRepository;
 import com.travelland.repository.trip.TripRepository;
+import com.travelland.repository.trip.TripSearchRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ public class TripService {
     private final TripRepository tripRepository;
     private final TripHashtagRepository tripHashtagRepository;
     private final MemberRepository memberRepository;
+    private final TripSearchRepository tripSearchRepository;
     private final RedisTemplate<String,String> redisTemplate;
     private final TripImageService tripImageService;
     private final TripLikeService tripLikeService;
@@ -35,7 +38,7 @@ public class TripService {
     private final TripSearchService tripSearchService;
 
     /**
-     * 회원이 입력한 여행후기 게시글 생성
+     * 회원이 입력한 여행후기 게시글 저장
      * @param requestDto 회원이 입력한 여행후기 정보
      * @param thumbnail 여행후기 게시글 썸네일 이미지
      * @param imageList 여행후기 게시글 추가 이미지
@@ -66,7 +69,7 @@ public class TripService {
      */
     @Transactional
     public TripDto.Get getTrip(Long tripId, String loginMemberEmail) {
-        Trip trip = tripRepository.getTripWithMember(tripId, false).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
+        Trip trip = tripRepository.findByIdAndIsDeleted(tripId, false).orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));
         Member writer = trip.getMember(); //게시글을 작성한 회원정보
 
         if (!trip.isPublic() && !writer.getEmail().equals(loginMemberEmail)) { //비공개 글인 경우
@@ -123,18 +126,19 @@ public class TripService {
 
         //해쉬태그 수정
         tripHashtagRepository.deleteByTrip(trip);
-
-        if (!requestDto.getHashTag().isEmpty())
-            requestDto.getHashTag().forEach(hashtagTitle -> tripHashtagRepository.save(new TripHashtag(hashtagTitle, trip)));
+        requestDto.getHashTag().forEach(hashtagTitle -> tripHashtagRepository.save(new TripHashtag(hashtagTitle, trip)));
 
         //이미지 수정
         tripImageService.deleteTripImage(trip);
-
-        if (!imageList.isEmpty())
-            tripImageService.createTripImage(thumbnail, imageList, trip);
+        String thumbnailUrl = tripImageService.createTripImage(thumbnail, imageList, trip);
 
         //여행정보 수정
         trip.update(requestDto);
+
+        //ES 수정
+        TripSearchDoc tripSearchDoc = tripSearchRepository.findByTripId(tripId);
+        tripSearchDoc.update(trip, requestDto.getHashTag(), thumbnailUrl);
+        tripSearchRepository.save(tripSearchDoc);
 
         return new TripDto.Id(trip.getId());
     }
