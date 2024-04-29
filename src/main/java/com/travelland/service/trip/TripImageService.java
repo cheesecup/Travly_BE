@@ -29,13 +29,13 @@ public class TripImageService {
     @Transactional
     public String createTripImage(MultipartFile thumbnail, List<MultipartFile> imageList, Trip trip) {
         TripImage tripImage = tripImageRepository.save(new TripImage(s3FileService.saveResizeImage(thumbnail), true, trip)); //리사이즈된 썸네일 이미지 저장
-        tripImageRepository.save(new TripImage(s3FileService.saveOriginalImage(thumbnail), false, trip)); //리사이즈된 썸네일 이미지 저장
+        tripImageRepository.save(new TripImage(s3FileService.saveOriginalImage(thumbnail), false, trip));
 
         if (imageList != null && !imageList.isEmpty()) {
             imageList.stream()
                     .map(image -> CompletableFuture.supplyAsync(() -> s3FileService.saveOriginalImage(image), asyncTaskExecutor))
                     .toList()
-                    .forEach(request -> tripImageRepository.save(new TripImage(request.join(), false, null)));
+                    .forEach(request -> tripImageRepository.save(new TripImage(request.join(), false, trip)));
         }
 
         return tripImage.getImageUrl();
