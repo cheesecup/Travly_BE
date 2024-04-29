@@ -142,6 +142,7 @@ public class TripController implements TripControllerDocs {
     public ResponseEntity<List<TripDto.GetList>> getMyTripList(@RequestParam(defaultValue = "1") int page,
                                                                @RequestParam(defaultValue = "9") int size,
                                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        checkLogin(userDetails);
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getMyTripList(page, size, userDetails.getUsername()));
     }
 
