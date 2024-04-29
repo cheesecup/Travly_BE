@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @Slf4j
 @Service
@@ -21,6 +23,7 @@ public class TripImageService {
 
     private final TripImageRepository tripImageRepository;
     private final S3FileService s3FileService;
+    private final Executor asyncTaskExecutor;
 
     // 이미지 정보 저장, 썸네일 이미지 URL 반환
     @Transactional
@@ -30,8 +33,9 @@ public class TripImageService {
 
         if (imageList != null && !imageList.isEmpty()) {
             imageList.stream()
-                    .map(image -> new TripImage(s3FileService.saveOriginalImage(image), false, trip))
-                    .forEach(tripImageRepository::save);
+                    .map(image -> CompletableFuture.supplyAsync(() -> s3FileService.saveOriginalImage(image), asyncTaskExecutor))
+                    .toList()
+                    .forEach(request -> tripImageRepository.save(new TripImage(request.join(), false, null)));
         }
 
         return tripImage.getImageUrl();
