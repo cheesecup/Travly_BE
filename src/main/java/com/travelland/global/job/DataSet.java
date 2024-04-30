@@ -6,9 +6,6 @@ import java.util.List;
  * id: 추천 기준 tripId <br>
  * recommendIds: 추천 결과 tripId 리스트
  *
- * @author     kjw
- * @version    1.0.0
- * @since      1.0.0
  */
 public class DataSet {
     /**

@@ -17,7 +17,6 @@ import java.time.Period;
 import java.util.List;
 
 public class TripDto {
-
     /**
      * 등록할 여행후기 정보를 담는 DTO
      */
@@ -304,15 +303,5 @@ public class TripDto {
         private final long totalCount;
         private final String resultKeyword;
         private final List<String> nearPlaces;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @Builder
-    public static class Rank {
-        private final String key;
-        private final Long count;
-        private final String status;
-        private final int value;
     }
 }

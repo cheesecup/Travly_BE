@@ -97,7 +97,7 @@ public class TripSearchService {
             elasticsearchLogService.putSearchLog("area", areaLog);
 
         if(!hashtagLog.isEmpty() && page ==1)
-            elasticsearchLogService.putSearchLog("hashtagLog", hashtagLog);
+            elasticsearchLogService.putSearchLog("hashtag", hashtagLog);
 
         return TripDto.SearchResult.builder()
                 .searches(searches)
