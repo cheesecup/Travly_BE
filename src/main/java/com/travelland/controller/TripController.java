@@ -1,10 +1,12 @@
 package com.travelland.controller;
 
+import com.travelland.domain.member.Member;
 import com.travelland.dto.trip.TripCommentDto;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.security.UserDetailsImpl;
+import com.travelland.repository.member.MemberRepository;
 import com.travelland.service.trip.*;
 import com.travelland.swagger.TripControllerDocs;
 import com.travelland.valid.trip.TripValidationSequence;
@@ -29,23 +31,24 @@ public class TripController implements TripControllerDocs {
     private final TripScrapService tripScrapService;
     private final TripSearchService tripSearchService;
     private final TripCommentService tripCommentService;
+    private final MemberRepository memberRepository;
 
     @PostMapping(value = "/trips", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<TripDto.Id> createTrip(@Validated(TripValidationSequence.class) @RequestPart TripDto.Create requestDto,
                                                  @RequestPart MultipartFile thumbnail,
                                                  @RequestPart(required = false) List<MultipartFile> imageList,
                                                  @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        TripDto.Id responseDto = tripService.createTrip(requestDto, thumbnail, imageList, userDetails.getMember());
+        TripDto.Id responseDto = tripService.createTrip(requestDto, thumbnail, imageList, testMember());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @GetMapping("/trips/{tripId}")
     public ResponseEntity<TripDto.Get> getTrip(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        String email = "";
-        if (userDetails != null) email = userDetails.getUsername();
+//        String email = "";
+//        if (userDetails != null) email = userDetails.getUsername();
 
-        TripDto.Get responseDto = tripService.getTrip(tripId, email);
+        TripDto.Get responseDto = tripService.getTrip(tripId, testMember().getEmail());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
@@ -64,14 +67,14 @@ public class TripController implements TripControllerDocs {
                                                  @RequestPart MultipartFile thumbnail,
                                                  @RequestPart(required = false) List<MultipartFile> imageList,
                                                  @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        TripDto.Id responseDto = tripService.updateTrip(tripId, requestDto, thumbnail, imageList, userDetails.getUsername());
+        TripDto.Id responseDto = tripService.updateTrip(tripId, requestDto, thumbnail, imageList, testMember());
 
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
     @DeleteMapping("/trips/{tripId}")
     public ResponseEntity<TripDto.Delete> deleteTrip(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        tripService.deleteTrip(tripId, userDetails.getUsername());
+        tripService.deleteTrip(tripId, testMember());
 
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Delete(true));
     }
@@ -239,5 +242,9 @@ public class TripController implements TripControllerDocs {
 
     private void checkLogin(UserDetailsImpl userDetails) {
         if (userDetails == null) throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
+    }
+
+    private Member testMember() {
+        return memberRepository.findByEmail("test@test.com").orElseThrow(IllegalArgumentException::new);
     }
 }

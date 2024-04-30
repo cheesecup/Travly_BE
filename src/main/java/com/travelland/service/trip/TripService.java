@@ -114,14 +114,14 @@ public class TripService {
      * @param requestDto 회원이 수정한 여행후기 정보
      * @param thumbnail 여행후기 게시글 썸네일 이미지
      * @param imageList 여행후기 게시글 추가 이미지
-     * @param email 수정 요청한 회원 이메일
+     * @param loginMember 수정 요청한 회원 정보
      * @return 수정된 여행후기 게시글 id
      */
     @Transactional
-    public TripDto.Id updateTrip(Long tripId, TripDto.Update requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, String email) {
+    public TripDto.Id updateTrip(Long tripId, TripDto.Update requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, Member loginMember) {
         Trip trip = getTrip(tripId);
 
-        if (!trip.getMember().getEmail().equals(email))
+        if (!trip.getMember().getEmail().equals(loginMember.getEmail()))
             throw new CustomException(ErrorCode.POST_UPDATE_NOT_PERMISSION);
 
         //해쉬태그 수정
@@ -146,13 +146,13 @@ public class TripService {
     /**
      * 여행후기 게시글 삭제
      * @param tripId 삭제하고자 하는 게시글 id
-     * @param email 삭제 요청한 회원 이메일
+     * @param loginMember 삭제 요청한 회원정보
      */
     @Transactional
-    public void deleteTrip(Long tripId, String email) {
+    public void deleteTrip(Long tripId, Member loginMember) {
         Trip trip = getTrip(tripId);
 
-        if (!trip.getMember().getEmail().equals(email))
+        if (!trip.getMember().getEmail().equals(loginMember.getEmail()))
             throw new CustomException(ErrorCode.POST_DELETE_NOT_PERMISSION);
 
         // ES
