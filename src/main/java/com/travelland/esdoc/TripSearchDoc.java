@@ -106,4 +106,16 @@ public class TripSearchDoc {
             return content.substring(0,length-1);
         return content;
     }
+
+    public void update(Trip trip, List<String> hashtag, String thumbnailUrl) {
+        this.title = trip.getTitle();
+        this.cost = trip.getCost();
+        this.area = trip.getArea();
+        this.hashtag = hashtag;
+        this.tripStartDate = trip.getTripStartDate();
+        this.tripEndDate = trip.getTripEndDate();
+        this.address = trip.getAddress();
+        this.thumbnailUrl = thumbnailUrl;
+        this.isPublic = trip.isPublic();
+    }
 }
