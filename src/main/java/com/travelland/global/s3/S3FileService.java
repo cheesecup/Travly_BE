@@ -9,7 +9,6 @@ import com.travelland.dto.trip.TripImageDto.CreateRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +31,11 @@ public class S3FileService {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    //원본 사이즈 이미지 업로드
+    /**
+     * AWS S3 이미지 업로드
+     * @param multipartFile 업로드할 이미지 파일
+     * @return 이미지 URL, 저장된 이미지 이름
+     */
     public CreateRequest saveOriginalImage(MultipartFile multipartFile) {
         String oriImgName = multipartFile.getOriginalFilename();
         String storeImageName = uuidImageName(oriImgName);
@@ -47,7 +50,11 @@ public class S3FileService {
         return new CreateRequest(imageUrl, storeImageName);
     }
 
-    //리사이즈한 이미지 업로드
+    /**
+     * 이미지 리사이즈 후 AWS S3 업로드
+     * @param multipartFile 리사이즈할 이미지 파일
+     * @return 이미지 URL, 저장된 이미지 이름
+     */
     public CreateRequest saveResizeImage(MultipartFile multipartFile) {
         int width = 300;
         int height = 250;
@@ -81,7 +88,10 @@ public class S3FileService {
         return new CreateRequest(imageUrl, storeImageName);
     }
 
-    // 저장된 이미지 퍄일 삭제
+    /**
+     * AWS S3 이미지 삭제
+     * @param storeImageName 삭제할 이미지 파일 이름
+     */
     public void deleteFile(String storeImageName) {
         s3Client.deleteObject(new DeleteObjectRequest(bucket, storeImageName));
     }
@@ -98,17 +108,31 @@ public class S3FileService {
         return s3Client.getUrl(bucket, storeImageName).toString();
     }
 
-    //이미지파일 원본이름 랜덤 변경
+    /**
+     * 이미지 파일 이름 변경
+     * @param oriImgName 변경할 이미지 파일 이름
+     * @return 변경된 이미지 파일 이름
+     */
     private String uuidImageName(String oriImgName) {
         return UUID.randomUUID().toString().concat(getFileExtension(oriImgName));
     }
 
-    //리사이즈 이미지 파일 이름 랜덤 변경
+    /**
+     * 이미지 사이즈가 이름에 포함되도록 이미지 파일 이름 변경
+     * @param oriImageName 변경할 이미지 파일 이름
+     * @param width 가로
+     * @param height 세로
+     * @return 변경된 이미지 파일 이름
+     */
     private String uuidImageName(String oriImageName, String width, String height) {
         return UUID.randomUUID().toString().concat("_" + width + "x" + height + getFileExtension(oriImageName));
     }
 
-    //이미지파일 원본이름 확장자 자르기
+    /**
+     * 이미지 파일 이름에서 확장자 추출
+     * @param oriImgName 추출할 이미지 파일 이름
+     * @return 추출된 확장자
+     */
     private String getFileExtension(String oriImgName) {
         try {
             return oriImgName.substring(oriImgName.lastIndexOf("."));
