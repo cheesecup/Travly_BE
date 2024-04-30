@@ -82,7 +82,6 @@ public class S3FileService {
     }
 
     // 저장된 이미지 퍄일 삭제
-    @Async
     public void deleteFile(String storeImageName) {
         s3Client.deleteObject(new DeleteObjectRequest(bucket, storeImageName));
     }

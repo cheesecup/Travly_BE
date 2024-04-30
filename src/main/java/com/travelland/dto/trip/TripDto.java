@@ -17,7 +17,9 @@ import java.time.Period;
 import java.util.List;
 
 public class TripDto {
-
+    /**
+     * 등록할 여행후기 정보를 담는 DTO
+     */
     @Getter
     @AllArgsConstructor
     public static class Create {
@@ -30,21 +32,26 @@ public class TripDto {
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripStartDate;
+
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
         private LocalDate tripEndDate;
 
         @Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = TripValidationGroups.CostRangeGroup.class)
         private Integer cost;
+
         private List<String> hashTag;
 
         @NotBlank(message = "도로명 주소를 입력해 주세요.", groups = TripValidationGroups.AddressBlankGroup.class)
         private String address;
         
-        private String placeName; //여행 장소
+        private String placeName;
 
         private Boolean isPublic;
     }
 
+    /**
+     * 수정할 여행후기 정보를 담는 DTO
+     */
     @Getter
     @AllArgsConstructor
     public static class Update {
@@ -55,17 +62,37 @@ public class TripDto {
         @NotBlank(message = "내용을 입력해주세요,", groups = TripValidationGroups.ContentBlankGroup.class)
         private String content;
 
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+        private LocalDate tripStartDate;
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
+        private LocalDate tripEndDate;
+
+        @Min(value = 0, message = "비용은 최소 0원 이상입니다.", groups = TripValidationGroups.CostRangeGroup.class)
+        private Integer cost;
+
         private List<String> hashTag;
+
+        @NotBlank(message = "도로명 주소를 입력해 주세요.", groups = TripValidationGroups.AddressBlankGroup.class)
+        private String address;
+
+        private String placeName;
 
         private Boolean isPublic;
     }
 
+    /**
+     * 여행후기 id를 담는 DTO
+     */
     @Getter
     @AllArgsConstructor
     public static class Id {
         private Long tripId;
     }
 
+    /**
+     * 여행후기 상세 정보를 담는 DTO
+     */
     @Getter
     @AllArgsConstructor
     public static class Get {
@@ -74,9 +101,11 @@ public class TripDto {
         private String title;
         private String content;
         private int cost;
+        private String address;
         private String area;
         private LocalDate tripStartDate;
         private LocalDate tripEndDate;
+        private String placeName;
 
         private List<String> hashtagList;
         private List<String> imageUrlList;
@@ -93,7 +122,9 @@ public class TripDto {
             this.title = trip.getTitle();
             this.content = trip.getContent();
             this.cost = trip.getCost();
+            this.address = trip.getAddress();
             this.area = trip.getArea();
+            this.placeName = trip.getPlaceName();
             this.tripStartDate = trip.getTripStartDate();
             this.tripEndDate = trip.getTripEndDate();
             this.hashtagList = hashtagList;
@@ -106,9 +137,13 @@ public class TripDto {
         }
     }
 
+    /**
+     * 여행후기 목록 정보를 담는 DTO
+     */
     @Getter
     @AllArgsConstructor
     public static class GetList {
+
         private Long tripId;
         private String area;
         private String title;
@@ -130,28 +165,31 @@ public class TripDto {
         }
     }
 
-    @Getter
-    @AllArgsConstructor
-    public static class GetMyList {
-        private long totalElements;
-        private List<TripDto.GetList> trips;
-    }
-
+    /**
+     * 여행후기 삭제 결과를 담는 DTO
+     */
     @Getter
     @AllArgsConstructor
     public static class Delete {
         private Boolean isDeleted;
     }
 
+    /**
+     * 좋아요, 스크랩 등록/취소 결과를 담는 DTO
+     */
     @Getter
     @AllArgsConstructor
     public static class Result {
         private Boolean isResult;
     }
 
+    /**
+     * 여행후기 좋아요 목록 정보를 담는 DTO
+     */
     @Getter
     @AllArgsConstructor
     public static class Likes {
+
         private Long tripId;
         private String title;
         private String nickname;
@@ -165,6 +203,9 @@ public class TripDto {
         }
     }
 
+    /**
+     * 여행후기 스크랩 목록 정보를 담는 DTO
+     */
     @Getter
     @AllArgsConstructor
     public static class Scraps {
@@ -189,35 +230,9 @@ public class TripDto {
         }
     }
 
-    @Getter
-    @AllArgsConstructor
-    public static class GetMyScraps {
-        private long totalElements;
-        private List<TripDto.Scraps> scraps;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    public static class GetByMember {
-        private Long tripId;
-        private String title;
-        private String nickname;
-        private String thumbnailUrl;
-        private String tripPeriod;
-        private int viewCount;
-        private LocalDate createdAt;
-
-        public GetByMember(Trip trip, String thumbnailUrl) {
-            this.tripId = trip.getId();
-            this.title = trip.getTitle();
-            this.nickname = trip.getMember().getNickname();
-            this.thumbnailUrl = thumbnailUrl;
-            this.tripPeriod = Period.between(trip.getTripStartDate(), trip.getTripEndDate()).getDays() + "일";
-            this.viewCount = trip.getViewCount();
-            this.createdAt = trip.getCreatedAt().toLocalDate();
-        }
-    }
-
+    /**
+     * 검색된 여행후기 정보를 담는 DTO
+     */
     @Getter
     public static class Search {
         private final String id;
@@ -245,6 +260,9 @@ public class TripDto {
         }
     }
 
+    /**
+     * 여행후기 TOP 10의 정보를 담는 DTO
+     */
     @Getter
     public static class Top10 {
         private final String id;
@@ -275,6 +293,9 @@ public class TripDto {
         }
     }
 
+    /**
+     * 검색된 여행후기 목록을 담는 DTO
+     */
     @Getter
     @Builder
     public static class SearchResult {
@@ -282,15 +303,5 @@ public class TripDto {
         private final long totalCount;
         private final String resultKeyword;
         private final List<String> nearPlaces;
-    }
-
-    @Getter
-    @AllArgsConstructor
-    @Builder
-    public static class Rank {
-        private final String key;
-        private final Long count;
-        private final String status;
-        private final int value;
     }
 }

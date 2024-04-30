@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j(topic = "ES")
 @Service
@@ -63,17 +64,18 @@ public class TripSearchService {
      * @return 검색 결과
      */
     public TripDto.SearchResult totalSearchTrip(String text, int page, int size, String sortBy, boolean isAsc) {
-
-        if(text.split(" ").length == 1 && text.matches("^[ㄱ-ㅎ가-힣]*$"))
-            text += " " + koreanKeyboardToEng.korToEng(text);
+        String newText = changeKeyboardKorToAlphabet(text);
 
         SearchHits<TripSearchDoc> result =
-                tripSearchRepository.searchByTextTEST(text, this.toPageable(page, size, sortBy, isAsc));
+                tripSearchRepository.searchByTextTEST(newText, this.toPageable(page, size, sortBy, isAsc));
 
         if (result.getTotalHits() == 0)
             return TripDto.SearchResult.builder().build();
 
         List<TripDto.Search> searches = new ArrayList<>();
+
+        String areaLog = "";
+        String hashtagLog = "";
 
         for(SearchHit<TripSearchDoc> search : result.getSearchHits()){
             searches.add(new TripDto.Search(search.getContent()));
@@ -81,17 +83,21 @@ public class TripSearchService {
             if(search.getHighlightFields().isEmpty())
                 continue;
 
-            search.getHighlightFields().forEach((key, value) -> {
-                String lowerKey = key.toLowerCase();
-                String subValue = value.get(0).substring(4,value.get(0).length()-5);
+            for(Map.Entry<String,List<String>> res : search.getHighlightFields().entrySet()){
+                String subValue = res.getValue().get(0).substring(4,res.getValue().get(0).length()-5);
 
-                if(lowerKey.contains("area"))
-                    elasticsearchLogService.putSearchLog("area", subValue);
+                if(res.getKey().equals("area"))
+                    areaLog = subValue;
 
-                if(lowerKey.contains("hashtag"))
-                    elasticsearchLogService.putSearchLog("hashtag", subValue);
-            });
+                if(res.getKey().equals("hashtag"))
+                   hashtagLog = subValue;
+            }
         }
+        if(!areaLog.isEmpty() && page==1)
+            elasticsearchLogService.putSearchLog("area", areaLog);
+
+        if(!hashtagLog.isEmpty() && page ==1)
+            elasticsearchLogService.putSearchLog("hashtag", hashtagLog);
 
         return TripDto.SearchResult.builder()
                 .searches(searches)
@@ -114,7 +120,7 @@ public class TripSearchService {
         SearchHits<TripSearchDoc> result =
                 tripSearchRepository.searchByTitle(title,this.toPageable(page, size, sortBy, isAsc));
 
-        return  searchMapper("title", title, result);
+        return  searchMapper("title", title, page, result);
     }
 
     /**
@@ -131,7 +137,7 @@ public class TripSearchService {
         SearchHits<TripSearchDoc> result =
                 tripSearchRepository.searchByField(field, value,true,this.toPageable(page, size, sortBy, isAsc));
 
-        return searchMapper(field, value, result);
+        return searchMapper(field, value, page, result);
     }
 
     /**
@@ -147,11 +153,11 @@ public class TripSearchService {
         Pageable pageable = this.toPageable(page, size, sortBy, isAsc);
 
         if(area.equals("전체"))
-            return searchMapper("areaAll", area, tripSearchRepository.searchAllArea(true,pageable));
+            return searchMapper("areaAll", area,page, tripSearchRepository.searchAllArea(true,pageable));
 
         String[] adaptedArea = searchArea.getMappingArea(area);
         SearchHits<TripSearchDoc> result = tripSearchRepository.searchByArea(adaptedArea,true,pageable);
-        return searchMapper("area", area, result);
+        return searchMapper("area", area,page, result);
     }
 
     /**
@@ -182,11 +188,15 @@ public class TripSearchService {
      */
     public List<String> getRecentlyTopSearch(String field) {
         LocalDateTime now = LocalDateTime.now();
-        return elasticsearchLogService.
-                getRankInRange(field, now.minusWeeks(1), now)
+        List<String> resultList = elasticsearchLogService
+                .getRankInRange(field, now.minusWeeks(1), now)
                 .stream()
                 .map(recentKeyword -> recentKeyword.get("key").toString())
                 .toList();
+        if (resultList.size() > 8) {
+            resultList = resultList.subList(0, 8);
+        }
+        return resultList;
     }
     /**
      * Elasticsearch 내 문서 삭제
@@ -194,6 +204,7 @@ public class TripSearchService {
      */
     public void deleteTrip(Long tripId) {
         tripSearchRepository.deleteByTripId(tripId);
+        tripRecommendRepository.deleteById(tripId);
     }
     /**
      * 내가 쓴 여행 정보 목록
@@ -222,17 +233,6 @@ public class TripSearchService {
         }
     }
 
-//    private void saveLog(SearchHits<TripSearchDoc> searchHits){
-//        for(SearchHit<TripSearchDoc> searchHit : searchHits.getSearchHits()){
-//            Map<String, List<String>> highlightFields = searchHit.getHighlightFields();
-//
-//            if(highlightFields.containsKey("area") || highlightFields.containsKey("eng_area"))
-//                elasticsearchLogService.putSearchLog("area", highlightFields.get("area").get(0));
-//
-//            if(highlightFields.containsKey("hashtag"))
-//                elasticsearchLogService.putSearchLog("hashtag", highlightFields.get("hashtag").get(0));
-//        }
-//    }
     /**
      * 페이징 처리
      * @param page page : 1부터 시작
@@ -252,11 +252,11 @@ public class TripSearchService {
      * @param result 검색 결과
      * @return 검색 결과 형태 dto 반환
      */
-    private TripDto.SearchResult searchMapper(String field, String keyword, SearchHits<TripSearchDoc> result){
+    private TripDto.SearchResult searchMapper(String field, String keyword, int page, SearchHits<TripSearchDoc> result){
         if (result.getTotalHits() == 0)
             return TripDto.SearchResult.builder().build();
 
-        if(field.equals("hashtag") || field.equals("area"))
+        if((page == 1 && field.equals("hashtag")) || (page==1 && field.equals("area")))
             elasticsearchLogService.putSearchLog(field, keyword);
 
         List<TripDto.Search> searches = result.get()
@@ -275,11 +275,26 @@ public class TripSearchService {
      * @return 주변 여행지 검색 결과
      */
     private List<String> getNearPlaceNames(String area){
-        return tripSearchRepository.searchByField("area", area, true,
+        log.info(area);
+        return tripSearchRepository.searchByArea(area.split(" "), true,
                         PageRequest.of(0, 7))
                 .stream()
                 .map(SearchHit::getContent)
                 .map(TripSearchDoc::getPlaceName)
                 .toList();
+    }
+    /**
+     * 한글 키보드 상태에서 입력된 영어 단어 변환 기능<br>
+     * 잘못 변환될 가능성이 있으므로 변환 전 후를 공백으로 구분하여 검색<br>
+     * Ex> ㅑㅔㅙㅜㄷ -> ㅑㅔㅙㅜㄷ iphone
+     * @param text 입력 text
+     * @return 변환후 text
+     */
+    private String changeKeyboardKorToAlphabet(String text){
+        String newText = text;
+        if(text.split(" ").length == 1 && text.matches("^[ㄱ-ㅎ가-힣]*$")){
+            newText += " " + koreanKeyboardToEng.korToEng(text);
+        }
+        return newText;
     }
 }

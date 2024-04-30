@@ -1,95 +1,168 @@
 package com.travelland.service.trip;
 
-import com.travelland.domain.search.HangleAnalyzer;
+import com.travelland.constant.Role;
+import com.travelland.domain.member.Member;
+import com.travelland.domain.trip.Trip;
+import com.travelland.dto.trip.TripDto;
+import com.travelland.esdoc.TripRecommendDoc;
 import com.travelland.repository.member.MemberRepository;
+import com.travelland.repository.trip.TripRecommendRepository;
 import com.travelland.repository.trip.TripRepository;
-import com.travelland.repository.trip.TripSearchRepository;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.transaction.annotation.Transactional;
 
-//@SpringBootTest
-//class TripSearchServiceTest {
-//    @Autowired
-//    private TripSearchService tripSearchService;
-//    @Autowired
-//    private TripSearchRepository tripSearchRepository;
-//    @Autowired
-//    private TripRepository tripRepository;
-//    @Autowired
-//    private MemberRepository memberRepository;
-//    @Autowired
-//    private TripService tripService;
-//    @Autowired
-//    private HangleAnalyzer hangleAnalyzer;
-////
-////    @Test
-////    void getTripList() {
-////        System.out.println("tripSearchService = " + tripSearchService.getTripList(1,20,"createdAt",true));
-////    }
-////    @Test
-////    void getTripByKeyword(){
-////        System.out.println("tripSearchService = " + tripSearchService.searchTripByField("hashtag", "여행",1,20,"createdAt",true).getTotalCount());
-////    }
-////    @Test
-////    void getRankByViewCount(){
-////        System.out.println("tripSearchService = " + tripService.getRankByViewCount(10L));
-////    }
-//
-////    @Test
-////    void comoran(){
-////        Komoran komoran = new Komoran(DEFAULT_MODEL.FULL);
-////        String strToAnalyze = "지난 주, 나는 울산 지역의 축제에 참여하면서 즐거운 시간을 보냈습니다. 이번 여행은 울산의 다채로운 문화와 축제 분위기를 경험하고자 마음먹고 떠난 것이었습니다.\n" +
-////                "\n" +
-////                "가장 먼저 울산에서 진행되는 대표적인 축제 중 하나인 '울산 어촌문화축제'에 참여했습니다. 이 축제는 울산의 어촌에서 열리며, 그곳의 특색 있는 문화와 전통을 체험할 수 있는 좋은 기회였습니다. 해안가에 설치된 작은 장터에서는 지역 특산물과 수공예품들을 구경하고 구입할 수 있었는데, 이곳에서 맛보는 간식들은 정말 맛있었습니다.\n" +
-////                "\n" +
-////                "또한, 축제 기간 동안 울산의 다양한 문화 행사들도 즐길 수 있었습니다. 가장 기억에 남는 것은 전통 민속놀이와 공연이었습니다. 춤과 음악이 어우러진 공연은 울산의 역사와 문화를 잘 보여주었고, 민속놀이는 참여자들과 함께 즐겁게 놀면서 소통하는 시간을 보낼 수 있었습니다.\n" +
-////                "\n" +
-////                "그리고 울산의 자연 경관을 즐기는 것도 잊을 수 없는 추억입니다. 축제가 열리는 동안 가까운 산을 등반하여 일출을 감상하고 해변을 걷는 등의 활동을 즐겼습니다. 특히 해안 산책로에서 바라보는 바다의 푸른 물결은 정말 황홀한 풍경이었습니다.\n" +
-////                "\n" +
-////                "이번 울산 지역 축제 여행은 정말 즐거웠습니다. 지역의 문화와 자연을 경험하면서 새로운 경험을 하고 많은 것을 배울 수 있었습니다. 다음에도 기회가 된다면 울산의 다른 축제에도 참여하여 더 많은 즐거움을 느끼고 싶습니다.";
-////
-////        KomoranResult analyzeResultList = komoran.analyze(strToAnalyze);
-////
-////        System.out.println(analyzeResultList.getPlainText());
-////
-////        List<Token> tokenList = analyzeResultList.getTokenList();
-////        for (Token token : tokenList) {
-////            if(token.getPos().matches("^(NP|NNP|NNG)$"))
-////            System.out.format("(%2d, %2d) %s/%s\n", token.getBeginIndex(), token.getEndIndex(), token.getMorph(), token.getPos());
-////        }
-////    }
-//
-////    @Test
-////    void getTripList() {
-////    SearchHits<TripSearchDoc> res = tripSearchRepository.searchByTextTEST("서울", PageRequest.of(0,5));
-////    res.getSearchHits().forEach(System.out::println);
-////    res.getSearchHits().forEach(data -> System.out.println(data.getHighlightFields().keySet()));
-////    }
-//
-////    @Test
-////    @Transactional(readOnly = true)
-////    void createTripDoc(){
-////        TripDto.Get trip = tripService.getTrip(2L,"test@test.com");
-////        trip.getHashtagList().forEach(System.out::println);
-////        tripSearchService.createTripDocument(tripRepository.findById(2L)
-////                        .orElseThrow(() -> new CustomException(ErrorCode.UNAUTHORIZED_MEMBER)),
-////                trip.getHashtagList(),"");
-////    }
-//
-//
-////    @Test
-////    void engToKorTest() {
-////        tripSearchService.totalSearchTrip("ㅂㅅㄱㅇㅅ",1,5,"createdAt",true)
-////                .getSearches().forEach(System.out::println);
-////    }
-//    @Test
-//    void totalSearchTest(){
-//        tripSearchService.totalSearchTrip("",1,6,"createdAt",true);
-//    }
-//
-//    @Test
-//    void jamoTest() {
-//        hangleAnalyzer.analyzeHangle("서울에서의 즐거운 자유여행을 즐겨보세요! 서울은 역사적인 명소부터 현대적인 도시 생활까지 다양한 즐길 거리가 가득합니다.").forEach(System.out::println);
-//    }
-//}
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+@SpringBootTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE,
+        connection = EmbeddedDatabaseConnection.H2)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Transactional
+class TripSearchServiceTest {
+    @Autowired
+    TripSearchService tripSearchService;
+    @Autowired
+    TripRecommendRepository tripRecommendRepository;
+    @Autowired
+    TripRepository tripRepository;
+    @Autowired
+    MemberRepository memberRepository;
+    private final List<Trip> trips = new ArrayList<>();
+
+    @BeforeAll
+    void createData(){
+        List<String> hashtag = new ArrayList<>();
+        hashtag.add("힐링");
+        hashtag.add("추억");
+        hashtag.add("여행");
+
+        for(int i = 0 ; i < 2 ; i++){
+            Member member = new Member(String.format("test%d@test.com", i),
+                    "1234",String.format("TEST%d", i),Role.USER,"imgUrl");
+
+            Member savedMember = memberRepository.save(member);
+
+            TripDto.Create requestDto = new TripDto.Create(
+                    String.format("여행TEST%d", i),"여행관련 내용", LocalDate.now(), LocalDate.now().plusDays(1L),
+                    5000, hashtag,"서울시 강남구","강남역",true);
+
+            Trip trip = tripRepository.save(new Trip(requestDto, savedMember));
+            this.trips.add(trip);
+
+            tripSearchService.createTripDocument(trip, hashtag,"thumbnailUrl");
+        }
+    }
+
+    @AfterAll
+    void deleteData(){
+        this.trips.forEach(trip -> tripSearchService.deleteTrip(trip.getId()));
+    }
+
+    @Test
+    @DisplayName("통합 검색 기능 TEST")
+    void totalSearchTrip() {
+        TripDto.SearchResult result =
+                tripSearchService.totalSearchTrip("ㅅㅇ",1,8,"createdAt",false);
+        Assertions.assertEquals("ㅅㅇ", result.getResultKeyword());
+        Assertions.assertNotNull(result.getSearches());
+        Assertions.assertNotEquals(0, result.getTotalCount());
+        Assertions.assertFalse(result.getSearches().isEmpty());
+        result.getNearPlaces().forEach(System.out::println);
+    }
+
+    @Test
+    @DisplayName("제목 검색 기능 TEST")
+    void searchTripByTitle() {
+        TripDto.SearchResult result =
+                tripSearchService.searchTripByTitle("여행TEST",1,5,"createdAt",false);
+
+        Assertions.assertEquals("여행TEST", result.getResultKeyword());
+        Assertions.assertNotNull(result.getSearches());
+        Assertions.assertEquals("강남역", result.getSearches().get(0).getPlaceName());
+        Assertions.assertNotEquals(0, result.getTotalCount());
+        Assertions.assertFalse(result.getSearches().isEmpty());
+    }
+
+    @Test
+    @Order(0)
+    @DisplayName("field명 검색 기능 TEST")
+    void searchTripByField() {
+        TripDto.SearchResult result =
+                tripSearchService.searchTripByField("hashtag","여행",1,5,"createdAt",false);
+
+        Assertions.assertEquals("여행", result.getResultKeyword());
+        Assertions.assertNotNull(result.getSearches());
+        Assertions.assertEquals("강남역", result.getSearches().get(0).getPlaceName());
+        Assertions.assertNotEquals(0, result.getTotalCount());
+        Assertions.assertFalse(result.getSearches().isEmpty());
+    }
+
+    @Test
+    @DisplayName("지역 검색 기능 TEST")
+    void searchTripByArea() {
+        TripDto.SearchResult result =
+                tripSearchService.searchTripByArea("서울시",1,5,"createdAt",false);
+
+        Assertions.assertEquals("서울시", result.getResultKeyword());
+        Assertions.assertNotNull(result.getSearches());
+        Assertions.assertEquals("강남역", result.getSearches().get(0).getPlaceName());
+        Assertions.assertNotEquals(0, result.getTotalCount());
+        Assertions.assertFalse(result.getSearches().isEmpty());
+    }
+
+    @Test
+    @DisplayName("키워드 없는 검색")
+    void getTripList() {
+        List<TripDto.GetList> result =
+                tripSearchService.getTripList(1,5,"createdAt",false);
+        Assertions.assertFalse(result.isEmpty());
+    }
+
+    @Test
+    @DisplayName(" tripId list 조회 TEST")
+    void getRankByViewCount() {
+        List<Long> keys = this.trips.stream().map(Trip::getId).toList();
+        List<TripDto.Top10> result =
+                tripSearchService.getRankByViewCount(keys);
+        Assertions.assertFalse(result.isEmpty());
+        Assertions.assertEquals("강남역", result.get(0).getPlaceName());
+    }
+
+    @Test
+    @Order(1)
+    @DisplayName(" 인기 검색어 조회 TEST")
+    void getRecentlyTopSearch() {
+        List<String> result = tripSearchService.getRecentlyTopSearch("hashtag");
+        Assertions.assertFalse(result.isEmpty());
+    }
+
+    @Test
+    @DisplayName(" 내가 쓴 여행글 List 조회 TEST")
+    void getMyTripList() {
+        List<TripDto.GetList> result = tripSearchService.getMyTripList(1,10,"test1@test.com");
+        Assertions.assertNotNull(result.get(0).getTripId());
+    }
+
+    @Test
+    @DisplayName(" random 글 조회 TEST")
+    void getRandomTrip() {
+        List<TripDto.GetList> result = tripSearchService.getRandomTrip();
+        Assertions.assertFalse(result.isEmpty());
+    }
+    @Test
+    @DisplayName(" 내용 기반 여행 후기 추천 기능 TEST")
+    void getRecommendTrip(){
+        SearchHits<TripRecommendDoc> result = tripRecommendRepository.recommendByContent("여행 관련",5);
+        Assertions.assertNotEquals(0, result.getTotalHits());
+        Assertions.assertFalse(result.getSearchHits().isEmpty());
+    }
+
+}

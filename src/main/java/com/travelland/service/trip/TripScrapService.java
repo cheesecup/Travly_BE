@@ -7,7 +7,6 @@ import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
-import com.travelland.repository.member.MemberRepository;
 import com.travelland.repository.trip.TripRepository;
 import com.travelland.repository.trip.TripScrapRepository;
 import com.travelland.repository.trip.TripSearchRepository;
@@ -29,9 +28,12 @@ public class TripScrapService {
     private final TripRepository tripRepository;
     private final TripSearchRepository tripSearchESRepository;
     private final RedisTemplate<String, String> redisTemplate;
-    private final MemberRepository memberRepository;
 
-    //여행정보 스크랩 등록
+    /**
+     * 여행후기 스크랩 등록
+     * @param tripId 여행후기 id
+     * @param loginMember 로그인한 회원 정보
+     */
     @Transactional
     public void registerTripScrap(Long tripId, Member loginMember) {
         Trip trip = getTrip(tripId);
@@ -45,7 +47,11 @@ public class TripScrapService {
         redisTemplate.opsForSet().add(TRIP_SCRAPS_TRIP_ID + tripId, loginMember.getEmail());
     }
 
-    //여행정보 스크랩 취소
+    /**
+     * 여행후기 스크랩 취소
+     * @param tripId 여행후기 id
+     * @param loginMember 로그인한 회원 정보
+     */
     @Transactional
     public void cancelTripScrap(Long tripId, Member loginMember) {
         Trip trip = getTrip(tripId);
@@ -56,8 +62,14 @@ public class TripScrapService {
 
         redisTemplate.opsForSet().remove(TRIP_SCRAPS_TRIP_ID + tripId, loginMember.getEmail());
     }
-    
-    //스크랩한 여행정보 목록 조회
+
+    /**
+     * 스크랩한 여행후기 게시글 목록 조회
+     * @param page 조회할 페이지 번호
+     * @param size 한 페이지에 보여지는 게시글 수
+     * @param loginMember 로그인한 회원 정보
+     * @return 조회된 여행후기 목록
+     */
     @Transactional(readOnly = true)
     public List<TripDto.Scraps> getTripScrapList(int page, int size, Member loginMember) {
         List<TripSearchDoc> scrapList = tripScrapRepository.getScrapListByMember(loginMember, size, page).stream()
@@ -66,13 +78,21 @@ public class TripScrapService {
         return scrapList.stream().map(TripDto.Scraps::new).toList();
     }
 
-    //스크랩 데이터 삭제
+    /**
+     * 스크랩 삭제
+     * @param trip 삭제할 여행후기
+     */
     @Transactional
     public void deleteTripScrap(Trip trip) {
         tripScrapRepository.deleteByTrip(trip);
     }
-    
-    //게시글 스크랩 여부 확인
+
+    /**
+     * 여행후기 스크랩 상태 확인
+     * @param tripId 조회할 여행후기 id
+     * @param loginMember 로그인한 회원정보
+     * @return 스크랩 여부
+     */
     public boolean statusTripScrap(Long tripId, Member loginMember) {
         if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(TRIP_SCRAPS_TRIP_ID + tripId, loginMember.getEmail())))
             return true;
@@ -85,6 +105,11 @@ public class TripScrapService {
         return false;
     }
 
+    /**
+     * 여행후기 정보 조회
+     * @param tripId 조회할 여행후기 id
+     * @return 조회한 여행후기
+     */
     private Trip getTrip(Long tripId) {
         return tripRepository.findById(tripId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));

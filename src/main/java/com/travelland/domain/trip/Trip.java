@@ -81,8 +81,15 @@ public class Trip {
     public void update(TripDto.Update requestDto) {
         this.title = requestDto.getTitle();
         this.content = requestDto.getContent();
+        this.cost = requestDto.getCost();
+        this.address = requestDto.getAddress();
+        this.area = splitAddress(requestDto.getAddress());
+        this.placeName = requestDto.getPlaceName();
         this.isPublic = requestDto.getIsPublic();
+        this.tripStartDate = requestDto.getTripStartDate();
+        this.tripEndDate = requestDto.getTripEndDate();
     }
+
     public void increaseViewCount() {
         this.viewCount++;
     }

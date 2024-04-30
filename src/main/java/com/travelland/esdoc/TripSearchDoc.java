@@ -30,7 +30,7 @@ public class TripSearchDoc {
             searchAnalyzer = "eng2kor_analyzer")
     private String engKorTitleSuggest;
 
-    @Field(name = "chosung_title",type = FieldType.Text, analyzer = "chosung_analyzer", searchAnalyzer = "chosung_search_analyzer")
+    @Field(name = "chosung_title",type = FieldType.Text, analyzer = "chosung_analyzer", searchAnalyzer = "standard")
     private String chosungTitle;
 
     @Field(name = "content",type = FieldType.Text, analyzer = "korean_analyzer")
@@ -46,7 +46,7 @@ public class TripSearchDoc {
     private String engKorAreaSuggest;
 
     @Field(name = "chosung_area", type = FieldType.Keyword,  analyzer = "chosung_analyzer",
-            searchAnalyzer = "chosung_search_analyzer")
+            searchAnalyzer = "keyword")
     private String chosungArea;
 
     @Field(name = "hashtag", type = FieldType.Keyword, copyTo = {"eng_kor_hashtag_suggest", "chosung_hashtag"})
@@ -56,7 +56,7 @@ public class TripSearchDoc {
     private List<String> engKorHashtagSuggest;
 
     @Field(name = "chosung_hashtag", type = FieldType.Keyword,  analyzer = "chosung_analyzer",
-            searchAnalyzer = "chosung_search_analyzer")
+            searchAnalyzer = "keyword")
     private List<String> chosungHashtag;
 
     @Field(name = "trip_start_date", type = FieldType.Date, format = {DateFormat.date, DateFormat.epoch_millis})
@@ -96,6 +96,7 @@ public class TripSearchDoc {
         this.content = makeShortContent(trip.getContent(),200);
         this.createdAt = trip.getCreatedAt();
         this.address = trip.getAddress();
+        this.placeName = trip.getPlaceName();
         this.thumbnailUrl = thumbnailUrl;
         this.email = trip.getMember().getEmail();
         this.isPublic = trip.isPublic();
@@ -104,5 +105,17 @@ public class TripSearchDoc {
         if(content.length() > length)
             return content.substring(0,length-1);
         return content;
+    }
+
+    public void update(Trip trip, List<String> hashtag, String thumbnailUrl) {
+        this.title = trip.getTitle();
+        this.cost = trip.getCost();
+        this.area = trip.getArea();
+        this.hashtag = hashtag;
+        this.tripStartDate = trip.getTripStartDate();
+        this.tripEndDate = trip.getTripEndDate();
+        this.address = trip.getAddress();
+        this.thumbnailUrl = thumbnailUrl;
+        this.isPublic = trip.isPublic();
     }
 }

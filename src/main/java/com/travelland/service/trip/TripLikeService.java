@@ -27,6 +27,11 @@ public class TripLikeService {
     private final TripRepository tripRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
+    /**
+     * 여행후기 좋아요 등록
+     * @param tripId 여행후기 id
+     * @param loginMember 로그인한 회원 정보
+     */
     @Transactional
     public void registerTripLike(Long tripId, Member loginMember) {
         Trip trip = getTrip(tripId);
@@ -38,7 +43,11 @@ public class TripLikeService {
         redisTemplate.opsForSet().add(TRIP_LIKES_TRIP_ID + tripId, loginMember.getEmail());
     }
 
-    //여행정보 좋아요 취소
+    /**
+     * 여행후기 좋아요 취소
+     * @param tripId 여행후기 id
+     * @param loginMember 로그인한 회원 정보
+     */
     @Transactional
     public void cancelTripLike(Long tripId, Member loginMember) {
         Trip trip = getTrip(tripId);
@@ -49,14 +58,34 @@ public class TripLikeService {
         redisTemplate.opsForSet().remove(TRIP_LIKES_TRIP_ID + tripId, loginMember.getEmail());
     }
 
-    //여행정보 좋아요 목록 조회
+    /**
+     * 좋아요한 여행후기 게시글 목록 조회
+     * @param page 조회할 페이지 번호
+     * @param size 한 페이지에 보여지는 게시글 수
+     * @param loginMember 로그인한 회원 정보
+     * @return 조회된 여행후기 목록
+     */
     @Transactional(readOnly = true)
     public List<TripDto.Likes> getTripLikeList(int page, int size, Member loginMember) {
         return tripLikeRepository.getLikeListByMember(loginMember, size, page)
                 .stream().map(TripDto.Likes::new).toList();
     }
 
-    //게시글 좋아요 여부 확인
+    /**
+     * 좋아요 삭제
+     * @param trip 삭제할 여행후기
+     */
+    @Transactional
+    public void deleteTripLike(Trip trip) {
+        tripLikeRepository.deleteByTrip(trip);
+    }
+
+    /**
+     * 여행후기 좋아요 상태 확인
+     * @param tripId 조회할 여행후기 id
+     * @param loginMember 로그인한 회원정보
+     * @return 좋아요 여부
+     */
     public boolean statusTripLike(Long tripId, Member loginMember) {
         if(Boolean.TRUE.equals(redisTemplate.opsForSet().isMember(TRIP_LIKES_TRIP_ID + tripId, loginMember.getEmail())))
             return true;
@@ -69,12 +98,11 @@ public class TripLikeService {
         return false;
     }
 
-    //좋아요 데이터 삭제
-    @Transactional
-    public void deleteTripLike(Trip trip) {
-        tripLikeRepository.deleteByTrip(trip);
-    }
-
+    /**
+     * 여행후기 정보 조회
+     * @param tripId 조회할 여행후기 id
+     * @return 조회한 여행후기
+     */
     private Trip getTrip(Long tripId) {
         return tripRepository.findById(tripId)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_NOT_FOUND));

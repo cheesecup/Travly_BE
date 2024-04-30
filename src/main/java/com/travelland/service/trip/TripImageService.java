@@ -25,7 +25,13 @@ public class TripImageService {
     private final S3FileService s3FileService;
     private final Executor asyncTaskExecutor;
 
-    // 이미지 정보 저장, 썸네일 이미지 URL 반환
+    /**
+     * 회원이 등록한 여행후기 이미지 정보 저장
+     * @param thumbnail 썸네일 이미지 파일
+     * @param imageList 추가 이미지 파일
+     * @param trip 등록할 여행후기
+     * @return 썸네일 이미지 URL
+     */
     @Transactional
     public String createTripImage(MultipartFile thumbnail, List<MultipartFile> imageList, Trip trip) {
         TripImage tripImage = tripImageRepository.save(new TripImage(s3FileService.saveResizeImage(thumbnail), true, trip)); //리사이즈된 썸네일 이미지 저장
@@ -41,29 +47,39 @@ public class TripImageService {
         return tripImage.getImageUrl();
     }
 
-    // 선택한 게시글 이미지 URL 리스트 가져오기
+    /**
+     * 여행후기에 등록된 이미지 URL 목록 조회
+     * @param trip 조회할 여행후기
+     * @return 조회된 이미지 URL 목록
+     */
     @Transactional(readOnly = true)
     public List<String> getTripImageUrl(Trip trip) {
         return tripImageRepository.findAllByTripAndIsThumbnail(trip, false).stream()
                 .map(TripImage::getImageUrl).toList();
     }
 
-    // 선택한 게시글 썸네일 이미지 URL 가져오기
+    /**
+     * 여행후기에 등록된 썸네일 URL 조회
+     * @param trip 조회할 여행후기
+     * @return 조회된 썸네일 URL
+     */
     @Transactional(readOnly = true)
     public String getTripThumbnailUrl(Trip trip) {
         TripImage tripImage =  tripImageRepository.findByTripAndIsThumbnail(trip, true)
                 .orElseThrow(() -> new CustomException(ErrorCode.POST_IMAGE_NOT_FOUND));
         return tripImage.getImageUrl();
     }
-    
-    // 게시글 이미지 삭제
+
+    /**
+     * 여행후기 이미지와 S3 이미지 삭제
+     * @param trip 삭제할 여행후기
+     */
     @Transactional
     public void deleteTripImage(Trip trip) {
         List<String> storeImageNameList = tripImageRepository.findAllByTrip(trip).stream()
-                .map(TripImage::getStoreImageName).toList();
+                .map(TripImage::getImageUrl).toList();
+        storeImageNameList.forEach(s3FileService::deleteFile); //S3 이미지 삭제
 
         tripImageRepository.deleteByTrip(trip);
-
-        storeImageNameList.forEach(s3FileService::deleteFile); //S3 이미지 삭제
     }
 }

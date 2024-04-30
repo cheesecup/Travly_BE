@@ -30,7 +30,6 @@ public class TripController implements TripControllerDocs {
     private final TripSearchService tripSearchService;
     private final TripCommentService tripCommentService;
 
-    //여행정보 작성
     @PostMapping(value = "/trips", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<TripDto.Id> createTrip(@Validated(TripValidationSequence.class) @RequestPart TripDto.Create requestDto,
                                                  @RequestPart MultipartFile thumbnail,
@@ -41,7 +40,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    //여행정보 상세 조회
     @GetMapping("/trips/{tripId}")
     public ResponseEntity<TripDto.Get> getTrip(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         String email = "";
@@ -52,7 +50,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    //여행정보 목록 조회
     @GetMapping("/trips")
     public ResponseEntity<List<TripDto.GetList>> getTripList(@RequestParam(defaultValue = "1") int page,
                                                              @RequestParam(defaultValue = "9") int size,
@@ -61,11 +58,10 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getTripList(page, size, sortBy, isAsc));
     }
 
-    //여행정보 수정
     @PutMapping(value = "/trips/{tripId}", consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<TripDto.Id> updateTrip(@PathVariable Long tripId,
                                                  @Validated(TripValidationSequence.class) @RequestPart TripDto.Update requestDto,
-                                                 @RequestPart(required = false) MultipartFile thumbnail,
+                                                 @RequestPart MultipartFile thumbnail,
                                                  @RequestPart(required = false) List<MultipartFile> imageList,
                                                  @AuthenticationPrincipal UserDetailsImpl userDetails) {
         TripDto.Id responseDto = tripService.updateTrip(tripId, requestDto, thumbnail, imageList, userDetails.getUsername());
@@ -73,7 +69,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    //여행정보 삭제
     @DeleteMapping("/trips/{tripId}")
     public ResponseEntity<TripDto.Delete> deleteTrip(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         tripService.deleteTrip(tripId, userDetails.getUsername());
@@ -81,7 +76,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Delete(true));
     }
 
-    //여행정보 좋아요 등록
     @PostMapping("/trips/{tripId}/like")
     public ResponseEntity<TripDto.Result> createTripLike(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         checkLogin(userDetails);
@@ -90,7 +84,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(true));
     }
 
-    //여행정보 좋아요 취소
     @DeleteMapping("/trips/{tripId}/like")
     public ResponseEntity<TripDto.Result> deleteTripLike(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         checkLogin(userDetails);
@@ -99,7 +92,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(false));
     }
 
-    //여행정보 좋아요 목록 조회
     @GetMapping("/trips/like")
     public ResponseEntity<List<TripDto.Likes>> getTripLikeList(@RequestParam(defaultValue = "1") int page,
                                                                @RequestParam(defaultValue = "9") int size,
@@ -109,7 +101,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    //여행정보 스크랩 등록
     @PostMapping("/trips/{tripId}/scrap")
     public ResponseEntity<TripDto.Result> createTripScrap(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         checkLogin(userDetails);
@@ -118,7 +109,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(true));
     }
 
-    //여행정보 스크랩 취소
     @DeleteMapping("/trips/{tripId}/scrap")
     public ResponseEntity<TripDto.Result> deleteTripScrap(@PathVariable Long tripId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         checkLogin(userDetails);
@@ -127,7 +117,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new TripDto.Result(false));
     }
 
-    //스크랩한 여행 목록 조회
     @GetMapping("/trips/scrap")
     public ResponseEntity<List<TripDto.Scraps>> getTripScrapList(@RequestParam(defaultValue = "1") int page,
                                                                  @RequestParam(defaultValue = "9") int size,
@@ -137,7 +126,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    //작성한 여행정보 게시글 목록 조회
     @GetMapping("/users/trips")
     public ResponseEntity<List<TripDto.GetList>> getMyTripList(@RequestParam(defaultValue = "1") int page,
                                                                @RequestParam(defaultValue = "9") int size,
@@ -146,7 +134,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getMyTripList(page, size, userDetails.getUsername()));
     }
 
-    //여행정보 검색
     @GetMapping("/trips/search")
     public ResponseEntity<TripDto.SearchResult> searchTrip(@RequestParam String text,
                                                                   @RequestParam(defaultValue = "1") int page,
@@ -157,7 +144,6 @@ public class TripController implements TripControllerDocs {
                 .body(tripSearchService.totalSearchTrip(text, page, size, sortBy, isAsc));
     }
 
-    //여행정보 타이틀 검색
     @GetMapping("/trips/search/title")
     public ResponseEntity<TripDto.SearchResult> searchTripByTitle(@RequestParam String title,
                                                                     @RequestParam(defaultValue = "1") int page,
@@ -168,7 +154,6 @@ public class TripController implements TripControllerDocs {
                 .body(tripSearchService.searchTripByTitle(title, page, size, sortBy, isAsc));
     }
 
-    //여행정보 해시태그 검색
     @GetMapping("/trips/search/hashtag")
     public ResponseEntity<TripDto.SearchResult> searchTripByHashtag(@RequestParam String hashtag,
                                                                     @RequestParam(defaultValue = "1") int page,
@@ -179,7 +164,6 @@ public class TripController implements TripControllerDocs {
                 .body(tripSearchService.searchTripByField("hashtag", hashtag, page, size, sortBy, isAsc));
     }
 
-    //여행정보 지역 검색
     @GetMapping("/trips/search/area")
     public ResponseEntity<TripDto.SearchResult> searchTripByArea(@RequestParam String area,
                                                                     @RequestParam(defaultValue = "1") int page,
@@ -190,19 +174,16 @@ public class TripController implements TripControllerDocs {
                 .body(tripSearchService.searchTripByArea(area, page, size, sortBy, isAsc));
     }
 
-    //여행정보 해쉬태그 검색량 상위 TOP5
     @GetMapping("/trips/rank/hashtag")
     public ResponseEntity<List<String>> getRecentTopHashtag(){
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRecentlyTopSearch("hashtag"));
     }
 
-    //여행정보 지역 검색량 상위 TOP5
     @GetMapping("/trips/rank/area")
     public ResponseEntity<List<String>> getRecentTopArea(){
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRecentlyTopSearch("area"));
     }
 
-    //여행정보 댓글 작성
     @PostMapping("/trips/{tripId}/comments")
     public ResponseEntity<TripCommentDto.Id> createTripComment(@PathVariable Long tripId,
                                                                @RequestBody TripCommentDto.Create requestDto,
@@ -212,7 +193,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    //여행정보 댓글 목록 조회
     @GetMapping("/trips/{tripId}/comments")
     public ResponseEntity<List<TripCommentDto.GetList>> getTripCommentList(@PathVariable Long tripId,
                                                                            @RequestParam(defaultValue = "1") int page,
@@ -222,7 +202,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    //여행정보 댓글 수정
     @PutMapping("/trips/{tripId}/comments/{commentId}")
     public ResponseEntity<TripCommentDto.Id> updateTripComment(@PathVariable Long tripId,
                                                                @PathVariable Long commentId,
@@ -233,7 +212,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(responseDto);
     }
 
-    //여행정보 댓글 삭제
     @DeleteMapping("/trips/{tripId}/comments/{commentId}")
     public ResponseEntity<TripCommentDto.Delete> deleteTripComment(@PathVariable Long tripId,
                                                                    @PathVariable Long commentId,
@@ -243,13 +221,11 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(new TripCommentDto.Delete(true));
     }
 
-    //여행정보 조회수 TOP 10 목록 조회
     @GetMapping("/trips/rank")
     public ResponseEntity<List<TripDto.Top10>> getTripListTop10() {
         return ResponseEntity.status(HttpStatus.OK).body(tripService.getRankByViewCount(10L));
     }
 
-    //여행정보 랜덤 게시글 목록 조회
     @GetMapping("/trips/random")
     public ResponseEntity<List<TripDto.GetList>> getTripListRandom8(){
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRandomTrip());
@@ -261,7 +237,6 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(true);
     }
 
-    //비로그인 체크
     private void checkLogin(UserDetailsImpl userDetails) {
         if (userDetails == null) throw new CustomException(ErrorCode.STATUS_NOT_LOGIN);
     }
