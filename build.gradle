@@ -80,6 +80,11 @@ dependencies {
 
     //komoran
     implementation 'com.github.shin285:KOMORAN:3.3.9'
+
+    //image CMYK
+    implementation 'com.twelvemonkeys.imageio:imageio-tiff:3.9.4'
+    implementation 'com.twelvemonkeys.imageio:imageio-jpeg:3.9.4'
+
 }
 
 tasks.named('test') {
