@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Map;
+import java.util.Optional;
 
 class EmitterRepositoryImplTest {
 
@@ -49,20 +50,11 @@ class EmitterRepositoryImplTest {
         String emitterId1 = memberId + "_" + System.currentTimeMillis();
         emitterRepository.save(emitterId1, new SseEmitter(DEFAULT_TIMEOUT));
 
-        Thread.sleep(100);
-        String emitterId2 = memberId + "_" + System.currentTimeMillis();
-        emitterRepository.save(emitterId2, new SseEmitter(DEFAULT_TIMEOUT));
-
-        Thread.sleep(100);
-        String emitterId3 = memberId + "_" + System.currentTimeMillis();
-        emitterRepository.save(emitterId3, new SseEmitter(DEFAULT_TIMEOUT));
-
-
         //when
-        Map<String, SseEmitter> ActualResult = emitterRepository.findAllEmitterStartWithByMemberId(String.valueOf(memberId));
+        Optional<SseEmitter> ActualResult = emitterRepository.findEmitterById(String.valueOf(memberId));
 
         //then
-        Assertions.assertEquals(3, ActualResult.size());
+        Assertions.assertTrue(ActualResult.isPresent());
     }
 
     @Test
@@ -104,26 +96,7 @@ class EmitterRepositoryImplTest {
         emitterRepository.deleteById(emitterId);
 
         //then
-        Assertions.assertEquals(0, emitterRepository.findAllEmitterStartWithByMemberId(emitterId).size());
-    }
-
-    @Test
-    @DisplayName("저장된 모든 Emitter를 제거한다.")
-    public void deleteAllEmitterStartWithId() throws Exception {
-        //given
-        Long memberId = 1L;
-        String emitterId1 = memberId + "_" + System.currentTimeMillis();
-        emitterRepository.save(emitterId1, new SseEmitter(DEFAULT_TIMEOUT));
-
-        Thread.sleep(100);
-        String emitterId2 = memberId + "_" + System.currentTimeMillis();
-        emitterRepository.save(emitterId2, new SseEmitter(DEFAULT_TIMEOUT));
-
-        //when
-        emitterRepository.deleteAllEmitterStartWithId(String.valueOf(memberId));
-
-        //then
-        Assertions.assertEquals(0, emitterRepository.findAllEmitterStartWithByMemberId(String.valueOf(memberId)).size());
+        Assertions.assertFalse(emitterRepository.findEmitterById(emitterId).isPresent());
     }
 
     @Test

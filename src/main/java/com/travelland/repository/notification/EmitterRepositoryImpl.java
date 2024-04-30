@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -26,10 +27,8 @@ public class EmitterRepositoryImpl implements EmitterRepository {
     }
 
     @Override
-    public Map<String, SseEmitter> findAllEmitterStartWithByMemberId(String memberId) {
-        return emitters.entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(memberId))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    public Optional<SseEmitter> findEmitterById(String emitterId) {
+        return Optional.ofNullable(emitters.get(emitterId));
     }
 
     @Override
@@ -42,17 +41,6 @@ public class EmitterRepositoryImpl implements EmitterRepository {
     @Override
     public void deleteById(String id) {
         emitters.remove(id);
-    }
-
-    @Override
-    public void deleteAllEmitterStartWithId(String memberId) {
-        emitters.forEach(
-                (key, emitter) -> {
-                    if (key.startsWith(memberId)) {
-                        emitters.remove(key);
-                    }
-                }
-        );
     }
 
     @Override

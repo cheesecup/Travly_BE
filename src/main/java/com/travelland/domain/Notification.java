@@ -52,4 +52,8 @@ public class Notification {
         this.notificationType = notificationType;
         this.receiver = receiver;
     }
+
+    public void setIsRead() {
+        this.isRead = true;
+    }
 }

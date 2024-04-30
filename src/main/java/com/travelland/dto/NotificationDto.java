@@ -2,7 +2,6 @@ package com.travelland.dto;
 
 import com.travelland.constant.NotificationType;
 import com.travelland.domain.Notification;
-import com.travelland.domain.member.Member;
 import lombok.Getter;
 
 public class NotificationDto {
