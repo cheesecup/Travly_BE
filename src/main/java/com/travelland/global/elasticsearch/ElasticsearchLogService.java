@@ -23,12 +23,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-/**
- * 인기 검색어를 집계하기 위한 로그
- * @author     kjw
- * @version    1.0.0
- * @since      1.0.0
- */
+
 @Slf4j(topic = "ESLog")
 @Component
 @RequiredArgsConstructor

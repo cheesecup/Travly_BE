@@ -20,9 +20,6 @@ import static com.travelland.constant.Constants.TRIP_RECOMMEND_JOB_NAME;
 /**
  * 좋아요 기반 추천 컨텐츠를 위한 batch 작업
  *
- * @author     kjw
- * @version    1.0.0
- * @since      1.0.0
  */
 @Slf4j(topic = "Scheduler Start : ")
 @Component

@@ -161,7 +161,7 @@ class TripSearchServiceTest {
     @DisplayName(" 내용 기반 여행 후기 추천 기능 TEST")
     void getRecommendTrip(){
         SearchHits<TripRecommendDoc> result = tripRecommendRepository.recommendByContent("여행 관련",5);
-        Assertions.assertEquals(0, result.getTotalHits());
+        Assertions.assertNotEquals(0, result.getTotalHits());
         Assertions.assertFalse(result.getSearchHits().isEmpty());
     }
 

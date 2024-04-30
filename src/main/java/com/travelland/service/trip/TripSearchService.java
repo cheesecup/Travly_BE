@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j(topic = "ES")
 @Service
@@ -94,11 +93,11 @@ public class TripSearchService {
                    hashtagLog = subValue;
             }
         }
-        if(!areaLog.isEmpty())
+        if(!areaLog.isEmpty() && page==1)
             elasticsearchLogService.putSearchLog("area", areaLog);
 
-        if(!hashtagLog.isEmpty())
-            elasticsearchLogService.putSearchLog("hashtagLog", hashtagLog);
+        if(!hashtagLog.isEmpty() && page ==1)
+            elasticsearchLogService.putSearchLog("hashtag", hashtagLog);
 
         return TripDto.SearchResult.builder()
                 .searches(searches)
@@ -121,7 +120,7 @@ public class TripSearchService {
         SearchHits<TripSearchDoc> result =
                 tripSearchRepository.searchByTitle(title,this.toPageable(page, size, sortBy, isAsc));
 
-        return  searchMapper("title", title, result);
+        return  searchMapper("title", title, page, result);
     }
 
     /**
@@ -138,7 +137,7 @@ public class TripSearchService {
         SearchHits<TripSearchDoc> result =
                 tripSearchRepository.searchByField(field, value,true,this.toPageable(page, size, sortBy, isAsc));
 
-        return searchMapper(field, value, result);
+        return searchMapper(field, value, page, result);
     }
 
     /**
@@ -154,11 +153,11 @@ public class TripSearchService {
         Pageable pageable = this.toPageable(page, size, sortBy, isAsc);
 
         if(area.equals("전체"))
-            return searchMapper("areaAll", area, tripSearchRepository.searchAllArea(true,pageable));
+            return searchMapper("areaAll", area,page, tripSearchRepository.searchAllArea(true,pageable));
 
         String[] adaptedArea = searchArea.getMappingArea(area);
         SearchHits<TripSearchDoc> result = tripSearchRepository.searchByArea(adaptedArea,true,pageable);
-        return searchMapper("area", area, result);
+        return searchMapper("area", area,page, result);
     }
 
     /**
@@ -253,11 +252,11 @@ public class TripSearchService {
      * @param result 검색 결과
      * @return 검색 결과 형태 dto 반환
      */
-    private TripDto.SearchResult searchMapper(String field, String keyword, SearchHits<TripSearchDoc> result){
+    private TripDto.SearchResult searchMapper(String field, String keyword, int page, SearchHits<TripSearchDoc> result){
         if (result.getTotalHits() == 0)
             return TripDto.SearchResult.builder().build();
 
-        if(field.equals("hashtag") || field.equals("area"))
+        if((page == 1 && field.equals("hashtag")) || (page==1 && field.equals("area")))
             elasticsearchLogService.putSearchLog(field, keyword);
 
         List<TripDto.Search> searches = result.get()

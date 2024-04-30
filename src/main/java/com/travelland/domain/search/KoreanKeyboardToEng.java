@@ -88,9 +88,6 @@ public class KoreanKeyboardToEng {
     private void separateKey(String target, StringBuilder sb) {
         if(target.isEmpty())
             return;
-        log.info("");
-        log.info(target);
-        log.info("");
         int codePoint = Character.codePointAt(target, 0);
 
         if(codePoint < 0xAC00 || codePoint > 0xD79D){
