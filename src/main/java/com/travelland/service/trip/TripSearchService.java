@@ -9,6 +9,8 @@ import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripRecommendDoc;
 import com.travelland.esdoc.TripSearchDoc;
 import com.travelland.global.elasticsearch.ElasticsearchLogService;
+import com.travelland.global.exception.CustomException;
+import com.travelland.global.exception.ErrorCode;
 import com.travelland.repository.trip.TripHashtagRepository;
 import com.travelland.repository.trip.TripRecommendRepository;
 import com.travelland.repository.trip.TripRepository;
@@ -220,12 +222,28 @@ public class TripSearchService {
         }
     }
     /**
-     * 추천 게시글 기능
+     * 추천 게시글 기능 redis에 추천데이터 관련 key가 없다면 추천 검색 후 등록
      * @param tripId 추천 기준 tripId
      * @return 추천 결과 Dto
      */
     public List<TripDto.GetList> getRecommendTrip(Long tripId){
+        if(Boolean.FALSE.equals(redisTemplate.hasKey(TRIP_RECOMMEND + tripId))){
+            Trip trip = tripRepository.findById(tripId).orElseThrow(()-> new CustomException(ErrorCode.POST_NOT_FOUND));
+            SearchHits<TripRecommendDoc> result = tripRecommendRepository.recommendByContent(trip.getContent(),5);
+
+            if(result.getTotalHits() == 0)
+                return new ArrayList<>();
+
+            List<Long> keys = result.getSearchHits().stream().map(searchHit -> searchHit.getContent().getId()).toList();
+
+            redisTemplate.opsForList()
+                    .rightPushAll(TRIP_RECOMMEND+tripId, keys.stream().map(String::valueOf).toList());
+
+            return tripSearchRepository.getRecommendList(keys);
+        }
+
         List<String> res = redisTemplate.opsForList().range(TRIP_RECOMMEND+tripId,0,-1);
+
         if(res.isEmpty())
             return new ArrayList<>();
 
