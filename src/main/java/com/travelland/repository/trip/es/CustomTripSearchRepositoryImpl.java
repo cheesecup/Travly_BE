@@ -26,24 +26,6 @@ import java.util.List;
 @Component
 public class CustomTripSearchRepositoryImpl implements CustomTripSearchRepository {
     private final ElasticsearchOperations elasticsearchOperations;
-
-    @Override
-    public SearchHits<TripSearchDoc> searchByText(String text, Pageable pageable) {
-        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
-        searchQueryBuilder.withPageable(pageable);
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        boolQueryBuilder.minimumShouldMatch(1);
-        Arrays.stream(text.split("\\s+"))
-                .forEach(word -> {
-                    boolQueryBuilder.should(QueryBuilders.matchQuery("title", word));
-                    boolQueryBuilder.should(QueryBuilders.matchQuery("content", word));
-                    boolQueryBuilder.should(QueryBuilders.matchQuery("area", word));
-                    boolQueryBuilder.should(QueryBuilders.matchQuery("hashtag", word));
-                });
-        boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", true));
-        searchQueryBuilder.withQuery(boolQueryBuilder);
-        return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
-    }
     /**
      * 통합 검색기능, hashtag, area, title, content 기준으로 검색
      * @param text 검색할 문자열 입력
@@ -82,7 +64,13 @@ public class CustomTripSearchRepositoryImpl implements CustomTripSearchRepositor
         searchQueryBuilder.withQuery(boolQueryBuilder);
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
-
+    /**
+     * 통합 검색기능, hashtag, area, title, content 기준으로 검색
+     * @param text 검색할 문자열 입력
+     * @param engText 검색할 영 문자열 입력
+     * @param pageable 페이징 처리 입력
+     * @return 검색 결과
+     */
     @Override
     public SearchHits<TripSearchDoc> searchByTFAAndEng(String text, String engText, Pageable pageable) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
@@ -236,5 +224,29 @@ public class CustomTripSearchRepositoryImpl implements CustomTripSearchRepositor
                 .stream()
                 .map(hit -> new TripDto.GetList(hit.getContent())
                 ).toList();
+    }
+    /**
+     * 좋아요 기반 추천 기능
+     * @param keys 추천 글에 해당하는 tripId
+     * @return 좋아요 기반 추천 결과
+     */
+    @Override
+    public List<TripDto.GetList> getRecommendList(List<Long> keys) {
+        List<Query> queries = new ArrayList<>();
+        for(Long key : keys){
+            NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+            boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", true));
+            boolQueryBuilder.must(QueryBuilders.matchQuery("trip_id", key));
+            searchQueryBuilder.withQuery(boolQueryBuilder);
+            queries.add(searchQueryBuilder.build());
+        }
+
+        List<SearchHits<TripSearchDoc>> result = elasticsearchOperations.multiSearch(queries,TripSearchDoc.class);
+
+        return new ArrayList<>(result.stream()
+                .filter(element -> element.getTotalHits() > 0)
+                .map(element -> new TripDto.GetList(element.getSearchHit(0).getContent()))
+                .toList());
     }
 }

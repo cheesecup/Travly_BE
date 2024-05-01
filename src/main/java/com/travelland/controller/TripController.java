@@ -234,6 +234,11 @@ public class TripController implements TripControllerDocs {
         return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRandomTrip());
     }
 
+    @GetMapping("/trips/{tripId}/recommend")
+    public ResponseEntity<List<TripDto.GetList>> getTripRecommend(@PathVariable Long tripId){
+        return ResponseEntity.status(HttpStatus.OK).body(tripSearchService.getRecommendTrip(tripId));
+    }
+
     @GetMapping("/trips/sync/es")
     public ResponseEntity<Boolean> syncDBtoES(){
         tripSearchService.syncDBtoES();

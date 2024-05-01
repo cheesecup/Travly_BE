@@ -163,6 +163,7 @@ class TripSearchServiceTest {
         List<TripDto.GetList> result = tripSearchService.getRandomTrip();
         Assertions.assertFalse(result.isEmpty());
     }
+
     @Test
     @DisplayName(" 내용 기반 여행 후기 추천 기능 TEST")
     void getRecommendTrip(){
@@ -170,4 +171,5 @@ class TripSearchServiceTest {
         Assertions.assertNotEquals(0, result.getTotalHits());
         Assertions.assertFalse(result.getSearchHits().isEmpty());
     }
+
 }

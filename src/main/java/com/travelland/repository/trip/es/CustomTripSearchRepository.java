@@ -8,7 +8,6 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import java.util.List;
 
 public interface CustomTripSearchRepository {
-    SearchHits<TripSearchDoc> searchByText(String text, Pageable pageable);
     SearchHits<TripSearchDoc> searchByTFA(String text, Pageable pageable);
     SearchHits<TripSearchDoc> searchByTFAAndEng(String text, String engText, Pageable pageable);
     SearchHits<TripSearchDoc> searchByTitle(String title, Pageable pageable);
@@ -22,4 +21,6 @@ public interface CustomTripSearchRepository {
     List<TripDto.Top10> findRankList(List<Long> keys);
 
     List<TripDto.GetList> getRandomList(int size);
+
+    List<TripDto.GetList> getRecommendList(List<Long> keys);
 }

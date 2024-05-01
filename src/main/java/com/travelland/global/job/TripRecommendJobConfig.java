@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.travelland.constant.Constants.TRIP_RECOMMEND;
 import static com.travelland.constant.Constants.TRIP_RECOMMEND_JOB_NAME;
 /**
  * 좋아요 기반 추천 컨텐츠를 위한 batch 작업
@@ -61,7 +62,7 @@ public class TripRecommendJobConfig {
     private final RedisTemplate<String, String> redisTemplate;
     private final TripRecommendRepository tripRecommendRepository;
     private static final String TRIP_LIKE_RECOMMEND_STEP = "trip_like_recommend_step";
-    private static final String TRIP_RECOMMEND = "trip_recommend:";
+
     private static final int WORKER_SIZE = 2;
     private static final int RECOMMEND_SIZE = 5;
 
