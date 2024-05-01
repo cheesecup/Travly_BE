@@ -26,12 +26,14 @@ public class OAuthAttributes {
         this.profileImageUrl = profileImageUrl;
     }
 
-    public static OAuthAttributes of(String socialName, Map<String, Object> attributes) {
+    public static OAuthAttributes of(String socialName, String userNameAttributeName, Map<String, Object> attributes) {
         if ("kakao".equals(socialName)) {
-            return ofKakao("id", attributes);
+            return ofKakao(userNameAttributeName, attributes);
         }
-
-        return null;
+        if ("naver".equals(socialName)) {
+            return ofNaver(userNameAttributeName, attributes);
+        }
+        return ofGoogle(userNameAttributeName, attributes);
     }
 
     private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
@@ -42,6 +44,28 @@ public class OAuthAttributes {
                 .nickname(String.valueOf(kakaoProfile.get("nickname")))
                 .email(String.valueOf(kakaoAccount.get("email")))
                 .profileImageUrl(String.valueOf(kakaoProfile.get("thumbnail_image_url")))
+                .nameAttributesKey(userNameAttributeName)
+                .attributes(attributes)
+                .build();
+    }
+
+    private static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
+        Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+
+        return OAuthAttributes.builder()
+                .nickname(String.valueOf(response.get("nickname")))
+                .email(String.valueOf(response.get("email")))
+                .profileImageUrl(String.valueOf(response.get("profile_image")))
+                .nameAttributesKey(userNameAttributeName)
+                .attributes(attributes)
+                .build();
+    }
+
+    private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
+        return OAuthAttributes.builder()
+                .nickname(String.valueOf(attributes.get("name")))
+                .email(String.valueOf(attributes.get("email")))
+                .profileImageUrl(String.valueOf(attributes.get("picture")))
                 .nameAttributesKey(userNameAttributeName)
                 .attributes(attributes)
                 .build();
