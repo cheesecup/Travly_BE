@@ -51,7 +51,7 @@ public class CustomTripSearchRepositoryImpl implements CustomTripSearchRepositor
      * @return 검색 결과
      */
     @Override
-    public SearchHits<TripSearchDoc> searchByTextTEST(String text, Pageable pageable) {
+    public SearchHits<TripSearchDoc> searchByTFA(String text, Pageable pageable) {
         NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
         searchQueryBuilder.withPageable(pageable);
         searchQueryBuilder.withHighlightFields(
@@ -82,6 +82,42 @@ public class CustomTripSearchRepositoryImpl implements CustomTripSearchRepositor
         searchQueryBuilder.withQuery(boolQueryBuilder);
         return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
     }
+
+    @Override
+    public SearchHits<TripSearchDoc> searchByTFAAndEng(String text, String engText, Pageable pageable) {
+        NativeSearchQueryBuilder searchQueryBuilder = new NativeSearchQueryBuilder();
+        searchQueryBuilder.withPageable(pageable);
+        searchQueryBuilder.withHighlightFields(
+                new HighlightBuilder.Field("hashtag"),
+                new HighlightBuilder.Field("area"),
+                new HighlightBuilder.Field("eng_kor_hashtag_suggest"),
+                new HighlightBuilder.Field("chosung_hashtag"),
+                new HighlightBuilder.Field("chosung_area"),
+                new HighlightBuilder.Field("ng_kor_area_suggest")
+        );
+
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.minimumShouldMatch(1);
+        boolQueryBuilder.should(QueryBuilders.matchQuery("eng_title", engText));
+        Arrays.stream(text.split("\\s+"))
+                .forEach(word -> {
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("title", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("title", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("content", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("area", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("hashtag", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("eng_kor_hashtag_suggest", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("chosung_hashtag", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("chosung_area", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("eng_kor_area_suggest", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("chosung_title", word));
+                    boolQueryBuilder.should(QueryBuilders.matchQuery("eng_kor_title_suggest", word));
+                });
+        boolQueryBuilder.must(QueryBuilders.matchQuery("is_public", true));
+        searchQueryBuilder.withQuery(boolQueryBuilder);
+        return elasticsearchOperations.search(searchQueryBuilder.build(), TripSearchDoc.class);
+    }
+
     /**
      * 제목 검색기능
      * @param title 검색할 문자열 입력

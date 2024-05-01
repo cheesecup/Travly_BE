@@ -1,7 +1,9 @@
 package com.travelland.service.trip;
 
 import com.travelland.constant.Role;
+import com.travelland.constant.TripSearchField;
 import com.travelland.domain.member.Member;
+import com.travelland.domain.search.KoreanKeyboardToEng;
 import com.travelland.domain.trip.Trip;
 import com.travelland.dto.trip.TripDto;
 import com.travelland.esdoc.TripRecommendDoc;
@@ -26,6 +28,7 @@ import java.util.List;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Transactional
+
 class TripSearchServiceTest {
     @Autowired
     TripSearchService tripSearchService;
@@ -35,6 +38,9 @@ class TripSearchServiceTest {
     TripRepository tripRepository;
     @Autowired
     MemberRepository memberRepository;
+
+    @Autowired
+    KoreanKeyboardToEng koreanKeyboardToEng;
     private final List<Trip> trips = new ArrayList<>();
 
     @BeforeAll
@@ -164,5 +170,4 @@ class TripSearchServiceTest {
         Assertions.assertNotEquals(0, result.getTotalHits());
         Assertions.assertFalse(result.getSearchHits().isEmpty());
     }
-
 }

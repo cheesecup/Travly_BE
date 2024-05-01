@@ -49,7 +49,7 @@ public class TripService {
     public TripDto.Id createTrip(TripDto.Create requestDto, MultipartFile thumbnail, List<MultipartFile> imageList, Member loginMember) {
         Trip trip = tripRepository.save(new Trip(requestDto, loginMember));
 
-        if (!requestDto.getHashTag().isEmpty()) //해쉬태그 저장
+        if (!requestDto.getHashTag().isEmpty())
             requestDto.getHashTag().forEach(hashtagTitle -> tripHashtagRepository.save(new TripHashtag(hashtagTitle, trip)));
 
         String thumbnailUrl = "";
@@ -185,10 +185,7 @@ public class TripService {
                 .map(Long::parseLong)
                 .toList());
 
-        if(result.size()>=10)
-            return result.subList(0,10);
-
-        return result;
+        return result.size() >= 10 ? result.subList(0, 10) : result;
     }
 
     /**

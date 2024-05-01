@@ -11,7 +11,6 @@ public final class Constants {
     public static final String PLAN_VIEW_COUNT = "planViewCount:";
     public static final String PLAN_LIKES_PLAN_ID = "planLikes:planId:";
     public static final String PLAN_SCRAPS_PLAN_ID = "planScraps:planId:";
-    public static final String PLAN_TOTAL_COUNT = "plan_total_count:";
     /**
      * 여행 추천 관련 batch Job Name
      */
@@ -26,4 +25,5 @@ public final class Constants {
             "강원_강원,강원도/대전_대전,대전광역시,대전시/충북충남_충북,충남,충청도,충청북도,충청남도/" +
             "경북경남_경북,경상북도,경남,경상남도,경상,경상도/부산_부산,부산광역시,부산시/울산_울산,울산시,울산광역시/" +
             "전북전남_전북,전라북도,전남,전라남도,전라도,전라/제주_제주,제주시,제주도,제주특별시";
+
 }
