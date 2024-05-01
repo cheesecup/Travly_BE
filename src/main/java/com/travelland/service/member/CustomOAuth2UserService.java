@@ -31,8 +31,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         Map<String, Object> originAttributes = oAuth2User.getAttributes();
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        String userNameAttributeName = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
 
-        OAuthAttributes attributes = OAuthAttributes.of(registrationId, originAttributes);
+        OAuthAttributes attributes = OAuthAttributes.of(registrationId, userNameAttributeName, originAttributes);
         Member member = saveOrUpdate(attributes);
 
         return new UserDetailsImpl(member, oAuth2User.getAttributes());

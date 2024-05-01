@@ -39,7 +39,6 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
         String accessToken = jwtUtil.createToken(email, member.getRole());
         String refreshToken = jwtUtil.createRefreshToken();
         refreshTokenRepository.save(new RefreshToken(member.getId(), refreshToken, accessToken));
-        memberRepository.save(member);
 
         String uri = createURI(accessToken).toString();
         getRedirectStrategy().sendRedirect(request, response, uri);
