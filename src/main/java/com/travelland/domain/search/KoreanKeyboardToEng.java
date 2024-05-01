@@ -80,6 +80,15 @@ public class KoreanKeyboardToEng {
         Arrays.stream(target.split("")).forEach(str -> this.separateKey(str,sb));
         return sb.toString();
     }
+
+    public boolean checkAllKorean(String target){
+        int codePoint = Character.codePointAt(target, 0);
+
+        if(codePoint < 0xAC00 || codePoint > 0xD79D)
+            return false;
+
+        return true;
+    }
     /**
      * 들어온 한글 1 자를 초성 중성 종성으로 분리
      * @param target 분석 대상 한글 문자열

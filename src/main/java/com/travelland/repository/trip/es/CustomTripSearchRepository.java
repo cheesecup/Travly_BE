@@ -9,7 +9,8 @@ import java.util.List;
 
 public interface CustomTripSearchRepository {
     SearchHits<TripSearchDoc> searchByText(String text, Pageable pageable);
-    SearchHits<TripSearchDoc> searchByTextTEST(String text, Pageable pageable);
+    SearchHits<TripSearchDoc> searchByTFA(String text, Pageable pageable);
+    SearchHits<TripSearchDoc> searchByTFAAndEng(String text, String engText, Pageable pageable);
     SearchHits<TripSearchDoc> searchByTitle(String title, Pageable pageable);
 
     SearchHits<TripSearchDoc> searchByField(String field, String keyword, boolean isPublic, Pageable pageable);

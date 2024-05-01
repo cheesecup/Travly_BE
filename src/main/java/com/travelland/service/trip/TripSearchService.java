@@ -1,5 +1,6 @@
 package com.travelland.service.trip;
 
+import com.travelland.constant.TripSearchField;
 import com.travelland.domain.search.KoreanKeyboardToEng;
 import com.travelland.domain.search.SearchArea;
 import com.travelland.domain.trip.Trip;
@@ -64,40 +65,16 @@ public class TripSearchService {
      * @return 검색 결과
      */
     public TripDto.SearchResult totalSearchTrip(String text, int page, int size, String sortBy, boolean isAsc) {
-        String newText = changeKeyboardKorToAlphabet(text);
+        String engText = changeKeyboardKorToAlphabet(text);
 
-        SearchHits<TripSearchDoc> result =
-                tripSearchRepository.searchByTextTEST(newText, this.toPageable(page, size, sortBy, isAsc));
+        SearchHits<TripSearchDoc> result = engText.isEmpty()
+                ? tripSearchRepository.searchByTFA(text, this.toPageable(page, size, sortBy, isAsc))
+                : tripSearchRepository.searchByTFAAndEng(text, engText, this.toPageable(page, size, sortBy, isAsc));
 
         if (result.getTotalHits() == 0)
             return TripDto.SearchResult.builder().build();
 
-        List<TripDto.Search> searches = new ArrayList<>();
-
-        String areaLog = "";
-        String hashtagLog = "";
-
-        for(SearchHit<TripSearchDoc> search : result.getSearchHits()){
-            searches.add(new TripDto.Search(search.getContent()));
-
-            if(search.getHighlightFields().isEmpty())
-                continue;
-
-            for(Map.Entry<String,List<String>> res : search.getHighlightFields().entrySet()){
-                String subValue = res.getValue().get(0).substring(4,res.getValue().get(0).length()-5);
-
-                if(res.getKey().equals("area"))
-                    areaLog = subValue;
-
-                if(res.getKey().equals("hashtag"))
-                   hashtagLog = subValue;
-            }
-        }
-        if(!areaLog.isEmpty() && page==1)
-            elasticsearchLogService.putSearchLog("area", areaLog);
-
-        if(!hashtagLog.isEmpty() && page ==1)
-            elasticsearchLogService.putSearchLog("hashtag", hashtagLog);
+        List<TripDto.Search> searches = searchHitsToSearchDto(result, page);
 
         return TripDto.SearchResult.builder()
                 .searches(searches)
@@ -106,6 +83,8 @@ public class TripSearchService {
                 .nearPlaces(getNearPlaceNames(searches.get(0).getArea()))
                 .build();
     }
+
+
 
     /**
      * 여행 정보 제목 검색
@@ -181,6 +160,7 @@ public class TripSearchService {
     public List<TripDto.Top10> getRankByViewCount(List<Long> keys){
         return tripSearchRepository.findRankList(keys);
     }
+
     /**
      * 최근 인기 검색어 가져오기
      * @param field 인기 검색어를 조회할 field
@@ -198,6 +178,7 @@ public class TripSearchService {
         }
         return resultList;
     }
+
     /**
      * Elasticsearch 내 문서 삭제
      * @param tripId 여행 정보 식별값
@@ -206,6 +187,7 @@ public class TripSearchService {
         tripSearchRepository.deleteByTripId(tripId);
         tripRecommendRepository.deleteById(tripId);
     }
+
     /**
      * 내가 쓴 여행 정보 목록
      * @param page page : 1부터 시작
@@ -218,6 +200,7 @@ public class TripSearchService {
                 .map(TripDto.GetList::new)
                 .getContent();
     }
+
     /**
      * 무작위 여행 정보 8개 출력
      * @return Elasticsearch 내장된 랜덤 함수 사용한 결과
@@ -234,6 +217,42 @@ public class TripSearchService {
     }
 
     /**
+     * 검색 결과가 1건 이상인 경우 결과를 분석하여 로그를 저장하고 Dto로 변환
+     * @param result Elasticsearch 검색 결과
+     * @param page page : 1부터 시작
+     * @return 검색 결과 Dto 출력
+     */
+    private List<TripDto.Search> searchHitsToSearchDto(SearchHits<TripSearchDoc> result, int page){
+        List<TripDto.Search> searches = new ArrayList<>();
+
+        String areaLog = "";
+        String hashtagLog = "";
+
+        for(SearchHit<TripSearchDoc> search : result.getSearchHits()){
+            searches.add(new TripDto.Search(search.getContent()));
+
+            if(search.getHighlightFields().isEmpty())
+                continue;
+
+            for(Map.Entry<String,List<String>> res : search.getHighlightFields().entrySet()){
+                String subValue = res.getValue().get(0).substring(4,res.getValue().get(0).length()-5);
+
+                if(res.getKey().equals(TripSearchField.AREA.getField()))
+                    areaLog = subValue;
+                if(res.getKey().equals(TripSearchField.HASHTAG.getField()))
+                    hashtagLog = subValue;
+            }
+        }
+        if(!areaLog.isEmpty() && page==1)
+            elasticsearchLogService.putSearchLog(TripSearchField.AREA.getField(), areaLog);
+
+        if(!hashtagLog.isEmpty() && page ==1)
+            elasticsearchLogService.putSearchLog(TripSearchField.HASHTAG.getField(), hashtagLog);
+
+        return searches;
+    }
+
+    /**
      * 페이징 처리
      * @param page page : 1부터 시작
      * @param size 한번에 보여줄 갯수
@@ -245,6 +264,7 @@ public class TripSearchService {
         return PageRequest.of(page-1, size,
                 Sort.by(isAsc ? Sort.Direction.ASC : Sort.Direction.DESC, sortBy));
     }
+
     /**
      * 특정 field로 검색을 실행할 경우 해당하는 결과를 검색 로그에 기록하고 검색 결과를 Dto 형태로 매핑
      * @param field 매핑할 필드명
@@ -256,7 +276,8 @@ public class TripSearchService {
         if (result.getTotalHits() == 0)
             return TripDto.SearchResult.builder().build();
 
-        if((page == 1 && field.equals("hashtag")) || (page==1 && field.equals("area")))
+        if((page == 1 && field.equals(TripSearchField.HASHTAG.getField())) ||
+                (page==1 && field.equals(TripSearchField.AREA.getField())))
             elasticsearchLogService.putSearchLog(field, keyword);
 
         List<TripDto.Search> searches = result.get()
@@ -269,6 +290,7 @@ public class TripSearchService {
                 .nearPlaces(getNearPlaceNames(searches.get(0).getArea()))
                 .build();
     }
+
     /**
      * 검색 결과에서 나타날 주변 여행지 목록 출력
      * @param area 기준 여행지 입력
@@ -283,6 +305,7 @@ public class TripSearchService {
                 .map(TripSearchDoc::getPlaceName)
                 .toList();
     }
+
     /**
      * 한글 키보드 상태에서 입력된 영어 단어 변환 기능<br>
      * 잘못 변환될 가능성이 있으므로 변환 전 후를 공백으로 구분하여 검색<br>
@@ -291,10 +314,8 @@ public class TripSearchService {
      * @return 변환후 text
      */
     private String changeKeyboardKorToAlphabet(String text){
-        String newText = text;
-        if(text.split(" ").length == 1 && text.matches("^[ㄱ-ㅎ가-힣]*$")){
-            newText += " " + koreanKeyboardToEng.korToEng(text);
-        }
-        return newText;
+        if(text.split(" ").length == 1 && text.matches("^[ㄱ-ㅎㅏ-ㅣ가-힣]*$"))
+            return koreanKeyboardToEng.korToEng(text);
+        return "";
     }
 }

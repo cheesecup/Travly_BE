@@ -22,9 +22,12 @@ public class TripSearchDoc {
     @Field(name = "trip_id", type = FieldType.Long)
     private Long tripId;
 
-    @Field(name = "title",type = FieldType.Text , copyTo = {"eng_kor_title_suggest", "chosung_title"}
+    @Field(name = "title",type = FieldType.Text , copyTo = {"eng_kor_title_suggest", "chosung_title", "eng_title"}
             ,analyzer = "korean_analyzer")
     private String title;
+
+    @Field(name = "eng_title",type = FieldType.Text, analyzer = "standard", searchAnalyzer = "standard")
+    private String engTitle;
 
     @Field(name = "eng_kor_title_suggest", type = FieldType.Text, analyzer = "korean_analyzer",
             searchAnalyzer = "eng2kor_analyzer")
