@@ -230,6 +230,10 @@ public class TripSearchService {
         if(Boolean.FALSE.equals(redisTemplate.hasKey(TRIP_RECOMMEND + tripId))){
             Trip trip = tripRepository.findById(tripId).orElseThrow(()-> new CustomException(ErrorCode.POST_NOT_FOUND));
             SearchHits<TripRecommendDoc> result = tripRecommendRepository.recommendByContent(trip.getContent(),5);
+
+            if(result.getTotalHits() == 0)
+                return new ArrayList<>();
+
             List<Long> keys = result.getSearchHits().stream().map(searchHit -> searchHit.getContent().getId()).toList();
 
             redisTemplate.opsForList()
