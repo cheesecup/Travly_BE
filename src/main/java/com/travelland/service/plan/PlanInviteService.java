@@ -1,5 +1,7 @@
 package com.travelland.service.plan;
 
+import com.travelland.constant.NotificationType;
+import com.travelland.domain.Notification;
 import com.travelland.domain.member.Member;
 import com.travelland.domain.plan.Plan;
 import com.travelland.domain.plan.PlanInvite;
@@ -7,6 +9,7 @@ import com.travelland.dto.plan.PlanDto;
 import com.travelland.global.exception.CustomException;
 import com.travelland.global.exception.ErrorCode;
 import com.travelland.global.notification.DoEvent;
+import com.travelland.repository.notification.NotificationRepository;
 import com.travelland.repository.plan.PlanInviteRepository;
 import com.travelland.repository.plan.PlanRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class PlanInviteService {
 
     private final PlanInviteRepository planInviteRepository;
     private final PlanRepository planRepository;
+    private final NotificationRepository notificationRepository;
 
     private final ApplicationEventPublisher eventPublisher;
 
@@ -47,12 +51,21 @@ public class PlanInviteService {
         Plan plan = planRepository.findById(planId)
                 .orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
         planInviteRepository.save(new PlanInvite(member, plan));
+
+        Optional<Notification> notification = notificationRepository
+                .findByNotificationTypeAndReceiverAndTitle(NotificationType.INVITE, member, plan.getTitle());
+        notification.ifPresent(Notification::setIsRead);
         eventPublisher.publishEvent(new DoEvent.DoAgreeEvent(this, planId, member.getNickname()));
     }
 
     // 플랜 초대 거절
     @Transactional
     public void disagreeInvitedPlan(Long planId, Member member) {
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new CustomException(ErrorCode.PLAN_NOT_FOUND));
+        Optional<Notification> notification = notificationRepository
+                .findByNotificationTypeAndReceiverAndTitle(NotificationType.INVITE, member, plan.getTitle());
+        notification.ifPresent(Notification::setIsRead);
         eventPublisher.publishEvent(new DoEvent.DoDisagreeEvent(this, planId, member.getNickname()));
     }
 
