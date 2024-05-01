@@ -170,12 +170,4 @@ class TripSearchServiceTest {
         Assertions.assertNotEquals(0, result.getTotalHits());
         Assertions.assertFalse(result.getSearchHits().isEmpty());
     }
-
-    @Test
-    @DisplayName(" 영어 한글 키보드 입력 TEST")
-    void kor2eng(){
-        System.out.println(TripSearchField.AREA.getField());
-        System.out.println();
-        System.out.println(koreanKeyboardToEng.korToEng("ㅑㅔㅙㅜㄷ"));
-    }
 }
