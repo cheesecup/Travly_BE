@@ -11,6 +11,7 @@ public final class Constants {
     public static final String PLAN_VIEW_COUNT = "planViewCount:";
     public static final String PLAN_LIKES_PLAN_ID = "planLikes:planId:";
     public static final String PLAN_SCRAPS_PLAN_ID = "planScraps:planId:";
+    public static final String TRIP_RECOMMEND = "trip_recommend:";
     /**
      * 여행 추천 관련 batch Job Name
      */

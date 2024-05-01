@@ -118,6 +118,9 @@ public interface TripControllerDocs {
     @Operation(summary = "여행정보 조회수 TOP 10 목록 조회", description = "조회수 상위 10개 게시글 목록을 조회하는 API")
     ResponseEntity getTripListTop10();
 
+    @Operation(summary = "좋아요 기반 여행글 5개 추천", description = "여행 후기 상세정보시 하단부에 위치한 여행 추천")
+    ResponseEntity getTripRecommend(@PathVariable Long tripId);
+
     @Operation(summary = "여행정보 무작위 조회", description = "여행 후기 전체 글 중 무작위 8개 선정")
     ResponseEntity getTripListRandom8();
 

@@ -20,12 +20,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static com.travelland.constant.Constants.TRIP_RECOMMEND;
 
 @Slf4j(topic = "ES")
 @Service
@@ -39,6 +42,7 @@ public class TripSearchService {
     private final SearchArea searchArea;
     private final KoreanKeyboardToEng koreanKeyboardToEng;
     private final TripRecommendRepository tripRecommendRepository;
+    private final RedisTemplate<String,String> redisTemplate;
     
     /**
      * 여행 정보를 검색하기 위해 Elasticsearch에 데이터 저장
@@ -215,6 +219,18 @@ public class TripSearchService {
             this.createTripDocument(trip,hashtags,tripImageService.getTripThumbnailUrl(trip));
         }
     }
+    /**
+     * 추천 게시글 기능
+     * @param tripId 추천 기준 tripId
+     * @return 추천 결과 Dto
+     */
+    public List<TripDto.GetList> getRecommendTrip(Long tripId){
+        List<String> res = redisTemplate.opsForList().range(TRIP_RECOMMEND+tripId,0,-1);
+        if(res.isEmpty())
+            return new ArrayList<>();
+
+        return tripSearchRepository.getRecommendList(res.stream().map(Long::parseLong).toList());
+    }
 
     /**
      * 검색 결과가 1건 이상인 경우 결과를 분석하여 로그를 저장하고 Dto로 변환
@@ -251,6 +267,7 @@ public class TripSearchService {
 
         return searches;
     }
+
 
     /**
      * 페이징 처리
